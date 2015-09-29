@@ -8,9 +8,15 @@ from .sputil import list_files
 
 
 class SPControl(object):
-    def __init__(self, dirPath, indexPath):
+    def __init__(self, indexPath, dirPath):
         self._songPath = os.path.join(dirPath, 'Songs')
         self._setPath = os.path.join(dirPath, 'Sets')
+        if not os.path.exists(self._songPath):
+            raise IOError('dirPath does not contain a Songs folder at '
+                          + self._songPath)
+        if not os.path.exists(self._setPath):
+            raise IOError('dirPath does not contain a Sets folder at '
+                          + self._setPath)
         self._search = SPSearch(indexPath, self._songPath)
 
     def search(self, term):

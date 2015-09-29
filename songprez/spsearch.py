@@ -14,11 +14,12 @@ _myFilter = (RegexTokenizer() | LowercaseFilter() | StopFilter() |
              StemFilter(porter2.stem))
 _schema = Schema(filepath=ID(unique=True, stored=True),
                  time=STORED,
-                 title=TEXT(field_boost=2.0),
+                 title=TEXT(field_boost=2.0, stored=True),
                  aka=TEXT(field_boost=2.0),
                  key_line=TEXT(field_boost=2.0),
                  lyrics=TEXT(analyzer=_myFilter),
                  song=STORED)
+# TODO: What about NGrams?
 
 
 class SPSearch(object):
