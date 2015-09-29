@@ -70,7 +70,7 @@ class SPSearch(object):
                                       ix.schema)
             query = parser.parse(term)
             results = searcher.search(query, limit=None)
-            output = [r['song'] for r in results]
+            output = [(r['filepath'], r['title']) for r in results]
         return output
 
     def _obtain_index(self, indexPath, schema):
