@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 
 """
-test_chords
+test_spchords
 ----------------------------------
 
-Tests for `chords` module.
+Tests for `spchords` module.
 """
 
 import unittest
