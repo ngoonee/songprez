@@ -12,15 +12,27 @@ from kivy.clock import Clock
 from kivy.properties import StringProperty, BooleanProperty, ListProperty
 from kivy.properties import NumericProperty, ObjectProperty, DictProperty
 from kivy.uix.behaviors import FocusBehavior
+from ..control import spcontrol
 from .basewidget import BaseWidget
 from .settingsjson import _default_settings, _build_settings
 
 
 class SongPrezApp(App):
+    base = ObjectProperty(None)
+    colwidth = NumericProperty(0)
+    colspace = NumericProperty(0)
+    rowheight = NumericProperty(0)
+    rowspace = NumericProperty(0)
+
     def __init__ (self, **kwargs):
         super(SongPrezApp, self).__init__(**kwargs)
         self._keyboard = Window.request_keyboard(None, self, 'text')
         self._keyboard.bind(on_key_down=self._on_keyboard_down)
+        self.control = spcontrol.SPControl(u'/tmp/searchindex', u'/home/data/Dropbox/OpenSong')
+        Clock.schedule_once(self._finish_init)
+
+    def _finish_init(self, dt):
+        self.control._update_sets()
 
     def register_textinput(self, textInstance, value):
         '''
@@ -58,8 +70,24 @@ class SongPrezApp(App):
         Window.bind(on_resize=self.win_cb)
         self.settings_cls = SettingsWithSidebar
         self.use_kivy_settings = False
-        self.root = BaseWidget()
-        return self.root
+        self.base = BaseWidget()
+        self.base.bind(colwidth=self._colwidth)
+        self.base.bind(colspace=self._colspace)
+        self.base.bind(rowheight=self._rowheight)
+        self.base.bind(rowspace=self._rowspace)
+        return self.base
+
+    def _colwidth(self, instance, value):
+        self.colwidth = value
+
+    def _colspace(self, instance, value):
+        self.colspace = value
+
+    def _rowheight(self, instance, value):
+        self.rowheight = value
+
+    def _rowspace(self, instance, value):
+        self.rowspace = value
 
     def win_cb(self, window, width, height):
         self.width = width
