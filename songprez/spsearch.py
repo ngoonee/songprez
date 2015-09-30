@@ -82,3 +82,7 @@ class SPSearch(object):
         else:
             index = create_in(indexPath, schema)
         return index
+
+    def get_song_from_cache(self, path):
+        ix = self._ix
+        return ix.searcher().document(filepath=path)['song']
