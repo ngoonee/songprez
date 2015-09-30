@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<set name="MultiElement Set">
+  <slide_groups>
+  <slide_group name="Song One" type="song" presentation="" path=""/>
+  <slide_group name="Song2" type="song" presentation="" path=""/>
+  <slide_group name="SongThree" type="song" presentation="" path=""/>
+</slide_groups></set>
