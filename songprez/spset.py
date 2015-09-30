@@ -9,6 +9,7 @@ from .spsong import SPSong
 
 class SPSet(object):
     def __init__(self, **kwargs):
+        self.filepath = ''
         self.name = "Unnamed Set"
         self._items = []
 
@@ -36,6 +37,7 @@ class SPSet(object):
                 raise IOError("%s is not in a proper directory structure"
                               % filepath)
         retval = cls()
+        retval.filepath = filepath
         retval.name = setobj['@name']
         items = setobj['slide_groups']['slide_group']
         items = items if type(items) is list else [items]
