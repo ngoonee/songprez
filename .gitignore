@@ -44,3 +44,6 @@ docs/_build
 
 # Planning documents
 plan/*
+
+# Cache for py.test
+.cache/*
