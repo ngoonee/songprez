@@ -11,8 +11,8 @@ Tests for `spset` module
 import os
 import unittest
 
-from songprez import spset
-from songprez import spsong
+from songprez.control import spset
+from songprez.control import spsong
 
 '''
 def test_set_read_write(tmpdir):

@@ -11,16 +11,15 @@ Tests for `spsong` module.
 import unittest
 import os
 
-from songprez import spsong
-from songprez.spsong import SPSong
+from songprez.control import spsong
 
 def test_song_read_write(tmpdir):
     p = tmpdir.mkdir('songtest')
-    s = SPSong()
+    s = spsong.SPSong()
     for item in spsong._xmlkeys:
         setattr(s, item, "test")
     s.write_to_file(p.join('test').__str__())
-    s2 = SPSong.read_from_file(p.join('test').__str__())
+    s2 = spsong.SPSong.read_from_file(p.join('test').__str__())
     for item in spsong._xmlkeys:
         assert getattr(s, item) == getattr(s2, item)
 
@@ -36,11 +35,11 @@ class TestSongObject(unittest.TestCase):
         pass
 
     def test_str_repr(self):
-        s = SPSong()
+        s = spsong.SPSong()
         assert s.__repr__() == "<Song Object - Title: New Song>"
 
     def test_chord_removal(self):
-        s = SPSong()
+        s = spsong.SPSong()
         l = []
         l.append("[V]")
         l.append(".C D/F#     F G")
@@ -68,7 +67,7 @@ class TestSongObject(unittest.TestCase):
         assert s.words == "\n".join(l2)
 
     def test_transpose(self):
-        s = SPSong()
+        s = spsong.SPSong()
         l = []
         l.append(".        Esus4 E   D#o G#7(#5) C#m7")
         l.append(" You are ho____ly, ho__________ly")
@@ -92,7 +91,7 @@ class TestSongObject(unittest.TestCase):
         assert s.lyrics == "\n".join(l)
 
     def test_transpose_spacing(self):
-        s = SPSong()
+        s = spsong.SPSong()
         l = []
         l.append(".               D   A G          D  A G")
         l.append(" It's all about You,   All about You")
@@ -106,7 +105,7 @@ class TestSongObject(unittest.TestCase):
         l.append(".               Gm  F/D Eb/C F Bb  Eb/F")
         l.append(" It's all about You,         Jesus")
         assert s.lyrics == "\n".join(l)
-        s = SPSong()
+        s = spsong.SPSong()
         l = []
         l.append(".  C    F   C    Am Dm G   C")
         l.append(" O God, our help in a__ges past")
@@ -120,7 +119,7 @@ class TestSongObject(unittest.TestCase):
         l.append(".    Gm   Dm  Gm    C  F")
         l.append(" Our hope for years to come")
         assert s.lyrics == "\n".join(l)
-        s = SPSong()
+        s = spsong.SPSong()
         l = []
         l.append(".Ebmaj7 Bb/D Ebmaj7 Bb/D Ebmaj7 Gm Fm")
         l.append(" Ma_____ker  of     the  u______ni_verse")
@@ -138,7 +137,7 @@ class TestSongObject(unittest.TestCase):
         l.append(".B B2/D# B    E2      G#m  Emaj7   F#sus F#")
         l.append(" Je______sus, Lord of all (Lord of all)")
         assert s.lyrics == "\n".join(l)
-        s = SPSong()
+        s = spsong.SPSong()
         l = []
         l.append(".Ebmaj7 Bb/D Ebmaj7 Bb/D Ebmaj7 Gm Fm")
         l.append(" Ma_____ker  of     the  u______ni_verse")
@@ -154,7 +153,7 @@ class TestSongObject(unittest.TestCase):
         l.append(" Come  to   us,   by   Vir___gin birth")
         l.append(".B B2/D# B   E2     G#m   Emaj7  F#sus F#")
         assert s.lyrics == "\n".join(l)
-        s = SPSong()
+        s = spsong.SPSong()
         l = []
         l.append(".F A/Bb C")
         l.append('')
@@ -166,7 +165,7 @@ class TestSongObject(unittest.TestCase):
         assert s.lyrics == "\n".join(l)
 
     def test_split_lyric(self):
-        s = SPSong()
+        s = spsong.SPSong()
         lyric = " abcdefghijklmnopqrstuvwxyz"
         chord = ["333", "1", "4444", "22", "333", ""]
         splitlyric = s._split_lyric_line(lyric, chord)

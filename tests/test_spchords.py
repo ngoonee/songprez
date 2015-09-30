@@ -10,7 +10,7 @@ Tests for `spchords` module.
 
 import unittest
 
-from songprez import spchords
+from songprez.control import spchords
 
 
 class TestTranspose(unittest.TestCase):
