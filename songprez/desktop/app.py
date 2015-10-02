@@ -29,10 +29,11 @@ class SongPrezApp(App):
         self._keyboard = Window.request_keyboard(None, self, 'text')
         self._keyboard.bind(on_key_down=self._on_keyboard_down)
         self.control = spcontrol.SPControl(u'/tmp/searchindex', u'/home/data/Dropbox/OpenSong')
+        self.control.daemon = True
         Clock.schedule_once(self._finish_init)
 
     def _finish_init(self, dt):
-        self.control._update_sets()
+        self.control.start()
 
     def register_textinput(self, textInstance, value):
         '''

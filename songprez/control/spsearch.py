@@ -28,7 +28,6 @@ class SPSearch(object):
         self._dirpath = dirPath
         ix = self._obtain_index()
         self._ix = ix
-        self.update_index()
 
     def update_index(self):
         listed_files = list_files(self._dirpath)

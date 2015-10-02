@@ -1,8 +1,9 @@
-#/usr/bin/env python
+#!/usr/bin/env python
 
 import os
 from threading import Thread
 from blinker import signal
+from time import sleep
 from .spsearch import SPSearch
 from .spset import SPSet
 from .spsong import SPSong
@@ -16,23 +17,30 @@ class SPControl(Thread):
     and editing.
 
     EDITING:-
-        Internal state variables:-
-            Current set
-            Current song
         Published information:-
-            Current set
-            Current Song
+            curSet(sender, Set) - Current set
+            curSong(sender, Song) - Current Song
+            resultSet(sender, Set) - A requested set
+            resultSong(sender, Song) - A requested song
+            setList(sender, List) - List of sets
+            songList(sender, List) - List of songs
+            searchList(sender, List) - List of search results
         Subscribed signals:-
-            Change current set
-            Save current set (replace with sent information)
-            Change current song
-            Save current song (replace with sent information)
-            Add current song to current set
-            Remove current song from current set
-        Functions:-
-            get_sets - returns list of sets
-            get_songs - returns list of songs
-            search(term) - returns list of songs matching search term
+            getSongs(sender) - Generate a current list of songs and publish it
+            getSets(sender) - Generate a current list of sets and publish it
+            changeSong(sender, Path) - Change current song
+            saveSong(sender, Path, Song) - Save current song (replace with
+                                           sent information)
+            changeSet(sender, Path, <Song>) - Change current set
+            saveSet(sender, Path, Set) - Save current set (replace with sent
+                                         information)
+            getSong(sender, Path) - Publish song from given path
+            getSet(sender, Path) - Publish set from given path
+            addSong(sender) - Add current song to current set
+            removeSong(sender) - Remove current song from current set
+            search(sender, SearchTerm) - Run a search and publish the results
+            publishAll(sender) - Publish all information (cached) currently
+                                 held, this is a sort of 'refresh' order
 
     PRESENTING:-
         Published information:-
@@ -56,125 +64,145 @@ class SPControl(Thread):
         self._songPath = os.path.join(dirPath, 'Songs')
         self._setPath = os.path.join(dirPath, 'Sets')
         if not os.path.exists(self._songPath):
-            raise IOError('dirPath does not contain a Songs folder at '
-                          + self._songPath)
+            raise IOError('dirPath does not contain a Songs folder at ' +
+                          self._songPath)
         if not os.path.exists(self._setPath):
-            raise IOError('dirPath does not contain a Sets folder at '
-                          + self._setPath)
-        self._search = SPSearch(indexPath, self._songPath)
-        self.songList = None
-        self.setList = None
-        self.curSong = None
-        self.curSet = None
+            raise IOError('dirPath does not contain a Sets folder at ' +
+                          self._setPath)
+        self._searchObj = SPSearch(indexPath, self._songPath)
+        self._sets = None
+        self._songs = None
+        self._songList = None
+        self._setList = None
+        self._curSong = None
+        self._curSet = None
+        self._resultSet = None
+        self._resultSong = None
+        self._searchTerm = ''
+        self._searchList = None
+        self._quit = False
 
     def run(self):
         self._update_songs()
         self._update_sets()
-        self._search.update_index()
-        signal('changeSet').connect(self._change_set)
-        signal('saveSet').connect(self._save_set)
+        self._searchObj.update_index()
+        signal('getSongs').connect(self._get_songs)
         signal('changeSong').connect(self._change_song)
         signal('saveSong').connect(self._save_song)
+        signal('getSong').connect(self._get_song)
+        signal('getSets').connect(self._get_sets)
+        signal('changeSet').connect(self._change_set)
+        signal('saveSet').connect(self._save_set)
+        signal('getSet').connect(self._get_set)
         signal('addSong').connect(self._add_song)
         signal('removeSong').connect(self._remove_song)
+        signal('search').connect(self._search)
+        signal('publishAll').connect(self._publish_all)
+        while True:
+            if self._quit:
+                break
+            if self._searchTerm:
+                self._searchList = self._searchObj.search(self._searchTerm)
+                self._searchTerm = ''
+                signal('searchList').send(self, List=self._searchList)
+            sleep(0.1)
 
-    @property
-    def songList(self):
-        return self._songs
+    def quit(self):
+        self._quit = True
 
-    @songList.setter
-    def songList(self, list_of_songs):
-        self._songs = list_of_songs
-        signal('songList').send(self._songs)
-
+    ### Methods handling songList. _songs holds the list, _songList holds the
+    ### return object. Should only be accessed by _get_songs()
     def _update_songs(self):
-        self.songList = [SPSong.read_from_file(f)
-                         for f in list_files(self._songPath)]
+        self._songs = [SPSong.read_from_file(f)
+                       for f in list_files(self._songPath)]
+        self._get_songs(self)
 
-    @property
-    def setList(self):
-        return self._sets
+    def _get_songs(self, sender):
+        self._songList = [(s.filepath, s.title) for s in self._songs]
+        signal('songList').send(self, List=self._songList)
 
-    @setList.setter
-    def setList(self, list_of_sets):
-        self._sets = list_of_sets
-        signal('setList').send(self._sets)
-
+    ### Methods handling setList. _songs holds the list, _setList holds the
+    ### return object. Should only be accessed by _get_sets()
     def _update_sets(self):
-        self.setList = [SPSet.read_from_file(f)
-                        for f in list_files(self._setPath)]
+        self._sets = [SPSet.read_from_file(f)
+                     for f in list_files(self._setPath)]
+        self._get_sets(self)
 
-    @property
-    def curSong(self):
-        return self._cursong
+    def _get_sets(self, sender):
+        self._setList = [(s.filepath, s.name) for s in self._sets]
+        signal('setList').send(self, List=self._setList)
 
-    @curSong.setter
-    def curSong(self, songObject):
-        self._cursong = songObject
-        signal('curSong').send(self._cursong)
-
-    def _change_song(self, filepath):
+    ### Methods handling curSong.
+    def _change_song(self, sender, **kwargs):
+        filepath = kwargs.get('Path')
         if filepath:
-            self.curSong = SPSong.read_from_file(filepath)
+            self._curSong = SPSong.read_from_file(filepath)
+            signal('curSong').send(self, Song=self._curSong)
 
-    def _save_song(self, songObject, filepath):
-        if not isinstance(songObject, SPSong):
-            return
-        if not filepath:
-            filepath = songObject.filepath
-        songObject.write_to_file(filepath)
-        # Not sure if this is a good idea, would there be race bugs? Just that
-        # self.curSong = songObject seems a bit too presumptuous
-        self.curSong = SPSong.read_from_file(filepath)
+    def _save_song(self, sender, **kwargs):
+        filepath = kwargs.get('Path')
+        songObject = kwargs.get('Song')
+        if isinstance(songObject, SPSong):
+            if not filepath:
+                filepath = songObject.filepath
+            songObject.write_to_file(filepath)
+            self._change_song(self, Path=filepath)
 
-    @property
-    def curSet(self):
-        return self._curset
-
-    @curSet.setter
-    def curSet(self, setObject):
-        self._curset = setObject
-        signal('curSet').send(self._curset)
-
-    def _change_set(self, filepath):
+    ### Methods handling curSet.
+    def _change_set(self, sender, **kwargs):
+        filepath = kwargs.get('Path')
+        songObject = kwargs.get('Song')
         if filepath:
-            self.curSet = SPSet.read_from_file(filepath)
-            self.curSong = self.curSet.list_songs()[0]
+            self._curSet = SPSet.read_from_file(filepath)
+            signal('curSet').send(self, Set=self._curSet)
+            if songObject is not None:
+                self._change_song(self, Path=songObject.filepath)
 
-    def _save_set(self, setObject, filepath):
-        if not isinstance(setObject, SPSet):
-            return
-        if not filepath:
-            filepath = setObject.filepath
-        setObject.write_to_file(filepath)
-        # Not sure if this is a good idea, would there be race bugs? Just that
-        # self.curSet = setObject seems a bit too presumptuous
-        self.curSet = SPSet.read_from_file(filepath)
+    def _save_set(self, sender, **kwargs):
+        filepath = kwargs.get('Path')
+        setObject = kwargs.get('Set')
+        if isinstance(setObject, SPSet):
+            if not filepath:
+                filepath = setObject.filepath
+            setObject.write_to_file(filepath)
+            self._change_set(sender, Path=filepath)
 
-    def _add_song(self, songObject):
-        if not isinstance(songObject, SPSong):
-            return
-        self.curSet.add_song(songObject)
+    def _add_song(self, sender):
+        songObject = self._curSong
+        if isinstance(songObject, SPSong):
+            self._curSet.add_song(songObject)
+            self._change_set(sender, Path=self._curSet.filepath,
+                             Song=songObject)
 
-    def _remove_song(self):
-        if not isinstance(songObject, SPSong):
-            return
-        self.curSet.remove_song(songObject)
+    def _remove_song(self, sender):
+        songObject = self._curSong
+        if isinstance(songObject, SPSong):
+            self._curSet.remove_song(songObject)
+            self._change_set(sender, Path=self._curSet.filepath)
 
-    def search(self, term):
-        return self._search.search(term)
+    ### Methods handling search results.
+    def _search(self, sender, **kwargs):
+        self._searchTerm = kwargs.get('SearchTerm', '')
 
-    def get_sets(self):
-        return [(s.filepath, s.name) for s in self.setList]
+    ### Methods handling general requests
+    def _get_set(self, sender, **kwargs):
+        path = kwargs.get('Path')
+        self._resultSet = SPSet.read_from_file(path)
+        signal('resultSet').send(self, Set=self._resultSet)
 
-    def get_set(self, path):
-        return SPSet.read_from_file(path)
+    def _get_song(self, sender, **kwargs):
+        path = kwargs.get('Path')
+        self._resultSong = self._searchObj.get_song_from_cache(path)
+        signal('resultSong').send(self, Song=self._resultSong)
 
-    def get_songs(self):
-        return [(s.filepath, s.title) for s in self.songList]
-
-    def get_song(self, path):
-        return self._search.get_song_from_cache(path)
+    def _publish_all(self, sender):
+        signal('curSet').send(self, Set=self._curSet)
+        signal('curSong').send(self, Song=self._curSong)
+        signal('resultSet').send(self, Set=self._resultSet)
+        signal('resultSong').send(self, Song=self._resultSong)
+        signal('setList').send(self, List=self._setList)
+        signal('songList').send(self, List=self._songList)
+        signal('searchList').send(self, List=self._searchList)
 "search"
 "browse_previous"
 "browse_next"
