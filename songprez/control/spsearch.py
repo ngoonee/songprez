@@ -24,13 +24,16 @@ _schema = Schema(filepath=ID(unique=True, stored=True),
 
 class SPSearch(object):
     def __init__(self, indexPath, dirPath):
-        ix = self._obtain_index(indexPath, _schema)
-        self._ix = ix
+        self._indexpath = indexPath
         self._dirpath = dirPath
+        ix = self._obtain_index()
+        self._ix = ix
         self.update_index()
 
     def update_index(self):
         listed_files = list_files(self._dirpath)
+        if not self._ix.storage.index_exists():
+            self._ix = self._obtain_index()
         ix = self._ix
         indexedPaths = set()
         with ix.searcher() as searcher:
@@ -65,6 +68,9 @@ class SPSearch(object):
                                song=obj)
 
     def search(self, term):
+        if not self._ix.storage.index_exists():
+            self._ix = self._obtain_index()
+            self.update_index()
         ix = self._ix
         with ix.searcher() as searcher:
             parser = MultifieldParser(['title', 'aka', 'key_line', 'lyrics'],
@@ -74,15 +80,18 @@ class SPSearch(object):
             output = [(r['filepath'], r['title']) for r in results]
         return output
 
-    def _obtain_index(self, indexPath, schema):
-        if not os.path.exists(indexPath):
-            os.mkdir(indexPath)
-        if exists_in(indexPath):
-            index = open_dir(indexPath)
+    def _obtain_index(self):
+        if not os.path.exists(self._indexpath):
+            os.mkdir(self._indexpath)
+        if exists_in(self._indexpath):
+            index = open_dir(self._indexpath)
         else:
-            index = create_in(indexPath, schema)
+            index = create_in(self._indexpath, _schema)
         return index
 
     def get_song_from_cache(self, path):
+        if not self._ix.storage.index_exists():
+            self._ix = self._obtain_index()
+            self.update_index()
         ix = self._ix
         return ix.searcher().document(filepath=path)['song']
