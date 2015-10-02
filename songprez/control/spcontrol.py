@@ -1,6 +1,7 @@
 #/usr/bin/env python
 
 import os
+from threading import Thread
 from blinker import signal
 from .spsearch import SPSearch
 from .spset import SPSet
@@ -8,7 +9,7 @@ from .spsong import SPSong
 from .sputil import list_files
 
 
-class SPControl(object):
+class SPControl(Thread):
     '''
     A SongPrez controller stores current state, and any GUIs should be thin
     interfaces to the state shown. Currently there are two states, presenting
@@ -50,7 +51,8 @@ class SPControl(object):
             Add this song
             Overlay this alert
     '''
-    def __init__(self, indexPath, dirPath):
+    def __init__(self, indexPath, dirPath, **kwargs):
+        super(SPControl, self).__init__(**kwargs)
         self._songPath = os.path.join(dirPath, 'Songs')
         self._setPath = os.path.join(dirPath, 'Sets')
         if not os.path.exists(self._songPath):
@@ -64,8 +66,11 @@ class SPControl(object):
         self.setList = None
         self.curSong = None
         self.curSet = None
+
+    def run(self):
         self._update_songs()
         self._update_sets()
+        self._search.update_index()
         signal('changeSet').connect(self._change_set)
         signal('saveSet').connect(self._save_set)
         signal('changeSong').connect(self._change_song)
