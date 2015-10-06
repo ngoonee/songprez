@@ -11,6 +11,7 @@ from .setlist import SetList
 from .contentlist import ContentList
 
 Builder.load_string("""
+#:import blinker blinker
 <BaseWidget>:
     orientation: 'horizontal'
     colwidth: self.width//13
@@ -19,7 +20,10 @@ Builder.load_string("""
     rowspace: self.colspace//2
     padding: (self.width - self.colwidth*12 - self.colspace*11)//2
     spacing: self.colspace
-    setlist: setlist
+    curset: curset
+    songlist: contentlist.songlist
+    setlist: contentlist.setlist
+    searchlist: contentlist.searchlist
     BoxLayout:
         orientation: 'vertical'
         padding: 0
@@ -27,9 +31,10 @@ Builder.load_string("""
         size_hint_x: None
         width: root.colwidth*3 + root.colspace*2
         ContentList:
+            id: contentlist
             size_hint_y: 4
         SetList:
-            id: setlist
+            id: curset
             size_hint_y: 3
     BoxLayout:
         orientation: 'vertical'
@@ -46,17 +51,19 @@ Builder.load_string("""
             spacing: root.colspace
             NormalSizeFocusButton:
                 text: 'Add to Set'
-                on_release: print(app)
+                on_release: blinker.signal('getSets').send(None)
             NormalSizeFocusButton:
                 text: 'Remove from Set'
-                on_release: print(app.root)
+                on_release: blinker.signal('getSongs').send(None)
             Widget:
                 #size_hint_x: None
                 #width: root.colwidth*3 + root.colspace*2
             NormalSizeFocusButton:
                 text: 'Save Song As'
+                on_release: blinker.signal('search').send(None, SearchTerm='marry')
             NormalSizeFocusButton:
                 text: 'Save Song'
+                on_release: blinker.signal('publishAll').send(None)
     BoxLayout:
         orientation: 'vertical'
         padding: 0
@@ -84,9 +91,23 @@ Builder.load_string("""
 class BaseWidget(BoxLayout):
     def __init__(self, **kwargs):
         super(BaseWidget, self).__init__(**kwargs)
-        signal('curSet').connect(self._monitor_set)
+        signal('curSet').connect(self._monitor_curSet)
+        signal('setList').connect(self._monitor_setList)
+        signal('songList').connect(self._monitor_songList)
+        signal('searchList').connect(self._monitor_searchList)
 
-    def _monitor_set(self, curset):
-        self.setlist.setcontent.set_data(curset)
+    def _monitor_curSet(self, sender, **kwargs):
+        setObject = kwargs.get('Set')
+        self.curset.setcontent.set_data(setObject)
 
-    pass
+    def _monitor_setList(self, sender, **kwargs):
+        setList = kwargs.get('List')
+        self.setlist.set_data(setList)
+
+    def _monitor_songList(self, sender, **kwargs):
+        songList = kwargs.get('List')
+        self.songlist.set_data(songList)
+
+    def _monitor_searchList(self, sender, **kwargs):
+        searchList = kwargs.get('List')
+        self.searchlist.set_data(searchList)

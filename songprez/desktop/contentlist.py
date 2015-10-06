@@ -3,6 +3,7 @@ import kivy
 # kivy.require('1.9.0')
 from kivy.app import App
 from kivy.lang import Builder
+from kivy.clock import Clock
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.tabbedpanel import TabbedPanel, TabbedPanelItem
 from .itemlist import ItemList
@@ -48,4 +49,33 @@ Builder.load_string("""
 
 
 class ContentList(BoxLayout):
-    pass
+    def __init__(self, **kwargs):
+        super(ContentList, self).__init__(**kwargs)
+        Clock.schedule_once(self._finish_init)
+
+    def _finish_init(self, dt):
+        self.songlist.bind(adapter=self._update_song_adapter)
+        self.setlist.bind(adapter=self._update_set_adapter)
+        self.searchlist.bind(adapter=self._update_search_adapter)
+
+    def _update_song_adapter(self, instance, value):
+        instance.adapter.bind(on_selection_change=self._song_selected)
+
+    def _update_set_adapter(self, instance, value):
+        instance.adapter.bind(on_selection_change=self._set_selected)
+
+    def _update_search_adapter(self, instance, value):
+        instance.adapter.bind(on_selection_change=self._search_selected)
+
+    def _song_selected(self, adapter):
+        print(adapter)
+        print(adapter.selection)
+        print(adapter.selection[0])
+        print(adapter.select
+        #print(adapter.data)
+
+    def _set_selected(self, adapter):
+        print(adapter)
+
+    def _search_selected(self, adapter):
+        print(adapter)
