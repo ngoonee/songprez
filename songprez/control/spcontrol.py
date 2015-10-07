@@ -171,14 +171,13 @@ class SPControl(Thread):
         songObject = self._curSong
         if isinstance(songObject, SPSong):
             self._curSet.add_song(songObject)
-            self._change_set(sender, Path=self._curSet.filepath,
-                             Song=songObject)
+            signal('curSet').send(self, Set=self._curSet)
 
     def _remove_song(self, sender):
         songObject = self._curSong
         if isinstance(songObject, SPSong):
             self._curSet.remove_song(songObject)
-            self._change_set(sender, Path=self._curSet.filepath)
+            signal('curSet').send(self, Set=self._curSet)
 
     ### Methods handling search results.
     def _search(self, sender, **kwargs):
