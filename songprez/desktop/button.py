@@ -35,5 +35,4 @@ class NormalSizeFocusButton(FocusButton):
         app.bind(colwidth=self._setwidth)
 
     def _setwidth(self, instance, value):
-        print(value)
         self.width = value
