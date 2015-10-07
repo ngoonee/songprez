@@ -11,6 +11,7 @@ from .itemlist import ItemList
 from .button import NormalSizeFocusButton
 
 Builder.load_string("""
+#:import signal blinker.signal
 <ContentList>:
     songlist: songlist
     searchlist: searchlist
@@ -24,16 +25,27 @@ Builder.load_string("""
         tab_width: app.colwidth
         TabbedPanelItem:
             text: 'Songs'
-            ItemList:
-                id: songlist
+            BoxLayout:
+                padding: app.rowspace
+                ItemList:
+                    id: songlist
         TabbedPanelItem:
             text: 'Search'
-            ItemList:
-                id: searchlist
+            BoxLayout:
+                orientation: "vertical"
+                padding: app.rowspace
+                spacing: app.rowspace
+                SingleLineTextInput:
+                    on_action: signal('search').send(None, SearchTerm=self.text)
+                    on_textupdate: signal('search').send(None, SearchTerm=self.text)
+                ItemList:
+                    id: searchlist
         TabbedPanelItem:
             text: 'Sets'
-            ItemList:
-                id: setlist
+            BoxLayout:
+                padding: app.rowspace
+                ItemList:
+                    id: setlist
     BoxLayout:
         orientation: 'horizontal'
         size_hint_y: None

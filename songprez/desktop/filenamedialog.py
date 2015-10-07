@@ -5,6 +5,7 @@ from kivy.lang import Builder
 from kivy.uix.modalview import ModalView
 from blinker import signal
 from .button import NormalSizeFocusButton
+from .textinput import SingleLineTextInput
 
 Builder.load_string("""
 #:import signal blinker.signal
@@ -19,12 +20,9 @@ Builder.load_string("""
         orientation: "vertical"
         padding: app.rowspace//2
         spacing: app.rowspace
-        TextInput:
+        SingleLineTextInput:
             id: textinput
-            multiline: False
-            write_tab: False
-            size_hint_y: None
-            height: self.minimum_height
+            on_action: root.do_action(); root.dismiss()
         BoxLayout:
             orientation: "horizontal"
             size_hint_y: None
