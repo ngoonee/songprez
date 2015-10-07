@@ -160,12 +160,13 @@ class SPControl(Thread):
 
     def _save_set(self, sender, **kwargs):
         filepath = kwargs.get('Path')
+        if not filepath:
+            filepath = setObject.filepath
         setObject = kwargs.get('Set')
-        if isinstance(setObject, SPSet):
-            if not filepath:
-                filepath = setObject.filepath
-            setObject.write_to_file(filepath)
-            self._change_set(sender, Path=filepath)
+        if not isinstance(setObject, SPSet):
+            setObject = self._curSet
+        setObject.write_to_file(filepath)
+        self._change_set(sender, Path=filepath)
 
     def _add_song(self, sender):
         songObject = self._curSong
