@@ -71,7 +71,6 @@ class ContentList(BoxLayout):
         print(adapter)
         print(adapter.selection)
         print(adapter.selection[0])
-        print(adapter.select
         #print(adapter.data)
 
     def _set_selected(self, adapter):
