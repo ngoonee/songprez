@@ -16,7 +16,7 @@ class SPSet(object):
     def __repr__(self):
         printout = ["<Set Object - Name: " + self.name + ". Contents are:-"]
         for i in self._items:
-            printout.append(i['@type'].title() + ': ' +i['@name'])
+            printout.append(i['@type'].title() + ': ' + i['@name'])
         printout[-1] += ">"
         return "\n".join(printout)
 
@@ -104,7 +104,8 @@ class SPSet(object):
         '''
         i = None
         for index, item in enumerate(self._items):
-            if item['@type'] == 'song' and item['song'] == obj:
+            if (item['@type'] == 'song' and
+                    item['song'].filepath == obj.filepath):
                 i = index
         if i:
             self._items.pop(i)
