@@ -5,11 +5,14 @@ from kivy.app import App
 from kivy.lang import Builder
 from kivy.clock import Clock
 from kivy.uix.boxlayout import BoxLayout
+from kivy.properties import StringProperty
 from blinker import signal
 from .itemlist import ItemList
 from .button import NormalSizeFocusButton
+from .filenamedialog import FilenameDialog
 
 Builder.load_string("""
+#:import signal blinker.signal
 <SetList>:
     setcontent: setcontent
     orientation: 'vertical'
@@ -26,12 +29,16 @@ Builder.load_string("""
         Widget:
         NormalSizeFocusButton:
             text: 'Save Set As'
+            on_press: root._save_set_as()
         NormalSizeFocusButton:
             text: 'Save Set'
+            on_press: signal('saveSet').send(None)
 """)
 
 
 class SetList(BoxLayout):
+    _setName = StringProperty('')
+
     def __init__(self, **kwargs):
         super(SetList, self).__init__(**kwargs)
         signal('curSet').connect(self._monitor_curSet)
@@ -49,4 +56,10 @@ class SetList(BoxLayout):
     def _monitor_curSet(self, sender, **kwargs):
         setObject = kwargs.get('Set')
         songList = [(s.filepath, s.title) for s in setObject.list_songs()]
+        self._setName = setObject.name
         self.setcontent.set_data(songList)
+
+    def _save_set_as(self):
+        view = FilenameDialog('saveSet')
+        view.textinput.text = self._setName
+        view.open()
