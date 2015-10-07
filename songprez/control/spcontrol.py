@@ -143,10 +143,13 @@ class SPControl(Thread):
         songObject = kwargs.get('Song')
         if not isinstance(songObject, SPSong):
             songObject = self._curSong
+            if not songObject:
+                # No valid object found either in signal or curSong
+                return
         filepath = kwargs.get('Path')
         if not filepath:
             filepath = songObject.filepath
-        if not filepath:
+        if filepath:
             songObject.write_to_file(filepath)
             self._change_song(self, Path=filepath)
 
@@ -164,10 +167,15 @@ class SPControl(Thread):
         setObject = kwargs.get('Set')
         if not isinstance(setObject, SPSet):
             setObject = self._curSet
+            if not setObject:
+                # No valid object found either in signal or curSet
+                return
         filepath = kwargs.get('Path')
         if not filepath:
             filepath = setObject.filepath
-        if not filepath:
+        if filepath:
+            if not os.path.isabs(filepath):
+                filepath = os.path.join(self._setPath, filepath)
             setObject.write_to_file(filepath)
             self._change_set(sender, Path=filepath)
 
