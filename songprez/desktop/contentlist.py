@@ -6,6 +6,7 @@ from kivy.lang import Builder
 from kivy.clock import Clock
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.tabbedpanel import TabbedPanel, TabbedPanelItem
+from blinker import signal
 from .itemlist import ItemList
 from .button import NormalSizeFocusButton
 
@@ -51,6 +52,9 @@ Builder.load_string("""
 class ContentList(BoxLayout):
     def __init__(self, **kwargs):
         super(ContentList, self).__init__(**kwargs)
+        signal('setList').connect(self._monitor_setList)
+        signal('songList').connect(self._monitor_songList)
+        signal('searchList').connect(self._monitor_searchList)
         Clock.schedule_once(self._finish_init)
 
     def _finish_init(self, dt):
@@ -68,13 +72,22 @@ class ContentList(BoxLayout):
         instance.adapter.bind(on_selection_change=self._search_selected)
 
     def _song_selected(self, adapter):
-        print(adapter)
-        print(adapter.selection)
-        print(adapter.selection[0])
-        #print(adapter.data)
+        signal('changeSong').send(self, Path=adapter.selection[0].filepath)
 
     def _set_selected(self, adapter):
-        print(adapter)
+        signal('changeSet').send(self, Path=adapter.selection[0].filepath)
 
     def _search_selected(self, adapter):
-        print(adapter)
+        signal('changeSong').send(self, Path=adapter.selection[0].filepath)
+
+    def _monitor_setList(self, sender, **kwargs):
+        setList = kwargs.get('List')
+        self.setlist.set_data(setList)
+
+    def _monitor_songList(self, sender, **kwargs):
+        songList = kwargs.get('List')
+        self.songlist.set_data(songList)
+
+    def _monitor_searchList(self, sender, **kwargs):
+        searchList = kwargs.get('List')
+        self.searchlist.set_data(searchList)

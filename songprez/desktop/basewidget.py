@@ -92,22 +92,8 @@ class BaseWidget(BoxLayout):
     def __init__(self, **kwargs):
         super(BaseWidget, self).__init__(**kwargs)
         signal('curSet').connect(self._monitor_curSet)
-        signal('setList').connect(self._monitor_setList)
-        signal('songList').connect(self._monitor_songList)
-        signal('searchList').connect(self._monitor_searchList)
 
     def _monitor_curSet(self, sender, **kwargs):
         setObject = kwargs.get('Set')
-        self.curset.setcontent.set_data(setObject)
-
-    def _monitor_setList(self, sender, **kwargs):
-        setList = kwargs.get('List')
-        self.setlist.set_data(setList)
-
-    def _monitor_songList(self, sender, **kwargs):
-        songList = kwargs.get('List')
-        self.songlist.set_data(songList)
-
-    def _monitor_searchList(self, sender, **kwargs):
-        searchList = kwargs.get('List')
-        self.searchlist.set_data(searchList)
+        songList = [(s.filepath, s.title) for s in setObject.list_songs()]
+        self.curset.setcontent.set_data(songList)
