@@ -3,6 +3,7 @@ import kivy
 # kivy.require('1.9.0')
 from kivy.app import App
 from kivy.lang import Builder
+from kivy.clock import Clock
 from kivy.uix.boxlayout import BoxLayout
 from blinker import signal
 from .button import FocusButton, NormalSizeFocusButton
@@ -91,9 +92,10 @@ Builder.load_string("""
 class BaseWidget(BoxLayout):
     def __init__(self, **kwargs):
         super(BaseWidget, self).__init__(**kwargs)
-        signal('curSet').connect(self._monitor_curSet)
+        Clock.schedule_once(self._finish_init)
+
+    def _finish_init(self, dt):
+        pass
 
     def _monitor_curSet(self, sender, **kwargs):
-        setObject = kwargs.get('Set')
-        songList = [(s.filepath, s.title) for s in setObject.list_songs()]
-        self.curset.setcontent.set_data(songList)
+        pass
