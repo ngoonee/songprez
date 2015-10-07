@@ -21,6 +21,8 @@ from kivy.properties import ObjectProperty, DictProperty, \
 from math import ceil, floor
 
 Builder.load_string("""
+<CustomListItemButton>:
+    font_name: 'songprez/fonts/NSimSun.ttf'
 <ListView>:
     container: container
     ScrollView:

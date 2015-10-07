@@ -10,9 +10,10 @@ from .button import FocusButton, NormalSizeFocusButton
 from .itemlist import ItemList
 from .setlist import SetList
 from .contentlist import ContentList
+from .songedit import SongEdit
 
 Builder.load_string("""
-#:import blinker blinker
+#:import signal blinker.signal
 <BaseWidget>:
     orientation: 'horizontal'
     colwidth: self.width//13
@@ -43,7 +44,7 @@ Builder.load_string("""
         spacing: root.rowspace
         size_hint_x: None
         width: root.colwidth*7 + root.colspace*6
-        Button:
+        SongEdit:
         BoxLayout:
             orientation: 'horizontal'
             size_hint_y: None
@@ -52,19 +53,17 @@ Builder.load_string("""
             spacing: root.colspace
             NormalSizeFocusButton:
                 text: 'Add to Set'
-                on_release: blinker.signal('getSets').send(None)
+                on_press: signal('addSong').send(None)
             NormalSizeFocusButton:
                 text: 'Remove from Set'
-                on_release: blinker.signal('getSongs').send(None)
+                on_press: signal('removeSong').send(None)
             Widget:
                 #size_hint_x: None
                 #width: root.colwidth*3 + root.colspace*2
             NormalSizeFocusButton:
                 text: 'Save Song As'
-                on_release: blinker.signal('search').send(None, SearchTerm='marry')
             NormalSizeFocusButton:
                 text: 'Save Song'
-                on_release: blinker.signal('publishAll').send(None)
     BoxLayout:
         orientation: 'vertical'
         padding: 0

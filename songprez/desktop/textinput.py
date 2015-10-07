@@ -7,6 +7,7 @@ from kivy.properties import BooleanProperty
 
 Builder.load_string("""
 <RegisteredTextInput>:
+    font_name: 'songprez/fonts/NSimSun.ttf'
     write_tab: False
     #on_focus: app.register_textinput(self, self.focus)
 
