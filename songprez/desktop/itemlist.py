@@ -17,7 +17,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.adapters.simplelistadapter import SimpleListAdapter
 from kivy.uix.abstractview import AbstractView
 from kivy.properties import ObjectProperty, DictProperty, \
-        NumericProperty, ListProperty, BooleanProperty
+        NumericProperty, ListProperty, BooleanProperty, StringProperty
 from math import ceil, floor
 
 Builder.load_string("""
@@ -38,16 +38,61 @@ Builder.load_string("""
 """)
 
 
+class CustomListItemButton(ListItemButton):
+    _was_pressed = BooleanProperty(False)
+    filepath = StringProperty('')
+
+class CustomListAdapter(ListAdapter):
+    def handle_selection(self, view, hold_dispatch=False, *args):
+        if view not in self.selection:
+            if self.selection_mode in ['none', 'single'] and \
+                    len(self.selection) > 0:
+                for selected_view in self.selection:
+                    self.deselect_item_view(selected_view)
+            if self.selection_mode != 'none':
+                if self.selection_mode == 'multiple':
+                    if self.allow_empty_selection:
+                        # If < 0, selection_limit is not active.
+                        if self.selection_limit < 0:
+                            self.select_item_view(view)
+                        else:
+                            if len(self.selection) < self.selection_limit:
+                                self.select_item_view(view)
+                    else:
+                        self.select_item_view(view)
+                else:
+                    self.select_item_view(view)
+        else:
+            if len(self.selection) == 1 and not self.allow_empty_selection:
+                # Maintain selection rather than always defaulting to first
+                # item. This probably invalidates the next if section, but I
+                # am unable to test all corner cases out, and leaving it in
+                # does not hurt anything.
+                pass
+            else:
+                self.deselect_item_view(view)
+            if self.selection_mode != 'none':
+                # If the deselection makes selection empty, the following call
+                # will check allows_empty_selection, and if False, will
+                # select the first item. If view happens to be the first item,
+                # this will be a reselection, and the user will notice no
+                # change, except perhaps a flicker.
+                #
+                self.check_for_empty_selection()
+
+        if not hold_dispatch:
+            self.dispatch('on_selection_change')
+
 class ItemList(ListView):
     def set_data(self, datalist):
-        self.adapter = ListAdapter(data=datalist,
+        self.adapter = CustomListAdapter(data=datalist,
                                    args_converter=self.args_converter,
-                                   cls=ListItemButton,
+                                   cls=CustomListItemButton,
                                    selection_mode='single',
                                    allow_empty_selection=False)
 
     def args_converter(self, row_index, an_obj):
         return {'text': an_obj[1],
                 'size_hint_y': None,
-                'height': 25,
-                'random_name': an_obj[0]}
+                'height': 15*1.5,
+                'filepath': an_obj[0]}
