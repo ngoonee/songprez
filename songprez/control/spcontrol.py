@@ -141,12 +141,13 @@ class SPControl(Thread):
 
     def _save_song(self, sender, **kwargs):
         filepath = kwargs.get('Path')
+        if not filepath:
+            filepath = songObject.filepath
         songObject = kwargs.get('Song')
-        if isinstance(songObject, SPSong):
-            if not filepath:
-                filepath = songObject.filepath
-            songObject.write_to_file(filepath)
-            self._change_song(self, Path=filepath)
+        if not isinstance(songObject, SPSong):
+            songObject = self._curSong
+        songObject.write_to_file(filepath)
+        self._change_song(self, Path=filepath)
 
     ### Methods handling curSet.
     def _change_set(self, sender, **kwargs):
