@@ -58,13 +58,14 @@ class SPSearch(object):
 
     def _update_doc(self, writer, path):
         obj = SPSong.read_from_file(path)
-        writer.update_document(filepath=obj.filepath,
-                               time=obj.mtime,
-                               title=obj.title,
-                               aka=obj.aka,
-                               key_line=obj.key_line,
-                               lyrics=obj.words,
-                               song=obj)
+        if obj:
+            writer.update_document(filepath=obj.filepath,
+                                   time=obj.mtime,
+                                   title=obj.title,
+                                   aka=obj.aka,
+                                   key_line=obj.key_line,
+                                   lyrics=obj.words,
+                                   song=obj)
 
     def search(self, term):
         if not self._ix.storage.index_exists():

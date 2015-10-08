@@ -113,8 +113,10 @@ class SPControl(Thread):
     ### Methods handling songList. _songs holds the list, _songList holds the
     ### return object. Should only be accessed by _get_songs()
     def _update_songs(self):
-        self._songs = [SPSong.read_from_file(f)
-                       for f in list_files(self._songPath)]
+        # Use a generator first, then check for None return-type (xml parsing
+        # error
+        songs = (SPSong.read_from_file(f) for f in list_files(self._songPath))
+        self._songs = [s for s in songs if s is not None]
         self._get_songs(self)
 
     def _get_songs(self, sender):
@@ -124,8 +126,10 @@ class SPControl(Thread):
     ### Methods handling setList. _songs holds the list, _setList holds the
     ### return object. Should only be accessed by _get_sets()
     def _update_sets(self):
-        self._sets = [SPSet.read_from_file(f)
-                     for f in list_files(self._setPath)]
+        # Use a generator first, then check for None return-type (xml parsing
+        # error
+        sets = (SPSet.read_from_file(f) for f in list_files(self._setPath))
+        self._sets = [s for s in sets if s is not None]
         self._get_sets(self)
 
     def _get_sets(self, sender):
