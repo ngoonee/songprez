@@ -29,7 +29,7 @@ class SPSong(object):
         Loads an XML file at filepath to create a Song object. Returns None if
         filepath is not a valid XML.
         '''
-        with open(filepath, encoding='UTF-8') as f:
+        with open(filepath, 'rb') as f:
             data = f.read()
             try:
                 obj = xmltodict.parse(data)
