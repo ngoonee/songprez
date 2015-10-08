@@ -27,7 +27,7 @@ class SPSong(object):
         '''
         Loads an XML file at filepath to create a Song object.
         '''
-        with open(filepath) as f:
+        with open(filepath, encoding='UTF-8') as f:
             obj = xmltodict.parse(f.read())
             songobj = obj['song']
         retval = cls()
@@ -46,7 +46,7 @@ class SPSong(object):
             songobj[val] = getattr(self, val)
         obj = OrderedDict()
         obj['song'] = songobj
-        with open(filepath, 'w') as f:
+        with open(filepath, 'w', encoding='UTF-8') as f:
             f.write(xmltodict.unparse(obj, pretty=True))
 
     def __repr__(self):

@@ -61,8 +61,8 @@ class SPControl(Thread):
     '''
     def __init__(self, indexPath, dirPath, **kwargs):
         super(SPControl, self).__init__(**kwargs)
-        self._songPath = os.path.join(dirPath, 'Songs')
-        self._setPath = os.path.join(dirPath, 'Sets')
+        self._songPath = os.path.normpath(os.path.join(dirPath, 'Songs'))
+        self._setPath = os.path.normpath(os.path.join(dirPath, 'Sets'))
         if not os.path.exists(self._songPath):
             raise IOError('dirPath does not contain a Songs folder at ' +
                           self._songPath)

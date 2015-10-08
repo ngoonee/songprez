@@ -25,7 +25,7 @@ class SPSet(object):
         '''
         Loads an XML file at filepath to create a Set object.
         '''
-        with open(filepath) as f:
+        with open(filepath, encoding='UTF-8') as f:
             obj = xmltodict.parse(f.read())
             setobj = obj['set']
         # Find the base OpenSong directory by walking up the path to find the
@@ -74,7 +74,7 @@ class SPSet(object):
         setobj['slide_groups']['slide_group'] = _items
         obj = OrderedDict()
         obj['set'] = setobj
-        with open(filepath, 'w') as f:
+        with open(filepath, 'w', encoding='UTF-8') as f:
             f.write(xmltodict.unparse(obj, pretty=True))
 
     def _find_name_path(self, filepath):
