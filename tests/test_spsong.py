@@ -23,6 +23,13 @@ def test_song_read_write(tmpdir):
     for item in spsong._xmlkeys:
         assert getattr(s, item) == getattr(s2, item)
 
+def test_read_non_song(tmpdir):
+    p = tmpdir.mkdir('songtest')
+    testfile = p.join('testfile').__str__()
+    with open(testfile, 'w') as f:
+        f.write('This is just at text file, not XML')
+    assert spsong.SPSong.read_from_file(testfile) is None
+
 class TestSongObject(unittest.TestCase):
     '''
     Uses unsupported creation logic to simplify testing. The resulting

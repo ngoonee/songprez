@@ -27,6 +27,13 @@ def test_set_read_write(tmpdir):
         assert getattr(s, item) == getattr(s2, item)
         '''
 
+def test_read_non_set(tmpdir):
+    p = tmpdir.mkdir('settest')
+    testfile = p.join('testfile').__str__()
+    with open(testfile, 'w') as f:
+        f.write('This is just at text file, not XML')
+    assert spset.SPSet.read_from_file(testfile) is None
+
 class TestSPSet(unittest.TestCase):
 
     def setUp(self):

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import xmltodict
+from xml.parsers.expat import ExpatError
 import os
 from warnings import warn
 import re
@@ -25,10 +26,15 @@ class SPSong(object):
     @classmethod
     def read_from_file(cls, filepath):
         '''
-        Loads an XML file at filepath to create a Song object.
+        Loads an XML file at filepath to create a Song object. Returns None if
+        filepath is not a valid XML.
         '''
         with open(filepath, encoding='UTF-8') as f:
-            obj = xmltodict.parse(f.read())
+            data = f.read()
+            try:
+                obj = xmltodict.parse(data)
+            except ExpatError:
+                return
             songobj = obj['song']
         retval = cls()
         for val in _xmlkeys:

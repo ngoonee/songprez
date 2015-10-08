@@ -2,6 +2,7 @@
 
 import os
 import xmltodict
+from xml.parsers.expat import ExpatError
 from collections import OrderedDict
 from copy import deepcopy
 from .spsong import SPSong
@@ -23,10 +24,15 @@ class SPSet(object):
     @classmethod
     def read_from_file(cls, filepath):
         '''
-        Loads an XML file at filepath to create a Set object.
+        Loads an XML file at filepath to create a Set object. Returns None if
+        filepath is not a valid XML.
         '''
         with open(filepath, encoding='UTF-8') as f:
-            obj = xmltodict.parse(f.read())
+            data = f.read()
+            try:
+                obj = xmltodict.parse(data)
+            except ExpatError:
+                return
             setobj = obj['set']
         # Find the base OpenSong directory by walking up the path to find the
         # parent of 'Sets'
