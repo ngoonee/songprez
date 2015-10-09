@@ -22,7 +22,7 @@ Builder.load_string("""
         spacing: app.rowspace
         SingleLineTextInput:
             id: textinput
-            on_action: root.do_action(); root.dismiss()
+            on_text_validate: root.do_action(); root.dismiss()
         BoxLayout:
             orientation: "horizontal"
             size_hint_y: None
