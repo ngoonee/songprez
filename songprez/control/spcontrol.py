@@ -85,7 +85,6 @@ class SPControl(Thread):
     def run(self):
         self._update_songs()
         self._update_sets()
-        self._searchObj.update_index()
         signal('getSongs').connect(self._get_songs)
         signal('changeSong').connect(self._change_song)
         signal('saveSong').connect(self._save_song)
@@ -113,11 +112,16 @@ class SPControl(Thread):
     ### Methods handling songList. _songs holds the list, _songList holds the
     ### return object. Should only be accessed by _get_songs()
     def _update_songs(self):
+        '''
+        Update the stored list of songs from file. Also updates the search
+        index so that its in sync
+        '''
         # Use a generator first, then check for None return-type (xml parsing
         # error
         songs = (SPSong.read_from_file(f) for f in list_files(self._songPath))
         self._songs = [s for s in songs if s is not None]
         self._get_songs(self)
+        self._searchObj.update_index()
 
     def _get_songs(self, sender):
         self._songList = [(s.filepath, s.title) for s in self._songs]
