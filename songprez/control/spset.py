@@ -116,7 +116,7 @@ class SPSet(object):
             if (item['@type'] == 'song' and
                     item['song'].filepath == obj.filepath):
                 i = index
-        if i:
+        if i != None:
             self._items.pop(i)
 
     def move_song_down(self, obj):
