@@ -34,6 +34,12 @@ class SPControl(Thread):
                                          information)
             getSong(sender, Path) - Return song from given path
             getSet(sender, Path) - Return set from given path
+            newSong(sender, Path) - Creates a new song (blank) in the given
+                                    path (also changes current song)
+            newSet(sender, Path) - Creates a new set (blank) in the given
+                                   path (also changes current set)
+            deleteSong(sender, Path) - Deletes the song in the given path
+            deleteSet(sender, Path) - Deletes the set in the given path
             addSong(sender) - Add current song to current set
             removeSong(sender) - Remove current song from current set
             search(sender, SearchTerm) - Run a search and publish the results
@@ -89,6 +95,10 @@ class SPControl(Thread):
         signal('changeSet').connect(self._change_set)
         signal('saveSet').connect(self._save_set)
         signal('getSet').connect(self._get_set)
+        signal('newSong').connect(self._new_song)
+        signal('newSet').connect(self._new_set)
+        signal('deleteSong').connect(self._delete_song)
+        signal('deleteSet').connect(self._delete_set)
         signal('addSong').connect(self._add_song)
         signal('removeSong').connect(self._remove_song)
         signal('search').connect(self._search)
@@ -194,7 +204,9 @@ class SPControl(Thread):
         songObject = self._curSong
         if isinstance(songObject, SPSong):
             self._curSet.remove_song(songObject)
+            self._curSong = self._curSet.list_songs()[0]
             signal('curSet').send(self, Set=self._curSet)
+            signal('curSong').send(self, Song=self._curSong)
 
     ### Methods handling search results.
     def _search(self, sender, **kwargs):
@@ -208,6 +220,38 @@ class SPControl(Thread):
     def _get_song(self, sender, **kwargs):
         path = kwargs.get('Path')
         return self._searchObj.get_song_from_cache(path)
+
+    def _new_song(self, sender, **kwargs):
+        filepath = kwargs.get('Path')
+        songObject = SPSong()
+        songObject.title = filepath
+        filepath = os.path.abspath(os.path.join(self._songPath, filepath))
+        songObject.filepath = filepath
+        songObject.write_to_file(filepath)
+        self._update_songs()
+        self._change_song(None, Path=filepath)
+
+    def _new_set(self, sender, **kwargs):
+        filepath = kwargs.get('Path')
+        setObject = SPSet()
+        setObject.name = filepath
+        filepath = os.path.abspath(os.path.join(self._setPath, filepath))
+        setObject.filepath = filepath
+        setObject.write_to_file(filepath)
+        self._update_sets()
+        self._change_set(None, Path=filepath)
+
+    def _delete_song(self, sender, **kwargs):
+        filepath = kwargs.get('Path')
+        if os.path.exists(filepath):
+            os.remove(filepath)
+        self._update_songs()
+
+    def _delete_set(self, sender, **kwargs):
+        filepath = kwargs.get('Path')
+        if os.path.exists(filepath):
+            os.remove(filepath)
+        self._update_sets()
 
     def _publish_all(self, sender):
         signal('curSet').send(self, Set=self._curSet)

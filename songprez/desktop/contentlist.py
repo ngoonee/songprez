@@ -9,6 +9,7 @@ from kivy.uix.tabbedpanel import TabbedPanel, TabbedPanelItem
 from blinker import signal
 from .itemlist import ItemList
 from .button import NormalSizeFocusButton
+from .filenamedialog import FilenameDialog
 
 Builder.load_string("""
 #:import signal blinker.signal
@@ -16,10 +17,12 @@ Builder.load_string("""
     songlist: songlist
     searchlist: searchlist
     setlist: setlist
+    panel: panel
     orientation: 'vertical'
     padding: 0
     spacing: app.rowspace
     TabbedPanel:
+        id: panel
         do_default_tab: False
         tab_height: app.rowheight
         tab_width: app.colwidth
@@ -54,10 +57,13 @@ Builder.load_string("""
         spacing: app.colspace
         NormalSizeFocusButton:
             text: 'New'
+            on_press: root._new_action()
         NormalSizeFocusButton:
             text: 'Rename'
+            on_press: root._rename_action()
         NormalSizeFocusButton:
             text: 'Delete'
+            on_press: root._delete_action()
 """)
 
 
@@ -73,6 +79,9 @@ class ContentList(BoxLayout):
         self.songlist.bind(adapter=self._update_song_adapter)
         self.setlist.bind(adapter=self._update_set_adapter)
         self.searchlist.bind(adapter=self._update_search_adapter)
+        self.searchlist.set_data([])
+        self.songlist.set_data([])
+        self.setlist.set_data([])
 
     def _update_song_adapter(self, instance, value):
         instance.adapter.bind(on_selection_change=self._song_selected)
@@ -103,3 +112,67 @@ class ContentList(BoxLayout):
     def _monitor_searchList(self, sender, **kwargs):
         searchList = kwargs.get('List')
         self.searchlist.set_data(searchList)
+
+    def _new_action(self):
+        def do_new(signalSuffix):
+            # Return value is a list of tuple-pairs (func, val), take first pair
+            view = FilenameDialog('new' + signalSuffix)
+            view.textinput.text = 'A New Song'
+            view.open()
+        def handle_song(song=None):
+            do_new('Song')
+        def handle_search():
+            do_new('Song')
+        def handle_set():
+            do_new('Set')
+        {"Songs": handle_song,
+         "Search": handle_search,
+         "Sets": handle_set}.get(self.panel.current_tab.text)()
+
+    def _rename_action(self):
+        def do_rename(signalSuffix, filepath):
+            # Return value is a list of tuple-pairs (func, val), take first pair
+            songObject = signal('get' + signalSuffix).send(None, Path=filepath)[0][1]
+            view = FilenameDialog('save' + signalSuffix, Song=songObject)
+            view.textinput.text = filepath
+            view.open()
+        def handle_song(song=None):
+            filepath = (self.songlist.adapter.selection[0].filepath if
+                        self.songlist.adapter.selection else None)
+            if filepath:
+                do_rename('Song', filepath)
+        def handle_search():
+            filepath = (self.searchlist.adapter.selection[0].filepath if
+                        self.searchlist.adapter.selection else None)
+            if filepath:
+                do_rename('Song', filepath)
+        def handle_set():
+            filepath = (self.setlist.adapter.selection[0].filepath if
+                        self.setlist.adapter.selection else None)
+            if filepath:
+                do_rename('Set', filepath)
+        {"Songs": handle_song,
+         "Search": handle_search,
+         "Sets": handle_set}.get(self.panel.current_tab.text)()
+
+    def _delete_action(self):
+        def do_delete(signalSuffix, filepath):
+            signal('delete' + signalSuffix).send(None, Path=filepath)
+        def handle_song():
+            filepath = (self.songlist.adapter.selection[0].filepath if
+                        self.songlist.adapter.selection else None)
+            if filepath:
+                do_delete('Song', filepath)
+        def handle_search():
+            filepath = (self.searchlist.adapter.selection[0].filepath if
+                        self.searchlist.adapter.selection else None)
+            if filepath:
+                do_delete('Song', filepath)
+        def handle_set():
+            filepath = (self.setlist.adapter.selection[0].filepath if
+                        self.setlist.adapter.selection else None)
+            if filepath:
+                do_delete('Set', filepath)
+        {"Songs": handle_song,
+         "Search": handle_search,
+         "Sets": handle_set}.get(self.panel.current_tab.text)()
