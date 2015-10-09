@@ -9,7 +9,7 @@ from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 import os
 import re
-from songprez import spset
+from songprez.control import spset
 
 
 def _make_style(document, ptSize=12, fontName="Consolas", styleName="Custom Style"):
