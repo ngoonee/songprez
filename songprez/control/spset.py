@@ -45,7 +45,10 @@ class SPSet(object):
         retval = cls()
         retval.filepath = filepath
         retval.name = setobj['@name']
-        items = setobj['slide_groups']['slide_group']
+        try:
+            items = setobj['slide_groups']['slide_group']
+        except TypeError:
+            return retval
         items = items if type(items) is list else [items]
         # Workaround for the fact that single-entry Sets get parsed
         # differently by xmltodict
