@@ -39,8 +39,8 @@ Builder.load_string("""
                 padding: app.rowspace
                 spacing: app.rowspace
                 SingleLineTextInput:
-                    on_action: signal('search').send(None, SearchTerm=self.text)
-                    on_textupdate: signal('search').send(None, SearchTerm=self.text)
+                    on_text_validate: signal('search').send(None, SearchTerm=self.text)
+                    on_text_update: signal('search').send(None, SearchTerm=self.text)
                 ItemList:
                     id: searchlist
         TabbedPanelItem:

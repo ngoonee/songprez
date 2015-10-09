@@ -19,33 +19,28 @@ Builder.load_string("""
 
 
 class RegisteredTextInput(TextInput):
-    pass
+    def keyboard_on_key_down(self, window, keycode, text, modifiers):
+        if keycode[1] == "escape":
+            # Prevent escape from defocusing
+            return True
+        super(RegisteredTextInput, self).keyboard_on_key_down(window, keycode,
+                                                              text, modifiers)
 
 
 class SingleLineTextInput(RegisteredTextInput):
     '''
     TextInput which only accepts a single line of text. The 'enter' key is
-    consumed while typing here, and parent widgets may bind to the action
-    property to take the appropriate action. The value of the property is
-    not significant (may be True or False at anytime).
+    consumed while typing here
     '''
-    action = BooleanProperty(False)
-    textupdate = BooleanProperty(False)
-
+    text_update = BooleanProperty(False)
     def keyboard_on_key_down(self, window, keycode, text, modifiers):
-        super(SingleLineTextInput, self).keyboard_on_key_down(window, keycode, text, modifiers)
-        print(keycode)
         if keycode[1] == "enter":
             # Catch the 'enter' key, which by default causes loss of focus in
-            # single line TextInput widgets. Also modify action so that parents
-            # of this widget can bind to it and fire the appropriate action.
-            self.focus = True
-            self.action = not self.action
-            return True
-        elif keycode[1] == "escape":
-            # Have to catch escape as well, because otherwise it would call 'back'
+            # single line TextInput widgets.
+            self.dispatch('on_text_validate')
             return True
         elif keycode[1] == "spacebar":
-            self.textupdate = True
-            self.textupdate = False
-        return False
+            self.text_update = True
+            self.text_update = False
+        super(SingleLineTextInput, self).keyboard_on_key_down(window, keycode,
+                                                              text, modifiers)
