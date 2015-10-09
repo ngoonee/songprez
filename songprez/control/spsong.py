@@ -65,6 +65,19 @@ class SPSong(object):
         strrep += ">"
         return strrep
 
+    def __eq__(self, other):
+        '''
+        Compares all relevant properties. filepath and mtime do not matter in
+        comparing songs for equivalence.
+        '''
+        for key in _xmlkeys:
+            if getattr(self, key) != getattr(other, key):
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not(self.__eq__(other))
+
     @property
     def lyrics(self):
         return "\n".join(self._lyrics)
