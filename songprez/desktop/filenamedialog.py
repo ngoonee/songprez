@@ -43,10 +43,11 @@ class FilenameDialog(ModalView):
     def __init__(self, signalName, **kwargs):
         super(FilenameDialog, self).__init__(**kwargs)
         self.signalName = signalName
+        self.kwargs = kwargs
 
     def open(self):
         super(FilenameDialog, self).open()
         self.textinput.focus = True
 
     def do_action(self):
-        signal(self.signalName).send(None, Path=self.textinput.text)
+        signal(self.signalName).send(None, Path=self.textinput.text, **self.kwargs)
