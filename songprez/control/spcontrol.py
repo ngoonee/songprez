@@ -20,8 +20,6 @@ class SPControl(Thread):
         Published information:-
             curSet(sender, Set) - Current set
             curSong(sender, Song) - Current Song
-            resultSet(sender, Set) - A requested set
-            resultSong(sender, Song) - A requested song
             setList(sender, List) - List of sets
             songList(sender, List) - List of songs
             searchList(sender, List) - List of search results
@@ -34,8 +32,8 @@ class SPControl(Thread):
             changeSet(sender, Path, <Song>) - Change current set
             saveSet(sender, Path, Set) - Save current set (replace with sent
                                          information)
-            getSong(sender, Path) - Publish song from given path
-            getSet(sender, Path) - Publish set from given path
+            getSong(sender, Path) - Return song from given path
+            getSet(sender, Path) - Return set from given path
             addSong(sender) - Add current song to current set
             removeSong(sender) - Remove current song from current set
             search(sender, SearchTerm) - Run a search and publish the results
@@ -76,8 +74,6 @@ class SPControl(Thread):
         self._setList = None
         self._curSong = None
         self._curSet = None
-        self._resultSet = None
-        self._resultSong = None
         self._searchTerm = ''
         self._searchList = None
         self._quit = False
@@ -160,6 +156,7 @@ class SPControl(Thread):
         if filepath:
             songObject.write_to_file(filepath)
             self._change_song(self, Path=filepath)
+        self._update_songs()
 
     ### Methods handling curSet.
     def _change_set(self, sender, **kwargs):
@@ -206,13 +203,11 @@ class SPControl(Thread):
     ### Methods handling general requests
     def _get_set(self, sender, **kwargs):
         path = kwargs.get('Path')
-        self._resultSet = SPSet.read_from_file(path)
-        signal('resultSet').send(self, Set=self._resultSet)
+        return SPSet.read_from_file(path)
 
     def _get_song(self, sender, **kwargs):
         path = kwargs.get('Path')
-        self._resultSong = self._searchObj.get_song_from_cache(path)
-        signal('resultSong').send(self, Song=self._resultSong)
+        return self._searchObj.get_song_from_cache(path)
 
     def _publish_all(self, sender):
         signal('curSet').send(self, Set=self._curSet)
