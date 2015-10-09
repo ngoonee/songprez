@@ -38,32 +38,7 @@ Builder.load_string("""
         SetList:
             id: curset
             size_hint_y: 3
-    BoxLayout:
-        orientation: 'vertical'
-        padding: 0
-        spacing: root.rowspace
-        size_hint_x: None
-        width: root.colwidth*7 + root.colspace*6
-        SongEdit:
-        BoxLayout:
-            orientation: 'horizontal'
-            size_hint_y: None
-            height: root.rowheight
-            padding: 0
-            spacing: root.colspace
-            NormalSizeFocusButton:
-                text: 'Add to Set'
-                on_press: signal('addSong').send(None)
-            NormalSizeFocusButton:
-                text: 'Remove from Set'
-                on_press: signal('removeSong').send(None)
-            Widget:
-                #size_hint_x: None
-                #width: root.colwidth*3 + root.colspace*2
-            NormalSizeFocusButton:
-                text: 'Save Song As'
-            NormalSizeFocusButton:
-                text: 'Save Song'
+    SongEdit:
     BoxLayout:
         orientation: 'vertical'
         padding: 0
