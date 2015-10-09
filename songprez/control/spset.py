@@ -21,6 +21,22 @@ class SPSet(object):
         printout[-1] += ">"
         return "\n".join(printout)
 
+    def __eq__(self, other):
+        '''
+        This ignores value of 'name', which is probably the behaviour we want.
+        Compares items rather than just songs, so that I don't have to scratch
+        my head later on trying to figure out why scripture/presentations etc
+        don't compare well. Probably should have more fine-grained, but that's
+        just TODO I guess.
+        '''
+        for (me, you) in zip(self._items, other._items):
+            if me != you:
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not(self.__eq__(other))
+
     @classmethod
     def read_from_file(cls, filepath):
         '''
