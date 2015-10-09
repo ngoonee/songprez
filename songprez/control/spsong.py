@@ -37,8 +37,11 @@ class SPSong(object):
                 return
             songobj = obj['song']
         retval = cls()
-        for val in _xmlkeys:
-            setattr(retval, val, songobj[val])
+        for key, val in zip(_xmlkeys, _xmldefaults):
+            if songobj[key]:
+                setattr(retval, key, songobj[key])
+            else:
+                setattr(retval, key, val)
         retval.filepath = os.path.abspath(filepath)
         retval.mtime = os.path.getmtime(filepath)
         return retval
