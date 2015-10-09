@@ -196,13 +196,13 @@ class SPControl(Thread):
 
     def _add_song(self, sender):
         songObject = self._curSong
-        if isinstance(songObject, SPSong):
+        if isinstance(songObject, SPSong) and isinstance(self._curSet, SPSet):
             self._curSet.add_song(songObject)
             signal('curSet').send(self, Set=self._curSet)
 
     def _remove_song(self, sender):
         songObject = self._curSong
-        if isinstance(songObject, SPSong):
+        if isinstance(songObject, SPSong) and isinstance(self._curSet, SPSet):
             self._curSet.remove_song(songObject)
             self._curSong = self._curSet.list_songs()[0]
             signal('curSet').send(self, Set=self._curSet)
