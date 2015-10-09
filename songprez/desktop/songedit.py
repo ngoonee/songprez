@@ -36,134 +36,131 @@ Builder.load_string("""
     spacing: app.rowspace
     size_hint_x: None
     width: app.colwidth*7 + app.colspace*6
-    BoxLayout:
-        orientation: 'vertical'
-        spacing: app.rowspace
+    GridLayout:
+        cols: 4
+        orientation: 'horizontal'
+        size_hint_y: None
+        height: 2*title.height + app.rowspace
+        spacing: [app.colspace, app.rowspace]
+        MinimalLabel:
+            text: 'Title:'
+        SingleLineTextInput:
+            id: title
+        MinimalLabel:
+            text: ' Author:'
+        SingleLineTextInput:
+            id: author
+        # Next line
+        MinimalLabel:
+            text: 'AKA:'
+        SingleLineTextInput:
+            id: aka
+        MinimalLabel:
+            text: 'Key Line:'
+        SingleLineTextInput:
+            id: key_line
+    ScrollView:
+        bar_width: 20
+        scroll_type: ['bars', 'content']
+        effect_cls: 'ScrollEffect'
         GridLayout:
-            cols: 4
-            orientation: 'horizontal'
+            cols: 1
+            id: scroll
             size_hint_y: None
-            height: 2*title.height + app.rowspace
-            spacing: [app.colspace, app.rowspace]
-            MinimalLabel:
-                text: 'Title:'
-            SingleLineTextInput:
-                id: title
-            MinimalLabel:
-                text: ' Author:'
-            SingleLineTextInput:
-                id: author
-            # Next line
-            MinimalLabel:
-                text: 'AKA:'
-            SingleLineTextInput:
-                id: aka
-            MinimalLabel:
-                text: 'Key Line:'
-            SingleLineTextInput:
-                id: key_line
-        ScrollView:
-            bar_width: 20
-            scroll_type: ['bars', 'content']
-            effect_cls: 'ScrollEffect'
-            GridLayout:
-                cols: 1
-                id: scroll
+            spacing: app.rowspace
+            height: lyrics.height + presentation.height + copyright.height\
+                    + key.height + theme.height + user1.height + user2.height\
+                    + user3.height + 7*app.rowspace
+            RegisteredTextInput:
+                font_name: 'songprez/fonts/NSimSun.ttf'
                 size_hint_y: None
-                spacing: app.rowspace
-                height: lyrics.height + presentation.height + copyright.height\
-                        + key.height + theme.height + user1.height + user2.height\
-                        + user3.height + 7*app.rowspace
+                height: self.minimum_height
+                id: lyrics
+            BoxLayout:
+                orientation: 'horizontal'
+                size_hint_y: None
+                spacing: app.colspace
+                height: presentation.height
+                MinimalLabel:
+                    text: 'Presentation Order:'
+                SingleLineTextInput:
+                    size_hint_x: 3
+                    id: presentation
+                MinimalLabel:
+                    text: ' Hymn Number:'
+                SingleLineTextInput:
+                    size_hint_x: 1
+                    id: hymn_number
+            BoxLayout:
+                orientation: 'horizontal'
+                size_hint_y: None
+                spacing: app.colspace
+                height: copyright.height
+                MinimalLabel:
+                    text: 'Copyright:'
+                SingleLineTextInput:
+                    id: copyright
+                MinimalLabel:
+                    text: ' CCLI:'
+                SingleLineTextInput:
+                    id: ccli
+            BoxLayout:
+                orientation: 'horizontal'
+                size_hint_y: None
+                spacing: app.colspace
+                height: key.height
+                MinimalLabel:
+                    text: 'Key:'
+                SingleLineTextInput:
+                    id: key
+                MinimalLabel:
+                    text: ' Capo:'
+                SingleLineTextInput:
+                    id: capo
+                MinimalLabel:
+                    text: ' Tempo:'
+                SingleLineTextInput:
+                    id: tempo
+                MinimalLabel:
+                    text: ' Time Sig:'
+                SingleLineTextInput:
+                    id: time_sig
+            BoxLayout:
+                orientation: 'horizontal'
+                size_hint_y: None
+                spacing: app.colspace
+                height: theme.height
+                MinimalLabel:
+                    text: 'Theme:'
+                SingleLineTextInput:
+                    id: theme
+            BoxLayout:
+                orientation: 'horizontal'
+                size_hint_y: None
+                spacing: app.colspace
+                height: user1.height
+                MinimalLabel:
+                    text: 'User 1:'
                 RegisteredTextInput:
-                    font_name: 'songprez/fonts/NSimSun.ttf'
-                    size_hint_y: None
-                    height: self.minimum_height
-                    id: lyrics
-                BoxLayout:
-                    orientation: 'horizontal'
-                    size_hint_y: None
-                    spacing: app.colspace
-                    height: presentation.height
-                    MinimalLabel:
-                        text: 'Presentation Order:'
-                    SingleLineTextInput:
-                        size_hint_x: 3
-                        id: presentation
-                    MinimalLabel:
-                        text: ' Hymn Number:'
-                    SingleLineTextInput:
-                        size_hint_x: 1
-                        id: hymn_number
-                BoxLayout:
-                    orientation: 'horizontal'
-                    size_hint_y: None
-                    spacing: app.colspace
-                    height: copyright.height
-                    MinimalLabel:
-                        text: 'Copyright:'
-                    SingleLineTextInput:
-                        id: copyright
-                    MinimalLabel:
-                        text: ' CCLI:'
-                    SingleLineTextInput:
-                        id: ccli
-                BoxLayout:
-                    orientation: 'horizontal'
-                    size_hint_y: None
-                    spacing: app.colspace
-                    height: key.height
-                    MinimalLabel:
-                        text: 'Key:'
-                    SingleLineTextInput:
-                        id: key
-                    MinimalLabel:
-                        text: ' Capo:'
-                    SingleLineTextInput:
-                        id: capo
-                    MinimalLabel:
-                        text: ' Tempo:'
-                    SingleLineTextInput:
-                        id: tempo
-                    MinimalLabel:
-                        text: ' Time Sig:'
-                    SingleLineTextInput:
-                        id: time_sig
-                BoxLayout:
-                    orientation: 'horizontal'
-                    size_hint_y: None
-                    spacing: app.colspace
-                    height: theme.height
-                    MinimalLabel:
-                        text: 'Theme:'
-                    SingleLineTextInput:
-                        id: theme
-                BoxLayout:
-                    orientation: 'horizontal'
-                    size_hint_y: None
-                    spacing: app.colspace
-                    height: user1.height
-                    MinimalLabel:
-                        text: 'User 1:'
-                    RegisteredTextInput:
-                        id: user1
-                BoxLayout:
-                    orientation: 'horizontal'
-                    size_hint_y: None
-                    spacing: app.colspace
-                    height: user2.height
-                    MinimalLabel:
-                        text: 'User 2:'
-                    RegisteredTextInput:
-                        id: user2
-                BoxLayout:
-                    orientation: 'horizontal'
-                    size_hint_y: None
-                    spacing: app.colspace
-                    height: user3.height
-                    MinimalLabel:
-                        text: 'User 3:'
-                    RegisteredTextInput:
-                        id: user3
+                    id: user1
+            BoxLayout:
+                orientation: 'horizontal'
+                size_hint_y: None
+                spacing: app.colspace
+                height: user2.height
+                MinimalLabel:
+                    text: 'User 2:'
+                RegisteredTextInput:
+                    id: user2
+            BoxLayout:
+                orientation: 'horizontal'
+                size_hint_y: None
+                spacing: app.colspace
+                height: user3.height
+                MinimalLabel:
+                    text: 'User 3:'
+                RegisteredTextInput:
+                    id: user3
     BoxLayout:
         orientation: 'horizontal'
         size_hint_y: None
