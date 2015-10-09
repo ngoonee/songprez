@@ -5,7 +5,8 @@ from kivy.app import App
 from kivy.lang import Builder
 from kivy.clock import Clock
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.tabbedpanel import TabbedPanel, TabbedPanelItem
+from kivy.uix.tabbedpanel import TabbedPanel, TabbedPanelItem, TabbedPanelHeader
+from kivy.uix.behaviors import FocusBehavior
 from blinker import signal
 from .itemlist import ItemList
 from .button import NormalSizeFocusButton
@@ -26,15 +27,23 @@ Builder.load_string("""
         do_default_tab: False
         tab_height: app.rowheight
         tab_width: app.colwidth
-        TabbedPanelItem:
+        FocusPanelHeader:
             text: 'Songs'
+            content: songcontent.__self__
+        FocusPanelHeader:
+            text: 'Search'
+            content: searchcontent.__self__
+        FocusPanelHeader:
+            text: 'Sets'
+            content: setcontent.__self__
+        FloatLayout:
             BoxLayout:
+                id: songcontent
                 padding: app.rowspace
                 ItemList:
                     id: songlist
-        TabbedPanelItem:
-            text: 'Search'
             BoxLayout:
+                id: searchcontent
                 orientation: "vertical"
                 padding: app.rowspace
                 spacing: app.rowspace
@@ -43,9 +52,8 @@ Builder.load_string("""
                     on_text_update: signal('search').send(None, SearchTerm=self.text)
                 ItemList:
                     id: searchlist
-        TabbedPanelItem:
-            text: 'Sets'
             BoxLayout:
+                id: setcontent
                 padding: app.rowspace
                 ItemList:
                     id: setlist
@@ -65,6 +73,18 @@ Builder.load_string("""
             text: 'Delete'
             on_press: root._delete_action()
 """)
+
+
+class FocusPanelHeader(FocusBehavior, TabbedPanelHeader):
+    def on_focus(self, instance, value):
+        self.bold = value
+
+    def keyboard_on_key_down(self, window, keycode, text, modifiers):
+        super(FocusPanelHeader, self).keyboard_on_key_down(window, keycode, text, modifiers)
+        if keycode[1] in ("enter", "spacebar"):
+            self.trigger_action()
+            return True
+        return False
 
 
 class ContentList(BoxLayout):
