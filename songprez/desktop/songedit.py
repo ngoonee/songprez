@@ -9,6 +9,7 @@ from blinker import signal
 from copy import deepcopy
 from .textinput import SingleLineTextInput, RegisteredTextInput
 from .filenamedialog import FilenameDialog
+from .label import MinimalLabel
 
 Builder.load_string("""
 <SongEdit>:
@@ -28,8 +29,12 @@ Builder.load_string("""
             size_hint_y: None
             height: songtitle.height
             spacing: app.colspace
+            MinimalLabel:
+                text: 'Title:'
             SingleLineTextInput:
                 id: songtitle
+            MinimalLabel:
+                text: ' Author:'
             SingleLineTextInput:
                 id: songauthor
         ScrollView:
