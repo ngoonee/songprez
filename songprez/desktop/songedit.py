@@ -8,6 +8,7 @@ from kivy.uix.boxlayout import BoxLayout
 from blinker import signal
 from copy import deepcopy
 from .textinput import SingleLineTextInput, RegisteredTextInput
+from .filenamedialog import FilenameDialog
 
 Builder.load_string("""
 <SongEdit>:
@@ -52,8 +53,10 @@ Builder.load_string("""
         Widget:
         NormalSizeFocusButton:
             text: 'Save Song As'
+            on_press: root._save_as()
         NormalSizeFocusButton:
             text: 'Save Song'
+            on_press: root._save()
 """)
 
 
@@ -65,10 +68,27 @@ class SongEdit(BoxLayout):
     def _update_song(self, sender, **kwargs):
         songObject = kwargs.get('Song')
         self._songInit = songObject
-        self._songEdit = deepcopy(songObject)
         self.songname.text = songObject.title
         if songObject.author:
             self.songauthor.text = songObject.author
         else:
             self.songauthor.text = ''
         self.songlyrics.text = songObject.lyrics
+
+    def _song_from_textinput(self):
+        songObject = deepcopy(self._songInit)
+        songObject.title = self.songname.text
+        songObject.author = self.songauthor.text
+        songObject.lyrics = self.songlyrics.text
+        return songObject
+
+    def _save(self):
+        songObject = self._song_from_textinput()
+        if songObject != self._songInit:
+            signal('saveSong').send(self, Song=songObject)
+
+    def _save_as(self):
+        songObject = self._song_from_textinput()
+        view = FilenameDialog('saveSong', Song=songObject)
+        view.textinput.text = songObject.filepath
+        view.open()
