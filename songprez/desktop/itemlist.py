@@ -7,6 +7,7 @@ from kivy.clock import Clock
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.listview import ListItemButton, ListView
 from kivy.adapters.listadapter import ListAdapter
+from kivy.uix.behaviors import FocusBehavior
 
 from kivy.event import EventDispatcher
 from kivy.compat import PY2
@@ -24,8 +25,10 @@ Builder.load_string("""
 <CustomListItemButton>:
     font_name: 'songprez/fonts/NSimSun.ttf'
 <ListView>:
+    scroll: scroll
     container: container
     ScrollView:
+        id: scroll
         pos: root.pos
         on_scroll_y: root._scroll(args[1])
         do_scroll_x: False
@@ -43,6 +46,7 @@ Builder.load_string("""
 class CustomListItemButton(ListItemButton):
     _was_pressed = BooleanProperty(False)
     filepath = StringProperty('')
+    index = NumericProperty(-1)
 
 class CustomListAdapter(ListAdapter):
     def handle_selection(self, view, hold_dispatch=False, *args):
@@ -85,16 +89,69 @@ class CustomListAdapter(ListAdapter):
         if not hold_dispatch:
             self.dispatch('on_selection_change')
 
-class ItemList(ListView):
+class ItemList(FocusBehavior, ListView):
+    def on_focus(self, instance, value):
+        item = self.adapter.get_view(0)
+        if item:
+            self.adapter.handle_selection(item)
+
+    def keyboard_on_key_down(self, window, keycode, text, modifiers):
+        super(ItemList, self).keyboard_on_key_down(window, keycode, text, modifiers)
+        if keycode[1] in ("enter", "spacebar"):
+            curIndex = self.adapter.selection[0].index
+            item = self.adapter.get_view(curIndex)
+            self.adapter.handle_selection(item)
+            return True
+        elif keycode[1] in ("down", "up", "pagedown", "pageup", "home", "end"):
+            if len(self.adapter.selection):
+                # Handle the normal directional keys, jump up and down in the list
+                curIndex = self.adapter.selection[0].index
+                pageSkip = int(self.height//(15*1.5))
+                dataLen = len(self.adapter.data)-1
+                newIndex = {'down': curIndex + 1,
+                            'up': curIndex - 1,
+                            'pagedown': curIndex + pageSkip,
+                            'pageup': curIndex - pageSkip,
+                            'home': 0,
+                            'end': dataLen}.get(keycode[1])
+                if newIndex < 0:
+                    newIndex = 0
+                if newIndex > dataLen:
+                    newIndex = dataLen
+                if dataLen > 0:
+                    item = self.adapter.get_view(newIndex)
+                    # hold_dispatch means will not trigger on_selection_change event,
+                    # to prevent scrolling through from consecutively selecting many
+                    # items. Flip side is that need to manually call the 'scroll_to'
+                    # function for proper visibility.
+                    self.adapter.handle_selection(item, hold_dispatch=True)
+                    self._scroll_to_item(self.adapter)
+            return True
+        return False
+
+    def _scroll_to_item(self, adapter):
+        # Try to keep selected item in center of ScrollView
+        index = self.adapter.selection[-1].index
+        pageSkip = int(self.height//(15*1.5))
+        targetIndex = index - pageSkip//2
+        dataLen = len(adapter.data)-1-pageSkip
+        if dataLen > 0:
+            targetY = 1.0 - targetIndex/dataLen
+            if targetY < 0: targetY = 0.0
+            if targetY > 1.0: targetY = 1.0
+            self.scroll.scroll_y = targetY
+
     def set_data(self, datalist):
         self.adapter = CustomListAdapter(data=datalist,
                                    args_converter=self.args_converter,
                                    cls=CustomListItemButton,
                                    selection_mode='single',
                                    allow_empty_selection=False)
+        self.adapter.bind(on_selection_change=self._scroll_to_item)
 
     def args_converter(self, row_index, an_obj):
         return {'text': an_obj[1],
                 'size_hint_y': None,
                 'height': 15*1.5,
-                'filepath': an_obj[0]}
+                'filepath': an_obj[0],
+                'index': row_index}
