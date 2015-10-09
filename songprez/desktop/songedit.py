@@ -12,7 +12,7 @@ from .filenamedialog import FilenameDialog
 
 Builder.load_string("""
 <SongEdit>:
-    songname: songname
+    songtitle: songtitle
     songauthor: songauthor
     songlyrics: songlyrics
     orientation: 'vertical'
@@ -26,10 +26,10 @@ Builder.load_string("""
         BoxLayout:
             orientation: 'horizontal'
             size_hint_y: None
-            height: songname.height
+            height: songtitle.height
             spacing: app.colspace
             SingleLineTextInput:
-                id: songname
+                id: songtitle
             SingleLineTextInput:
                 id: songauthor
         ScrollView:
@@ -68,7 +68,7 @@ class SongEdit(BoxLayout):
     def _update_song(self, sender, **kwargs):
         songObject = kwargs.get('Song')
         self._songInit = songObject
-        self.songname.text = songObject.title
+        self.songtitle.text = songObject.title
         if songObject.author:
             self.songauthor.text = songObject.author
         else:
@@ -77,7 +77,7 @@ class SongEdit(BoxLayout):
 
     def _song_from_textinput(self):
         songObject = deepcopy(self._songInit)
-        songObject.title = self.songname.text
+        songObject.title = self.songtitle.text
         songObject.author = self.songauthor.text
         songObject.lyrics = self.songlyrics.text
         return songObject
