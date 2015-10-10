@@ -143,7 +143,7 @@ class SPSet(object):
         for index, item in enumerate(self._items):
             if item['@type'] == 'song' and item['song'] == obj:
                 i = index
-        if i >= 0 and i+1 < len(self._items):
+        if i is not None and i+1 < len(self._items):
             self._items[i], self._items[i+1] = self._items[i+1], self._items[i]
 
     def move_song_up(self, obj):
