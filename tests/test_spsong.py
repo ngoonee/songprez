@@ -30,6 +30,10 @@ def test_read_non_song(tmpdir):
         f.write('This is just at text file, not XML')
     assert spsong.SPSong.read_from_file(testfile) is None
 
+def test_transpose_song_with_no_chords():
+    s = spsong.SPSong()
+    s.transpose(3)
+
 class TestSongObject(unittest.TestCase):
     '''
     Uses unsupported creation logic to simplify testing. The resulting
