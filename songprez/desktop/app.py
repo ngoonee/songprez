@@ -51,7 +51,11 @@ class SongPrezApp(App):
         # Handle shortcut keys
         if modifiers == ['alt']:
             if keycode[1] == 's':
-                print('swap between contentlist tabs')
+                self.root.contentlist.searchheader.trigger_action()
+            elif keycode[1] == 'e':
+                self.root.contentlist.setheader.trigger_action()
+            elif keycode[1] == 'o':
+                self.root.contentlist.songheader.trigger_action()
             elif keycode[1] == 'a':
                 self.root.songedit.addtoset.trigger_action()
             elif keycode[1] == 'r':

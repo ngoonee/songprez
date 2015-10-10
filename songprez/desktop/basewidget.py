@@ -16,6 +16,7 @@ Builder.load_string("""
 #:import signal blinker.signal
 <BaseWidget>:
     songedit: songedit
+    contentlist: contentlist
     orientation: 'horizontal'
     colwidth: self.width//13
     colspace: self.width//140
@@ -24,9 +25,6 @@ Builder.load_string("""
     padding: (self.width - self.colwidth*12 - self.colspace*11)//2
     spacing: self.colspace
     curset: curset
-    songlist: contentlist.songlist
-    setlist: contentlist.setlist
-    searchlist: contentlist.searchlist
     BoxLayout:
         orientation: 'vertical'
         padding: 0

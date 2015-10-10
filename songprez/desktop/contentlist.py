@@ -18,6 +18,9 @@ Builder.load_string("""
     songlist: songlist
     searchlist: searchlist
     setlist: setlist
+    songheader: songheader
+    searchheader: searchheader
+    setheader: setheader
     panel: panel
     orientation: 'vertical'
     padding: 0
@@ -28,12 +31,15 @@ Builder.load_string("""
         tab_height: app.rowheight
         tab_width: app.colwidth
         FocusPanelHeader:
+            id: songheader
             text: 'Songs'
             content: songcontent.__self__
         FocusPanelHeader:
+            id: searchheader
             text: 'Search'
             content: searchcontent.__self__
         FocusPanelHeader:
+            id: setheader
             text: 'Sets'
             content: setcontent.__self__
         FloatLayout:
@@ -48,7 +54,7 @@ Builder.load_string("""
                 padding: app.rowspace
                 spacing: app.rowspace
                 SingleLineTextInput:
-                    on_text_validate: signal('search').send(None, SearchTerm=self.text)
+                    on_text_validate: signal('search').send(None, SearchTerm=self.text); searchlist.focus = True
                     on_text_update: signal('search').send(None, SearchTerm=self.text)
                 ItemList:
                     id: searchlist
@@ -85,6 +91,16 @@ class FocusPanelHeader(FocusBehavior, TabbedPanelHeader):
             self.trigger_action()
             return True
         return False
+
+    def trigger_action(self, **kwargs):
+        # When triggered, focus on focusable widgets in self.content (if any)
+        super(FocusPanelHeader, self).trigger_action(**kwargs)
+        self.focus = True
+        for widget in self.content.walk(restrict=True):
+            if isinstance(widget, FocusBehavior):
+                widget.focus = True
+                break
+
 
 
 class ContentList(BoxLayout):
