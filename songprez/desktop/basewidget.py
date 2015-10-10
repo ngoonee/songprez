@@ -70,6 +70,3 @@ class BaseWidget(BoxLayout):
 
     def _finish_init(self, dt):
         pass
-
-    def _monitor_curSet(self, sender, **kwargs):
-        pass
