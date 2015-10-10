@@ -127,42 +127,34 @@ Builder.load_string("""
                     text: ' Time Sig:'
                 SingleLineTextInput:
                     id: time_sig
-            BoxLayout:
-                orientation: 'horizontal'
+            GridLayout:
+                cols: 2
                 size_hint_y: None
-                spacing: app.colspace
-                height: theme.height
+                spacing: app.rowspace
+                height: theme.height + user1.height + user2.height +\
+                        user3.height + 3*app.rowspace
                 MinimalLabel:
                     text: 'Theme:'
                 SingleLineTextInput:
                     id: theme
-            BoxLayout:
-                orientation: 'horizontal'
-                size_hint_y: None
-                spacing: app.colspace
-                height: user1.height
                 MinimalLabel:
                     text: 'User 1:'
                 RegisteredTextInput:
                     id: user1
-            BoxLayout:
-                orientation: 'horizontal'
-                size_hint_y: None
-                spacing: app.colspace
-                height: user2.height
+                    size_hint_y: None
+                    height: self.minimum_height
                 MinimalLabel:
                     text: 'User 2:'
                 RegisteredTextInput:
                     id: user2
-            BoxLayout:
-                orientation: 'horizontal'
-                size_hint_y: None
-                spacing: app.colspace
-                height: user3.height
+                    size_hint_y: None
+                    height: self.minimum_height
                 MinimalLabel:
                     text: 'User 3:'
                 RegisteredTextInput:
                     id: user3
+                    size_hint_y: None
+                    height: self.minimum_height
     Button:
         size_hint_y: None
         height: app.rowheight
