@@ -147,12 +147,29 @@ class ItemList(FocusBehavior, ListView):
             self.scroll.scroll_y = targetY
 
     def set_data(self, datalist):
+        item = 0
+        try:
+            oldindex = self.adapter.selection[0].index
+            item = self.adapter.get_view(oldindex)
+        except IndexError:  # No selection yet
+            pass
+        except AttributeError:  # Not yet given an adapter
+            pass
         self.adapter = CustomListAdapter(data=datalist,
                                    args_converter=self.args_converter,
                                    cls=CustomListItemButton,
                                    selection_mode='single',
                                    allow_empty_selection=False)
         self.adapter.bind(on_selection_change=self._scroll_to_item)
+        if item:
+            newitem = 0
+            for i, data in enumerate(self.adapter.data):
+                if item.filepath == data[0]:
+                    newitem = self.adapter.get_view(i)
+                    break
+            if newitem:
+                self.adapter.handle_selection(newitem, hold_dispatch=True)
+                self._scroll_to_item(self.adapter)
 
     def args_converter(self, row_index, an_obj):
         return {'text': an_obj[1],
