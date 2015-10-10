@@ -60,7 +60,9 @@ class SongPrezApp(App):
                 self.root.songedit.addtoset.trigger_action()
             elif keycode[1] == 'r':
                 self.root.songedit.removefromset.trigger_action()
-        return True
+        if keycode[1] == 'escape':
+            return True
+        return False
 
     def build(self):
         Window.bind(on_resize=self.win_cb)
