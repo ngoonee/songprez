@@ -12,11 +12,15 @@ from .filenamedialog import FilenameDialog
 from .label import MinimalLabel
 
 Builder.load_string("""
+<SpinnerOption>:
+    # Default button used for spinner
+    height: app.rowheight
 <SongEdit>:
     title: title
     author: author
     aka: aka
     key_line: key_line
+    filepath: filepath
     presentation: presentation
     copyright: copyright
     ccli: ccli
@@ -61,6 +65,35 @@ Builder.load_string("""
             text: 'Key Line:'
         SingleLineTextInput:
             id: key_line
+    BoxLayout:
+        orientation: 'horizontal'
+        size_hint_y: None
+        padding_y: app.rowspace
+        height: app.rowheight
+        MinimalLabel:
+            text: 'Song saved as '
+            id: filepath_pre
+        MinimalLabel:
+            size_hint_x: 1
+            text_size: self.parent.width - filepath_pre.width - filepath_post.width - 2*app.rowspace, None
+            shorten: True
+            id: filepath
+        BoxLayout:
+            id: filepath_post
+            orientation: 'horizontal'
+            size_hint_x: None
+            spacing: app.colspace
+            width: transposelabel.width + transposespinner.width + app.colspace
+            MinimalLabel:
+                id: transposelabel
+                text: ' Transpose:'
+            Spinner:
+                id: transposespinner
+                size_hint: None, None
+                size: app.colwidth, app.rowheight
+                values: (str(n) if n<1 else '+' + str(n) for n in range(-6,7))
+                text: '0'
+                on_text: root._transpose(self.text); self.text='0'
     ScrollView:
         bar_width: 20
         scroll_type: ['bars', 'content']
@@ -155,10 +188,6 @@ Builder.load_string("""
                     id: user3
                     size_hint_y: None
                     height: self.minimum_height
-    Button:
-        size_hint_y: None
-        height: app.rowheight
-        text: 'Transpose Widget will be here'
     BoxLayout:
         orientation: 'horizontal'
         size_hint_y: None
@@ -191,10 +220,14 @@ class SongEdit(BoxLayout):
     def _update_song(self, sender, **kwargs):
         songObject = kwargs.get('Song')
         self._songInit = songObject
+        self._song_to_textinput(songObject)
+
+    def _song_to_textinput(self, songObject):
         self.title.text = songObject.title
         self.author.text = songObject.author
         self.aka.text = songObject.aka
         self.key_line.text = songObject.key_line
+        self.filepath.text = songObject.filepath
         self.presentation.text = songObject.presentation
         self.copyright.text = songObject.copyright
         self.ccli.text = songObject.ccli
@@ -240,3 +273,10 @@ class SongEdit(BoxLayout):
         view = FilenameDialog('saveSong', Song=songObject)
         view.textinput.text = songObject.filepath
         view.open()
+
+    def _transpose(self, interval):
+        numInterval = int(interval)
+        if numInterval:
+            songObject = self._song_from_textinput()
+            songObject.transpose(numInterval)
+            self._song_to_textinput(songObject)
