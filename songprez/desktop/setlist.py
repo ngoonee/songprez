@@ -18,8 +18,21 @@ Builder.load_string("""
     orientation: 'vertical'
     padding: 0
     spacing: app.rowspace
-    ItemList:
+    MovableItemList:
         id: setcontent
+    BoxLayout:
+        orientation: 'horizontal'
+        size_hint_y: None
+        height: app.rowheight
+        padding: 0
+        spacing: app.colspace
+        Widget:
+        NormalSizeFocusButton:
+            text: 'Move Song Up'
+            on_press: signal('upSong').send(None)
+        NormalSizeFocusButton:
+            text: 'Move Song Down'
+            on_press: signal('downSong').send(None)
     BoxLayout:
         orientation: 'horizontal'
         size_hint_y: None
@@ -35,6 +48,13 @@ Builder.load_string("""
             on_press: signal('saveSet').send(None)
 """)
 
+
+class MovableItemList(ItemList):
+    def keyboard_on_key_down(self, window, keycode, text, modifiers):
+        super(MovableItemList, self).keyboard_on_key_down(window, keycode,
+                                                          text, modifiers)
+        if keycode[1] in ('up', 'down') and modifiers == ['alt']:
+            signal(keycode[1] + 'Song').send(self)
 
 class SetList(BoxLayout):
     _setName = StringProperty('')

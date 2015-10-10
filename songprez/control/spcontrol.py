@@ -42,6 +42,8 @@ class SPControl(Thread):
             deleteSet(sender, Path) - Deletes the set in the given path
             addSong(sender) - Add current song to current set
             removeSong(sender) - Remove current song from current set
+            upSong(sender) - Move current song higher in current set
+            downSong(sender) - Move current song lower in current set
             search(sender, SearchTerm) - Run a search and publish the results
             publishAll(sender) - Publish all information (cached) currently
                                  held, this is a sort of 'refresh' order
@@ -101,6 +103,8 @@ class SPControl(Thread):
         signal('deleteSet').connect(self._delete_set)
         signal('addSong').connect(self._add_song)
         signal('removeSong').connect(self._remove_song)
+        signal('upSong').connect(self._up_song)
+        signal('downSong').connect(self._down_song)
         signal('search').connect(self._search)
         signal('publishAll').connect(self._publish_all)
         while True:
@@ -205,6 +209,18 @@ class SPControl(Thread):
         songObject = self._curSong
         if isinstance(songObject, SPSong) and isinstance(self._curSet, SPSet):
             self._curSet.remove_song(songObject)
+            signal('curSet').send(self, Set=self._curSet)
+
+    def _up_song(self, sender):
+        songObject = self._curSong
+        if isinstance(songObject, SPSong) and isinstance(self._curSet, SPSet):
+            self._curSet.move_song_up(songObject)
+            signal('curSet').send(self, Set=self._curSet)
+
+    def _down_song(self, sender):
+        songObject = self._curSong
+        if isinstance(songObject, SPSong) and isinstance(self._curSet, SPSet):
+            self._curSet.move_song_down(songObject)
             signal('curSet').send(self, Set=self._curSet)
 
     ### Methods handling search results.
