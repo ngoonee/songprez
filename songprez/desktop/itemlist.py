@@ -91,9 +91,12 @@ class CustomListAdapter(ListAdapter):
 
 class ItemList(FocusBehavior, ListView):
     def on_focus(self, instance, value):
-        item = self.adapter.get_view(0)
-        if item:
-            self.adapter.handle_selection(item)
+        if not value:
+            return
+        if not len(self.adapter.selection):
+            item = self.adapter.get_view(0)
+            if item:
+                self.adapter.handle_selection(item)
 
     def keyboard_on_key_down(self, window, keycode, text, modifiers):
         super(ItemList, self).keyboard_on_key_down(window, keycode, text, modifiers)
