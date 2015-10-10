@@ -205,9 +205,7 @@ class SPControl(Thread):
         songObject = self._curSong
         if isinstance(songObject, SPSong) and isinstance(self._curSet, SPSet):
             self._curSet.remove_song(songObject)
-            self._curSong = self._curSet.list_songs()[0]
             signal('curSet').send(self, Set=self._curSet)
-            signal('curSong').send(self, Song=self._curSong)
 
     ### Methods handling search results.
     def _search(self, sender, **kwargs):
