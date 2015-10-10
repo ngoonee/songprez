@@ -15,6 +15,7 @@ from .songedit import SongEdit
 Builder.load_string("""
 #:import signal blinker.signal
 <BaseWidget>:
+    songedit: songedit
     orientation: 'horizontal'
     colwidth: self.width//13
     colspace: self.width//140
@@ -39,6 +40,7 @@ Builder.load_string("""
             id: curset
             size_hint_y: 3
     SongEdit:
+        id: songedit
     BoxLayout:
         orientation: 'vertical'
         padding: 0

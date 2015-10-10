@@ -31,6 +31,8 @@ Builder.load_string("""
     user3: user3
     lyrics: lyrics
     scroll: scroll
+    addtoset: addtoset
+    removefromset: removefromset
     orientation: 'vertical'
     padding: 0
     spacing: app.rowspace
@@ -161,6 +163,10 @@ Builder.load_string("""
                     text: 'User 3:'
                 RegisteredTextInput:
                     id: user3
+    Button:
+        size_hint_y: None
+        height: app.rowheight
+        text: 'Transpose Widget will be here'
     BoxLayout:
         orientation: 'horizontal'
         size_hint_y: None
@@ -168,9 +174,11 @@ Builder.load_string("""
         padding: 0
         spacing: app.colspace
         NormalSizeFocusButton:
+            id: addtoset
             text: 'Add to Set'
             on_press: signal('addSong').send(None)
         NormalSizeFocusButton:
+            id: removefromset
             text: 'Remove from Set'
             on_press: signal('removeSong').send(None)
         Widget:

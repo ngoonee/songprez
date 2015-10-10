@@ -47,24 +47,15 @@ class SongPrezApp(App):
             self._textinputs.remove(textInstance)
 
     def _on_keyboard_down(self, keyboard, keycode, text, modifiers):
-        '''
-        def _invert(setting):
-            if setting == "minimal":
-                self.minimal = not self.minimal
-            elif setting == "tablet":
-                self.tablet = not self.tablet
-        func, arg = {"escape": (self.root._back, None),
-                     "m": (_invert, "minimal"),
-                     "a": (_invert, "tablet"),
-                     "g": (self.root._advance, "settings"),
-                     "l": (self.root._advance, "list"),
-                     "e": (self.root._advance, "edit"),
-                     "t": (self.root._advance, "transpose"),
-                     "b": (self.root._advance, "browse"),
-                     "s": (self.root._advance, "search")}.get(keycode[1], (None, None))
-        if func and len(self._textinputs) == 0:
-            func(arg) if arg else func()
-            '''
+        print(keycode, text, modifiers)
+        # Handle shortcut keys
+        if modifiers == ['alt']:
+            if keycode[1] == 's':
+                print('swap between contentlist tabs')
+            elif keycode[1] == 'a':
+                self.root.songedit.addtoset.trigger_action()
+            elif keycode[1] == 'r':
+                self.root.songedit.removefromset.trigger_action()
         return True
 
     def build(self):
