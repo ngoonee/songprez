@@ -105,7 +105,9 @@ class ItemList(FocusBehavior, ListView):
             item = self.adapter.get_view(curIndex)
             self.adapter.handle_selection(item)
             return True
-        elif keycode[1] in ("down", "up", "pagedown", "pageup", "home", "end"):
+        elif (keycode[1] in ("down", "up", "pagedown", "pageup", "home", "end")
+                and not modifiers):
+            # Movement keys, but not if modifiers used
             if len(self.adapter.selection):
                 # Handle the normal directional keys, jump up and down in the list
                 curIndex = self.adapter.selection[0].index
