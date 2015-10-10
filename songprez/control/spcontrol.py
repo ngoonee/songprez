@@ -138,7 +138,8 @@ class SPControl(Thread):
     def _update_sets(self):
         # Use a generator first, then check for None return-type (xml parsing
         # error
-        sets = (SPSet.read_from_file(f) for f in list_files(self._setPath))
+        sets = (SPSet.read_from_file(f)
+                for f in list_files(self._setPath, sortbytime=True))
         self._sets = [s for s in sets if s is not None]
         self._get_sets(self)
 

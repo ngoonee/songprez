@@ -29,6 +29,7 @@ def list_files(dirpath, sortbytime=False, recursive=False, hidden=False):
             retval.extend(list_files(abspath, recursive=True))
     if sortbytime:
         retval.sort(key=lambda f: os.path.getmtime(os.path.abspath(f)))
+        retval.reverse()
     else:
         retval.sort()
     return retval
