@@ -20,7 +20,7 @@ class SPSong(object):
     def __init__(self, **kwargs):
         for key, val in zip(_xmlkeys, _xmldefaults):
             setattr(self, key, val)
-        self.filepath = None
+        self.filepath = ''
         self.mtime = None
 
     @classmethod
@@ -160,8 +160,7 @@ class SPSong(object):
         '''
         Implementation of actual transpose. When run without gap set, will
         simply find default gaps based on existing chords. When run with gap
-        set, will try to enforce that particular tone gap. Lyric alignment
-        with chords not yet implemented. Will only take place if gap is set.
+        set, will try to enforce that particular tone gap.
         '''
         # 'Decouple' lyrics from the input list. Otherwise it does a shallow
         # copy (by ref) and all our edits will be saved on to the input list,
@@ -271,6 +270,9 @@ class SPSong(object):
         # Use the _transpose helper function as multiple runs are needed to
         # guarantee identical tone-gap across the song
         lyrics, toneGaps = self._transpose(self._lyrics, interval)
+        if len(toneGaps) == 0:
+            # Nothing to transpose
+            return
         if toneGaps.count(toneGaps[0]) != len(toneGaps):
             toneGaps.sort()
             gap = toneGaps[(len(toneGaps)-1)//2]
@@ -282,4 +284,6 @@ class SPSong(object):
         if toneGaps.count(toneGaps[0]) != len(toneGaps):
             warn("Transposition was unable to maintain a suitable tone gap " +
                  "for " + self.__repr__)
+        t = SPTranspose()
+        self.key = t.transpose_unit(self.key, interval, toneGaps[0])
         self._lyrics = lyrics
