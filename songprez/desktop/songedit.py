@@ -10,6 +10,7 @@ from copy import deepcopy
 from .textinput import SingleLineTextInput, RegisteredTextInput
 from .filenamedialog import FilenameDialog
 from .label import MinimalLabel
+from ..control.spsong import SPSong
 
 Builder.load_string("""
 <SpinnerOption>:
@@ -243,7 +244,11 @@ class SongEdit(BoxLayout):
         self.lyrics.text = songObject.lyrics
 
     def _song_from_textinput(self):
-        songObject = deepcopy(self._songInit)
+        try:
+            songObject = deepcopy(self._songInit)
+        except AttributeError:
+            # Hit if transpose is run before song is loaded
+            songObject = SPSong()
         songObject.title = self.title.text
         songObject.author = self.author.text
         songObject.aka = self.aka.text
