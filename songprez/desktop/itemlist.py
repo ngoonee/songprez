@@ -8,6 +8,7 @@ from kivy.uix.scrollview import ScrollView
 from kivy.uix.listview import ListItemButton, ListView
 from kivy.adapters.listadapter import ListAdapter
 from kivy.uix.behaviors import FocusBehavior
+from kivy.graphics import Color, Line
 
 from kivy.event import EventDispatcher
 from kivy.compat import PY2
@@ -47,6 +48,7 @@ class CustomListItemButton(ListItemButton):
     _was_pressed = BooleanProperty(False)
     filepath = StringProperty('')
     index = NumericProperty(-1)
+
 
 class CustomListAdapter(ListAdapter):
     def handle_selection(self, view, hold_dispatch=False, *args):
@@ -90,16 +92,38 @@ class CustomListAdapter(ListAdapter):
             self.dispatch('on_selection_change')
 
 class ItemList(FocusBehavior, ListView):
+    def __init__(self, **kwargs):
+        super(ItemList, self).__init__(**kwargs)
+        self.bind(pos=self._draw_outline)
+        self.bind(size=self._draw_outline)
+        self.bind(focus=self._draw_outline)
+
     def on_focus(self, instance, value):
-        if not value:
+        if not isinstance(self.adapter, CustomListAdapter):
             return
-        if not len(self.adapter.selection):
-            item = self.adapter.get_view(0)
-            if item:
-                self.adapter.handle_selection(item)
+        if not value:
+            pass
+        else:
+            if not len(self.adapter.selection):
+                item = self.adapter.get_view(0)
+                if item:
+                    self.adapter.handle_selection(item)
+
+    def _draw_outline(self, instance, value):
+        try:
+            self.canvas.remove(self._outline)
+        except AttributeError:
+            pass
+        if self.focus:
+            with self.canvas:
+                Color(1, 0, 0, 0.6)
+                rectOpt = (*self.pos, *self.size)
+                self._outline = Line(rectangle=rectOpt, width=2)
 
     def keyboard_on_key_down(self, window, keycode, text, modifiers):
         super(ItemList, self).keyboard_on_key_down(window, keycode, text, modifiers)
+        if not isinstance(self.adapter, CustomListAdapter):
+            return False
         if keycode[1] in ("enter", "spacebar"):
             curIndex = self.adapter.selection[0].index
             item = self.adapter.get_view(curIndex)
