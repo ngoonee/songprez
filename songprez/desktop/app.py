@@ -23,6 +23,7 @@ class SongPrezApp(App):
     colspace = NumericProperty(0)
     rowheight = NumericProperty(0)
     rowspace = NumericProperty(0)
+    inhibit = BooleanProperty(False)
 
     def __init__ (self, **kwargs):
         super(SongPrezApp, self).__init__(**kwargs)
@@ -48,6 +49,8 @@ class SongPrezApp(App):
 
     def _on_keyboard_down(self, keyboard, keycode, text, modifiers):
         print(keycode, text, modifiers)
+        if self.inhibit:
+            return True
         # Handle shortcut keys
         if modifiers == ['alt']:
             if keycode[1] == 's':
@@ -62,6 +65,9 @@ class SongPrezApp(App):
                 self.root.songedit.removefromset.trigger_action()
             elif keycode[1] == 't':
                 self.root.songedit.transposespinner.trigger_action()
+            elif keycode[1] == 'g':
+                app = App.get_running_app()
+                app.open_settings()
         if keycode[1] == 'escape':
             return True
         return False
@@ -114,16 +120,13 @@ class SongPrezApp(App):
             '''
         print(config, section, key, value)
 
-    '''
     def display_settings(self, settings):
-        manager = self.root.main._sm.get_screen("settings")
-        if settings not in manager.children:
-            manager.add_widget(settings)
-            return True
-        return False
-        '''
+        super(SongPrezApp, self).display_settings(settings)
+        self.inhibit = True
 
     def close_settings(self, *largs):
+        super(SongPrezApp, self).close_settings(*largs)
+        self.inhibit = False
         '''
         if len(largs) and largs[0] is self._app_settings:
             # Called using close button

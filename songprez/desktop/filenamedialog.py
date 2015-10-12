@@ -15,6 +15,8 @@ Builder.load_string("""
     size_hint: 0.5, None
     height: app.rowheight + 2*app.rowspace + 3*app.colspace + textinput.height
     padding: app.colspace
+    on_open: app.inhibit = True
+    on_dismiss: app.inhibit = False
     BoxLayout:
         id: box
         orientation: "vertical"
