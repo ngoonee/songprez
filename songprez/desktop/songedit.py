@@ -11,11 +11,9 @@ from .textinput import SingleLineTextInput, RegisteredTextInput
 from .filenamedialog import FilenameDialog
 from .label import MinimalLabel
 from ..control.spsong import SPSong
+from .spinner import FocusSpinner
 
 Builder.load_string("""
-<SpinnerOption>:
-    # Default button used for spinner
-    height: app.rowheight
 <SongEdit>:
     title: title
     author: author
@@ -88,7 +86,8 @@ Builder.load_string("""
             MinimalLabel:
                 id: transposelabel
                 text: ' Transpose:'
-            Spinner:
+            FocusSpinner:
+                mimic_size: True
                 id: transposespinner
                 size_hint: None, None
                 size: app.colwidth, app.rowheight
