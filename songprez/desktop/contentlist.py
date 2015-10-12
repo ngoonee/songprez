@@ -82,6 +82,15 @@ Builder.load_string("""
 
 
 class FocusPanelHeader(FocusBehavior, TabbedPanelHeader):
+    def __init__(self, **kwargs):
+        super(FocusPanelHeader, self).__init__(**kwargs)
+        self.bind(content=self._content_updated)
+
+    def _content_updated(self, instance, value):
+        for widget in self.content.walk(restrict=True):
+            if isinstance(widget, FocusBehavior):
+                widget.bind(focus=self.on_focus)
+
     def on_focus(self, instance, value):
         self.bold = value
 
