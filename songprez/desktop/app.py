@@ -60,6 +60,8 @@ class SongPrezApp(App):
                 self.root.songedit.addtoset.trigger_action()
             elif keycode[1] == 'r':
                 self.root.songedit.removefromset.trigger_action()
+            elif keycode[1] == 't':
+                self.root.songedit.transposespinner.trigger_action()
         if keycode[1] == 'escape':
             return True
         return False

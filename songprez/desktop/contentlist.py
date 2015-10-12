@@ -32,15 +32,18 @@ Builder.load_string("""
         tab_width: app.colwidth
         FocusPanelHeader:
             id: songheader
-            text: 'Songs'
+            markup: True
+            text: 'S[color=ffff00][b]o[/b][/color]ngs'
             content: songcontent.__self__
         FocusPanelHeader:
             id: searchheader
-            text: 'Search'
+            markup: True
+            text: '[color=ffff00][b]S[/b][/color]earch'
             content: searchcontent.__self__
         FocusPanelHeader:
             id: setheader
-            text: 'Sets'
+            markup: True
+            text: 'S[color=ffff00][b]e[/b][/color]ts'
             content: setcontent.__self__
         FloatLayout:
             BoxLayout:

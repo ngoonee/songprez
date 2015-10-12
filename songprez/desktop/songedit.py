@@ -20,6 +20,7 @@ Builder.load_string("""
     aka: aka
     key_line: key_line
     filepath: filepath
+    transposespinner: transposespinner
     presentation: presentation
     copyright: copyright
     ccli: ccli
@@ -85,7 +86,8 @@ Builder.load_string("""
             width: transposelabel.width + transposespinner.width + app.colspace
             MinimalLabel:
                 id: transposelabel
-                text: ' Transpose:'
+                markup: True
+                text: ' [color=ffff00][b]T[/b][/color]ranspose:'
             FocusSpinner:
                 mimic_size: True
                 id: transposespinner
@@ -196,11 +198,13 @@ Builder.load_string("""
         spacing: app.colspace
         NormalSizeFocusButton:
             id: addtoset
-            text: 'Add to Set'
+            markup: True
+            text: '[color=ffff00][b]A[/b][/color]dd to Set'
             on_press: signal('addSong').send(None)
         NormalSizeFocusButton:
             id: removefromset
-            text: 'Remove from Set'
+            markup: True
+            text: '[color=ffff00][b]R[/b][/color]emove from Set'
             on_press: signal('removeSong').send(None)
         Widget:
         NormalSizeFocusButton:
