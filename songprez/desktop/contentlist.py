@@ -173,9 +173,9 @@ class ContentList(BoxLayout):
             do_new('Song')
         def handle_set():
             do_new('Set')
-        {"Songs": handle_song,
-         "Search": handle_search,
-         "Sets": handle_set}.get(self.panel.current_tab.text)()
+        {self.songheader.text: handle_song,
+         self.searchheader.text: handle_search,
+         self.setheader.text: handle_set}.get(self.panel.current_tab.text)()
 
     def _rename_action(self):
         def do_rename(signalSuffix, filepath):
@@ -199,9 +199,9 @@ class ContentList(BoxLayout):
                         self.setlist.adapter.selection else None)
             if filepath:
                 do_rename('Set', filepath)
-        {"Songs": handle_song,
-         "Search": handle_search,
-         "Sets": handle_set}.get(self.panel.current_tab.text)()
+        {self.songheader.text: handle_song,
+         self.searchheader.text: handle_search,
+         self.setheader.text: handle_set}.get(self.panel.current_tab.text)()
 
     def _delete_action(self):
         def do_delete(signalSuffix, filepath):
@@ -221,6 +221,6 @@ class ContentList(BoxLayout):
                         self.setlist.adapter.selection else None)
             if filepath:
                 do_delete('Set', filepath)
-        {"Songs": handle_song,
-         "Search": handle_search,
-         "Sets": handle_set}.get(self.panel.current_tab.text)()
+        {self.songheader.text: handle_song,
+         self.searchheader.text: handle_search,
+         self.setheader.text: handle_set}.get(self.panel.current_tab.text)()
