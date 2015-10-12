@@ -143,7 +143,8 @@ class SPControl(Thread):
         # Use a generator first, then check for None return-type (xml parsing
         # error
         sets = (SPSet.read_from_file(f)
-                for f in list_files(self._setPath, sortbytime=True, reverse=True))
+                for f in list_files(self._setPath, sortbytime=True,
+                                    reverse=True, recursive=True))
         self._sets = [s for s in sets if s is not None]
         self._get_sets(self)
 
@@ -176,6 +177,8 @@ class SPControl(Thread):
     ### Methods handling curSet.
     def _change_set(self, sender, **kwargs):
         filepath = kwargs.get('Path')
+        if not os.path.isabs(filepath):
+            filepath = os.path.join(self._setPath, filepath)
         songObject = kwargs.get('Song')
         if filepath:
             self._curSet = SPSet.read_from_file(filepath)
@@ -229,8 +232,10 @@ class SPControl(Thread):
 
     ### Methods handling general requests
     def _get_set(self, sender, **kwargs):
-        path = kwargs.get('Path')
-        return SPSet.read_from_file(path)
+        filepath = kwargs.get('Path')
+        if not os.path.isabs(filepath):
+            filepath = os.path.join(self._setPath, filepath)
+        return SPSet.read_from_file(filepath)
 
     def _get_song(self, sender, **kwargs):
         path = kwargs.get('Path')
@@ -264,6 +269,8 @@ class SPControl(Thread):
 
     def _delete_set(self, sender, **kwargs):
         filepath = kwargs.get('Path')
+        if not os.path.isabs(filepath):
+            filepath = os.path.join(self._setPath, filepath)
         if os.path.exists(filepath):
             os.remove(filepath)
         self._update_sets()

@@ -53,13 +53,18 @@ class SPSet(object):
         # Find the base OpenSong directory by walking up the path to find the
         # parent of 'Sets'
         basedir, filename = os.path.split(filepath)
+        relpath = ''
         while filename != 'Sets':
+            if relpath:
+                relpath = os.path.join(filename, relpath)
+            else:
+                relpath = filename
             basedir, filename = os.path.split(basedir)
             if filename == '':
                 raise IOError("%s is not in a proper directory structure"
                               % filepath)
         retval = cls()
-        retval.filepath = filepath
+        retval.filepath = relpath
         retval.name = setobj['@name']
         try:
             items = setobj['slide_groups']['slide_group']
