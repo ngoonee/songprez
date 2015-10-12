@@ -73,7 +73,12 @@ class SPSet(object):
                 songPath = (basedir + os.path.sep + 'Songs' + os.path.sep +
                             item['@path'] + os.path.sep + item['@name'])
                 songPath = os.path.normpath(songPath)
-                item['song'] = SPSong.read_from_file(songPath.__str__())
+                try:
+                    item['song'] = SPSong.read_from_file(songPath.__str__())
+                except FileNotFoundError:
+                    item['song'] = SPSong()
+                    SPSong.title = 'File was not found'
+                    SPSong.filepath = songPath
                 retval._items.append(item)
             elif item['@type'] == 'scripture':
                 retval._items.append(item)
