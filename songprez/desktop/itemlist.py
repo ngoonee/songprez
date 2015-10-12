@@ -123,6 +123,10 @@ class ItemList(FocusBehavior, ListView):
     def keyboard_on_key_down(self, window, keycode, text, modifiers):
         super(ItemList, self).keyboard_on_key_down(window, keycode, text, modifiers)
         if not isinstance(self.adapter, CustomListAdapter):
+            # No adapter initialized
+            return False
+        if len(self.adapter.selection) == 0:
+            # No content or empty content
             return False
         if keycode[1] in ("enter", "spacebar"):
             curIndex = self.adapter.selection[0].index
@@ -132,29 +136,28 @@ class ItemList(FocusBehavior, ListView):
         elif (keycode[1] in ("down", "up", "pagedown", "pageup", "home", "end")
                 and not modifiers):
             # Movement keys, but not if modifiers used
-            if len(self.adapter.selection):
-                # Handle the normal directional keys, jump up and down in the list
-                curIndex = self.adapter.selection[0].index
-                pageSkip = int(self.height//(15*1.5))
-                dataLen = len(self.adapter.data)-1
-                newIndex = {'down': curIndex + 1,
-                            'up': curIndex - 1,
-                            'pagedown': curIndex + pageSkip,
-                            'pageup': curIndex - pageSkip,
-                            'home': 0,
-                            'end': dataLen}.get(keycode[1])
-                if newIndex < 0:
-                    newIndex = 0
-                if newIndex > dataLen:
-                    newIndex = dataLen
-                if dataLen > 0:
-                    item = self.adapter.get_view(newIndex)
-                    # hold_dispatch means will not trigger on_selection_change event,
-                    # to prevent scrolling through from consecutively selecting many
-                    # items. Flip side is that need to manually call the 'scroll_to'
-                    # function for proper visibility.
-                    self.adapter.handle_selection(item, hold_dispatch=True)
-                    self._scroll_to_item(self.adapter)
+            # Handle the normal directional keys, jump up and down in the list
+            curIndex = self.adapter.selection[0].index
+            pageSkip = int(self.height//(15*1.5))
+            dataLen = len(self.adapter.data)-1
+            newIndex = {'down': curIndex + 1,
+                        'up': curIndex - 1,
+                        'pagedown': curIndex + pageSkip,
+                        'pageup': curIndex - pageSkip,
+                        'home': 0,
+                        'end': dataLen}.get(keycode[1])
+            if newIndex < 0:
+                newIndex = 0
+            if newIndex > dataLen:
+                newIndex = dataLen
+            if dataLen > 0:
+                item = self.adapter.get_view(newIndex)
+                # hold_dispatch means will not trigger on_selection_change event,
+                # to prevent scrolling through from consecutively selecting many
+                # items. Flip side is that need to manually call the 'scroll_to'
+                # function for proper visibility.
+                self.adapter.handle_selection(item, hold_dispatch=True)
+                self._scroll_to_item(self.adapter)
             return True
         return False
 
