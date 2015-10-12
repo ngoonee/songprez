@@ -21,6 +21,7 @@ Builder.load_string("""
     colwidth: self.width//13
     colspace: self.width//140
     rowheight: self.colwidth//3
+    rowheight: self.songedit.title.height
     rowspace: self.colspace//2
     padding: (self.width - self.colwidth*12 - self.colspace*11)//2
     spacing: self.colspace
@@ -55,7 +56,9 @@ Builder.load_string("""
                 size_hint_x: None
                 width: root.colwidth
             NormalSizeFocusButton:
-                text: 'Settings'
+                markup: True
+                text: 'Settin[color=FFFF00][b]g[/b][/color]s'
+                on_press: app.open_settings()
         FocusButton:
             size_hint_y: None
             height: root.rowheight*2 + root.rowspace
