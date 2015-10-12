@@ -42,7 +42,20 @@ class SPSong(object):
                 setattr(retval, key, songobj[key])
             else:
                 setattr(retval, key, val)
-        retval.filepath = os.path.abspath(filepath)
+        # Find the base OpenSong directory by walking up the path to find the
+        # parent of 'Songs'
+        basedir, filename = os.path.split(filepath)
+        relpath = ''
+        while filename != 'Songs':
+            if relpath:
+                relpath = os.path.join(filename, relpath)
+            else:
+                relpath = filename
+            basedir, filename = os.path.split(basedir)
+            if filename == '':
+                raise IOError("%s is not in a proper directory structure"
+                              % filepath)
+        retval.filepath = relpath
         retval.mtime = os.path.getmtime(filepath)
         return retval
 

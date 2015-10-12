@@ -112,24 +112,14 @@ class SPSet(object):
         with open(filepath, 'w', encoding='UTF-8') as f:
             f.write(xmltodict.unparse(obj, pretty=True))
 
-    def _find_name_path(self, filepath):
-        if not filepath:
-            return '', ''
-        basedir, name = os.path.split(filepath)
-        path = ''
-        basedir, filename = os.path.split(basedir)
-        while filename != 'Songs':
-            path = filename + os.path.sep + path
-            basedir, filename = os.path.split(basedir)
-        return name, path
-
     def add_song(self, songObj):
         '''
         Add a Song to this set.
         '''
-        name, path = self._find_name_path(songObj.filepath)
+        filepath = songObj.filepath
+        basedir, name = os.path.split(filepath)
         item = OrderedDict([('@name', name), ('@type', 'song'),
-                           ('@presentation', ''), ('@path', path),
+                           ('@presentation', ''), ('@path', filepath),
                            ('song', songObj)])
         self._items.append(item)
 

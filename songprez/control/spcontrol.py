@@ -156,6 +156,8 @@ class SPControl(Thread):
     def _change_song(self, sender, **kwargs):
         filepath = kwargs.get('Path')
         if filepath:
+            if not os.path.isabs(filepath):
+                filepath = os.path.join(self._songPath, filepath)
             self._curSong = SPSong.read_from_file(filepath)
             signal('curSong').send(self, Song=self._curSong)
 
@@ -169,6 +171,8 @@ class SPControl(Thread):
         filepath = kwargs.get('Path')
         if not filepath:
             filepath = songObject.filepath
+        if not os.path.isabs(filepath):
+            filepath = os.path.join(self._songPath, filepath)
         if filepath:
             songObject.write_to_file(filepath)
             self._change_song(self, Path=filepath)
@@ -238,15 +242,17 @@ class SPControl(Thread):
         return SPSet.read_from_file(filepath)
 
     def _get_song(self, sender, **kwargs):
-        path = kwargs.get('Path')
+        filepath = kwargs.get('Path')
+        if not os.path.isabs(filepath):
+            filepath = os.path.join(self._songPath, filepath)
         return self._searchObj.get_song_from_cache(path)
 
     def _new_song(self, sender, **kwargs):
         filepath = kwargs.get('Path')
         songObject = SPSong()
         songObject.title = filepath
-        filepath = os.path.abspath(os.path.join(self._songPath, filepath))
         songObject.filepath = filepath
+        filepath = os.path.abspath(os.path.join(self._songPath, filepath))
         songObject.write_to_file(filepath)
         self._update_songs()
         self._change_song(None, Path=filepath)
@@ -263,6 +269,8 @@ class SPControl(Thread):
 
     def _delete_song(self, sender, **kwargs):
         filepath = kwargs.get('Path')
+        if not os.path.isabs(filepath):
+            filepath = os.path.join(self._songPath, filepath)
         if os.path.exists(filepath):
             os.remove(filepath)
         self._update_songs()
