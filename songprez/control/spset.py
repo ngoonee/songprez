@@ -7,6 +7,7 @@ from collections import OrderedDict
 from copy import deepcopy
 from .spsong import SPSong
 
+FileNotFoundError = getattr(__builtins__,'FileNotFoundError', IOError)
 
 class SPSet(object):
     def __init__(self, **kwargs):
@@ -79,7 +80,7 @@ class SPSet(object):
                             item['@path'] + os.path.sep + item['@name'])
                 songPath = os.path.normpath(songPath)
                 try:
-                    item['song'] = SPSong.read_from_file(songPath.__str__())
+                    item['song'] = SPSong.read_from_file(songPath)
                 except FileNotFoundError:
                     item['song'] = SPSong()
                     SPSong.title = 'File was not found'

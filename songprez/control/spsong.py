@@ -11,9 +11,9 @@ from .spchords import SPTranspose
 _xmlkeys = ('title', 'author', 'copyright', 'hymn_number', 'presentation',
             'ccli', 'key', 'aka', 'key_line', 'user1', 'user2', 'user3',
             'theme', 'tempo', 'time_sig', 'capo', 'lyrics')
-_xmldefaults = ('New Song', '', '', '', '',
-                '', '', '', '', '', '', '',
-                '', '', '', OrderedDict({'@print': 'false'}), '')
+_xmldefaults = (u'New Song', u'', u'', u'', u'',
+                u'', u'', u'', u'', u'', u'', u'',
+                u'', u'', u'', OrderedDict({'@print': 'false'}), u'')
 
 
 class SPSong(object):
@@ -29,6 +29,10 @@ class SPSong(object):
         Loads an XML file at filepath to create a Song object. Returns None if
         filepath is not a valid XML.
         '''
+        try:
+            filepath = unicode(filepath)
+        except NameError:
+            pass
         with open(filepath, 'rb') as f:
             data = f.read()
             try:
