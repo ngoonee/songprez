@@ -14,7 +14,7 @@ import os
 from songprez.control import spsong
 
 def test_song_read_write(tmpdir):
-    p = tmpdir.mkdir('songtest')
+    p = tmpdir.mkdir('Songs')
     s = spsong.SPSong()
     for item in spsong._xmlkeys:
         setattr(s, item, "test")
