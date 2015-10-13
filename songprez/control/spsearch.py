@@ -38,11 +38,12 @@ class SPSearch(object):
         with ix.searcher() as searcher:
             writer = ix.writer()
             for fields in searcher.all_stored_fields():
-                indexedPath = fields['filepath']
+                relPath = fields['filepath']
+                indexedPath = os.path.join(self._dirpath, relPath)
                 indexedPaths.add(indexedPath)
                 if not os.path.exists(indexedPath):
                     # File was deleted
-                    writer.delete_by_term('filepath', indexedPath)
+                    writer.delete_by_term('filepath', relPath)
                 else:
                     # Check if file has changed since indexing
                     indexedTime = fields['time']
