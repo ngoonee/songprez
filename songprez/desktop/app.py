@@ -13,7 +13,7 @@ from kivy.properties import StringProperty, BooleanProperty, ListProperty
 from kivy.properties import NumericProperty, ObjectProperty, DictProperty
 from kivy.uix.behaviors import FocusBehavior
 from ..control import spcontrol
-from .basewidget import BaseWidget
+from .editscreen import EditScreen
 from .settingsjson import _default_settings, _build_settings
 
 
@@ -76,7 +76,7 @@ class SongPrezApp(App):
         Window.bind(on_resize=self.win_cb)
         self.settings_cls = SettingsWithSidebar
         self.use_kivy_settings = False
-        self.base = BaseWidget()
+        self.base = EditScreen()
         self.base.bind(colwidth=self._colwidth)
         self.base.bind(colspace=self._colspace)
         self.base.bind(rowheight=self._rowheight)

@@ -14,9 +14,10 @@ from .songedit import SongEdit
 
 Builder.load_string("""
 #:import signal blinker.signal
-<BaseWidget>:
+<EditScreen>:
     songedit: songedit
     contentlist: contentlist
+    currentset: currentset
     orientation: 'horizontal'
     colwidth: self.width//13
     colspace: self.width//140
@@ -25,7 +26,6 @@ Builder.load_string("""
     rowspace: self.colspace//2
     padding: (self.width - self.colwidth*12 - self.colspace*11)//2
     spacing: self.colspace
-    curset: curset
     BoxLayout:
         orientation: 'vertical'
         padding: 0
@@ -36,7 +36,7 @@ Builder.load_string("""
             id: contentlist
             size_hint_y: 4
         SetList:
-            id: curset
+            id: currentset
             size_hint_y: 3
     SongEdit:
         id: songedit
@@ -66,9 +66,9 @@ Builder.load_string("""
 """)
 
 
-class BaseWidget(BoxLayout):
+class EditScreen(BoxLayout):
     def __init__(self, **kwargs):
-        super(BaseWidget, self).__init__(**kwargs)
+        super(EditScreen, self).__init__(**kwargs)
         Clock.schedule_once(self._finish_init)
 
     def _finish_init(self, dt):
