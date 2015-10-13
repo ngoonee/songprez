@@ -109,8 +109,13 @@ class SPSet(object):
         setobj['slide_groups']['slide_group'] = _items
         obj = OrderedDict()
         obj['set'] = setobj
-        with open(filepath, 'w', encoding='UTF-8') as f:
-            f.write(xmltodict.unparse(obj, pretty=True))
+        try:
+            with open(filepath, 'w', encoding='UTF-8') as f:
+                f.write(xmltodict.unparse(obj, pretty=True))
+        except TypeError:
+            # 'encoding' is not a valid keyword argument in python2
+            with open(filepath, 'wb') as f:
+                f.write(xmltodict.unparse(obj, pretty=True))
 
     def add_song(self, songObj):
         '''
