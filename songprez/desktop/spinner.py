@@ -25,7 +25,7 @@ class SpinnerOption(FocusBehavior, Button):
         if self.focus:
             with self.canvas:
                 Color(1, 0, 0, 0.6)
-                rectOpt = (*self.pos, *self.size)
+                rectOpt = (self.pos[0], self.pos[1], self.size[0], self.size[1])
                 self._outline = Line(rectangle=rectOpt, width=2)
 
     def keyboard_on_key_down(self, window, keycode, text, modifiers):
@@ -181,7 +181,7 @@ class FocusSpinner(FocusBehavior, Spinner):
         if self.focus:
             with self.canvas:
                 Color(1, 0, 0, 0.6)
-                rectOpt = (*self.pos, *self.size)
+                rectOpt = (self.pos[0], self.pos[1], self.size[0], self.size[1])
                 self._outline = Line(rectangle=rectOpt, width=2)
 
     def keyboard_on_key_down(self, window, keycode, text, modifiers):
