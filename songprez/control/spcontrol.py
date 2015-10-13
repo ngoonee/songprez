@@ -18,6 +18,7 @@ class SPControl(Thread):
 
     EDITING:-
         Published information:-
+            initialized(sender) - Initialization done
             curSet(sender, Set) - Current set
             curSong(sender, Song) - Current Song
             setList(sender, List) - List of sets
@@ -107,6 +108,7 @@ class SPControl(Thread):
         signal('downSong').connect(self._down_song)
         signal('search').connect(self._search)
         signal('publishAll').connect(self._publish_all)
+        signal('initialized').send(self)
         while True:
             if self._quit:
                 break

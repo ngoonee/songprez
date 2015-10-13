@@ -12,6 +12,7 @@ from kivy.clock import Clock
 from kivy.properties import StringProperty, BooleanProperty, ListProperty
 from kivy.properties import NumericProperty, ObjectProperty, DictProperty
 from kivy.uix.behaviors import FocusBehavior
+from blinker import signal
 from ..control import spcontrol
 from .basewidget import BaseWidget
 from .settingsjson import _default_settings, _build_settings
@@ -34,7 +35,11 @@ class SongPrezApp(App):
         Clock.schedule_once(self._finish_init)
 
     def _finish_init(self, dt):
+        signal('initialized').connect(self._control_loaded)
         self.control.start()
+
+    def _control_loaded(self, sender, **kwargs):
+        self.base.current = 'EditScreen'
 
     def register_textinput(self, textInstance, value):
         '''
@@ -54,17 +59,17 @@ class SongPrezApp(App):
         # Handle shortcut keys
         if modifiers == ['alt']:
             if keycode[1] == 's':
-                self.root.contentlist.searchheader.trigger_action()
+                self.base.contentlist.searchheader.trigger_action()
             elif keycode[1] == 'e':
-                self.root.contentlist.setheader.trigger_action()
+                self.base.contentlist.setheader.trigger_action()
             elif keycode[1] == 'o':
-                self.root.contentlist.songheader.trigger_action()
+                self.base.contentlist.songheader.trigger_action()
             elif keycode[1] == 'a':
-                self.root.songedit.addtoset.trigger_action()
+                self.base.songedit.addtoset.trigger_action()
             elif keycode[1] == 'r':
-                self.root.songedit.removefromset.trigger_action()
+                self.base.songedit.removefromset.trigger_action()
             elif keycode[1] == 't':
-                self.root.songedit.transposespinner.trigger_action()
+                self.base.songedit.transposespinner.trigger_action()
             elif keycode[1] == 'g':
                 app = App.get_running_app()
                 app.open_settings()

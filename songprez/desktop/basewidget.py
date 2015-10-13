@@ -6,6 +6,9 @@ from kivy.uix.screenmanager import ScreenManager
 from .editscreen import EditScreen
 
 Builder.load_string("""
+#:import FallOutTransition kivy.uix.screenmanager.FallOutTransition
+#:import NoTransition kivy.uix.screenmanager.NoTransition
+#:import SwapTransition kivy.uix.screenmanager.SwapTransition
 <BaseWidget>:
     songedit: editscreen.songedit
     contentlist: editscreen.contentlist
@@ -15,6 +18,13 @@ Builder.load_string("""
     rowheight: self.colwidth//3
     rowheight: self.songedit.title.height
     rowspace: self.colspace//2
+    #transition: NoTransition()
+    #transition: FallOutTransition()
+    transition: SwapTransition()
+    Screen:
+        name: 'LoadScreen'
+        Button:
+            text: "Nice intro logo?"
     Screen:
         name: 'EditScreen'
         EditScreen:
