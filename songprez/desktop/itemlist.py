@@ -168,7 +168,7 @@ class ItemList(FocusBehavior, ListView):
         targetIndex = index - pageSkip//2
         dataLen = len(adapter.data)-1-pageSkip
         if dataLen > 0:
-            targetY = 1.0 - targetIndex/dataLen
+            targetY = 1.0 - float(targetIndex)/dataLen
             if targetY < 0: targetY = 0.0
             if targetY > 1.0: targetY = 1.0
             self.scroll.scroll_y = targetY
