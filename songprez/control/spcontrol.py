@@ -76,6 +76,8 @@ class SPControl(Thread):
         if not os.path.exists(self._setPath):
             raise IOError('dirPath does not contain a Sets folder at ' +
                           self._setPath)
+        if not os.path.exists(indexPath):
+            raise IOError('indexPath does not exist at ' + indexPath)
         self._searchObj = SPSearch(indexPath, self._songPath)
         self._sets = None
         self._songs = None
