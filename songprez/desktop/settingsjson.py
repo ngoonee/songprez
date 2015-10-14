@@ -1,7 +1,37 @@
 import json
+import os
 from collections import OrderedDict
+from kivy import platform
 
 _settings_object = OrderedDict()
+
+defaultdatadir = os.path.join(os.path.expanduser('~'), 'SongPrez')
+defaultindexdir = os.path.join(os.path.expanduser('~'), '.songprez')
+if platform == 'linux':
+    pass
+elif platform == 'win':
+    pass
+elif platform == 'android':
+    pass
+elif platform == 'macosx':
+    pass
+elif platform == 'ios':
+    pass
+
+_settings_object['Files & Folders'] = [
+        {'type': 'path',
+            'title': 'SongPrez Data Folder',
+            'desc': 'SongPrez will not start if this folder does not exist',
+            'section': 'filesfolders',
+            'key': 'datadir',
+            'default': defaultdatadir},
+        {'type': 'path',
+            'title': 'SongPrez Search Index Folder',
+            'desc': 'Indices for searching are stored here. Default values are fine.',
+            'section': 'filesfolders',
+            'key': 'indexdir',
+            'default': defaultindexdir},
+        ]
 
 _settings_object['User Interface'] = [
             {'type': 'title',
@@ -53,7 +83,10 @@ _settings_object['Panel Name'] = [
 
 def _default_settings(config):
     for sect in _settings_object:
-        sectionName = _settings_object[sect][1]['section']
+        try:
+            sectionName = _settings_object[sect][1]['section']
+        except IndexError:
+            sectionName = _settings_object[sect][0]['section']
         sectionDefaults = {}
         for i in _settings_object[sect]:
             if i['type'] != 'title':
