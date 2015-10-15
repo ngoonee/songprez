@@ -82,6 +82,7 @@ class SetList(BoxLayout):
     def __init__(self, **kwargs):
         super(SetList, self).__init__(**kwargs)
         signal('curSet').connect(self._monitor_curSet)
+        signal('curSong').connect(self._monitor_curSong)
         Clock.schedule_once(self._finish_init)
 
     def _finish_init(self, dt):
@@ -100,6 +101,17 @@ class SetList(BoxLayout):
         self.name.text = setObject.name
         self.filepath.text = setObject.filepath
         self.content.set_data(songList)
+
+    def _monitor_curSong(self, sender, **kwargs):
+        '''
+        If the current song is in the currently displayed set, select it
+        '''
+        songObject = kwargs.get('Song')
+        dataObject = (songObject.filepath, songObject.title)
+        if dataObject in self.content.adapter.data:
+            index = self.content.adapter.data.index(dataObject)
+            view = self.content.adapter.get_view(index)
+            self.content.adapter.handle_selection(view, True)
 
     def _save_set_as(self):
         setObject = deepcopy(self._setInit)
