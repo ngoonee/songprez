@@ -26,8 +26,12 @@ Builder.load_string("""
     transition: SwapTransition()
     Screen:
         name: 'LoadScreen'
-        Button:
-            text: "Nice intro logo?"
+        Label:
+            font_size: '120sp'
+            text_size: self.parent.size
+            halign: 'center'
+            valign: 'middle'
+            text: "Please wait for loading..."
     Screen:
         name: 'EditScreen'
         EditScreen:
