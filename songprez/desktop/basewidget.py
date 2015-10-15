@@ -40,34 +40,12 @@ Builder.load_string("""
 
 
 class BaseWidget(ScreenManager):
-    inhibit = BooleanProperty(False)
-
     def __init__(self, **kwargs):
         super(BaseWidget, self).__init__(**kwargs)
         self._keyboard = Window.request_keyboard(None, self, 'text')
         self._keyboard.bind(on_key_down=self._on_keyboard_down)
 
     def _on_keyboard_down(self, keyboard, keycode, text, modifiers):
-        print(keycode, text, modifiers)
-        if self.inhibit:
-            return True
-        # Handle shortcut keys
-        if modifiers == ['alt']:
-            if keycode[1] == 's':
-                self.contentlist.searchheader.trigger_action()
-            elif keycode[1] == 'e':
-                self.contentlist.setheader.trigger_action()
-            elif keycode[1] == 'o':
-                self.contentlist.songheader.trigger_action()
-            elif keycode[1] == 'a':
-                self.songedit.addtoset.trigger_action()
-            elif keycode[1] == 'r':
-                self.songedit.removefromset.trigger_action()
-            elif keycode[1] == 't':
-                self.songedit.transposespinner.trigger_action()
-            elif keycode[1] == 'g':
-                app = App.get_running_app()
-                app.open_settings()
         if keycode[1] == 'escape':
             return True
         return False

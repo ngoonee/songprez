@@ -74,11 +74,7 @@ Builder.load_string("""
 
 
 class MovableItemList(ItemList):
-    def keyboard_on_key_down(self, window, keycode, text, modifiers):
-        super(MovableItemList, self).keyboard_on_key_down(window, keycode,
-                                                          text, modifiers)
-        if keycode[1] in ('up', 'down') and modifiers == ['alt']:
-            signal(keycode[1] + 'Song').send(self)
+    pass
 
 class SetList(BoxLayout):
     _setName = StringProperty('')

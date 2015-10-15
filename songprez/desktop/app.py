@@ -24,6 +24,7 @@ class SongPrezApp(App):
     colspace = NumericProperty(0)
     rowheight = NumericProperty(0)
     rowspace = NumericProperty(0)
+    inhibit = BooleanProperty(True)
     dataDir = StringProperty('')
     indexDir = StringProperty('')
 
@@ -54,6 +55,7 @@ class SongPrezApp(App):
 
     def _control_loaded(self, sender, **kwargs):
         self.base.current = 'EditScreen'
+        self.inhibit = False
 
     def _colwidth(self, instance, value):
         self.colwidth = value
@@ -108,13 +110,13 @@ class SongPrezApp(App):
 
 
     def display_settings(self, settings):
-        if not self.base.inhibit:
+        if not self.inhibit:
             super(SongPrezApp, self).display_settings(settings)
-        self.base.inhibit = True
+        self.inhibit = True
 
     def close_settings(self, *largs):
         super(SongPrezApp, self).close_settings(*largs)
-        self.base.inhibit = False
+        self.inhibit = False
         if not self.control:
             Clock.schedule_once(self._verify_spcontrol)
             # Maybe a pop-up here to mention WHY going back to settings?
