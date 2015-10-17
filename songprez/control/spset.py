@@ -125,7 +125,7 @@ class SPSet(object):
         filepath = songObj.filepath
         basedir, name = os.path.split(filepath)
         item = OrderedDict([('@name', name), ('@type', 'song'),
-                           ('@presentation', ''), ('@path', filepath),
+                           ('@presentation', ''), ('@path', basedir),
                            ('song', songObj)])
         self._items.append(item)
 
