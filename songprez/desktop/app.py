@@ -24,7 +24,7 @@ class SongPrezApp(App):
     colspace = NumericProperty(0)
     rowheight = NumericProperty(0)
     rowspace = NumericProperty(0)
-    inhibit = BooleanProperty(True)
+    inhibit = BooleanProperty(False)
     dataDir = StringProperty('')
     indexDir = StringProperty('')
 
