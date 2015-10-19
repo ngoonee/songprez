@@ -10,6 +10,9 @@ defaultindexdir = os.path.join(os.path.expanduser('~'), '.songprez')
 if platform == 'linux':
     pass
 elif platform == 'win':
+    defaultdatadir = os.path.join(os.path.expanduser('~'), 'SongPrez')
+    defaultindexdir = os.path.join(os.path.expanduser('~'), 'AppData',
+                                   'Local', 'SongPrez')
     pass
 elif platform == 'android':
     pass
