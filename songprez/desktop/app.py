@@ -14,6 +14,7 @@ from kivy.uix.behaviors import FocusBehavior
 from blinker import signal
 from ..control import spcontrol
 from .basewidget import BaseWidget
+from .settings import SPSettings
 from .settingsjson import _default_settings, _build_settings
 from time import sleep
 
@@ -29,7 +30,7 @@ class SongPrezApp(App):
     indexDir = StringProperty('')
 
     def build(self):
-        self.settings_cls = SettingsWithSidebar
+        self.settings_cls = SPSettings
         self.use_kivy_settings = False
         self.control = None
         signal('initialized').connect(self._control_loaded)

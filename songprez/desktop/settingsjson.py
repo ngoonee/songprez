@@ -22,17 +22,20 @@ elif platform == 'ios':
     pass
 
 _settings_object['Files & Folders'] = [
-        {'type': 'path',
+        {'type': 'pathex',
             'title': 'SongPrez Data Folder',
             'desc': 'SongPrez will not start if this folder does not exist',
             'section': 'filesfolders',
             'key': 'datadir',
+            'dirselect': True,
             'default': defaultdatadir},
-        {'type': 'path',
+        {'type': 'pathex',
             'title': 'SongPrez Search Index Folder',
             'desc': 'Indices for searching are stored here. Default values are fine.',
             'section': 'filesfolders',
             'key': 'indexdir',
+            'dirselect': True,
+            'show_hidden': True,
             'default': defaultindexdir},
         ]
 
