@@ -20,7 +20,7 @@ class SPSong(object):
     def __init__(self, **kwargs):
         for key, val in zip(_xmlkeys, _xmldefaults):
             setattr(self, key, val)
-        self.filepath = ''
+        self.filepath = u''
         self.mtime = None
 
     @classmethod
