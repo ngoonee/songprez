@@ -56,23 +56,24 @@ class TestSPSet(unittest.TestCase):
         assert len(self.set2.list_songs()) == 5
 
     def test_removing_song(self):
-        so = self.set2.list_songs()[1]
+        so = self.set2.list_songs()[1][0]
+        so = os.path.join(self.baseDir, 'Songs', so)
+        so = spsong.SPSong.read_from_file(so)
         self.set2.remove_song(so)
         assert len(self.set2.list_songs()) == 2
         self.set2.remove_song(so)
         assert len(self.set2.list_songs()) == 2
 
     def test_moving_song(self):
-        so = self.set2.list_songs()[-1]
+        songitem = self.set2.list_songs()[-1]
+        so = os.path.join(self.baseDir, 'Songs', songitem[0])
+        so = spsong.SPSong.read_from_file(so)
         self.set2.move_song_down(so)
-        for item in spsong._xmlkeys:
-            assert getattr(self.set2.list_songs()[-1], item) == getattr(so, item)
+        assert songitem == self.set2.list_songs()[-1]
         self.set2.move_song_up(so)
-        for item in spsong._xmlkeys:
-            assert getattr(self.set2.list_songs()[-2], item) == getattr(so, item)
+        assert songitem == self.set2.list_songs()[-2]
         self.set2.move_song_down(so)
-        for item in spsong._xmlkeys:
-            assert getattr(self.set2.list_songs()[-1], item) == getattr(so, item)
+        assert songitem == self.set2.list_songs()[-1]
 
     def test_writing(self):
         baseDir = self.baseDir
@@ -82,8 +83,7 @@ class TestSPSet(unittest.TestCase):
         for index in range(3):
             orisong = self.set2.list_songs()[index]
             copysong = set2copy.list_songs()[index]
-            for item in spsong._xmlkeys:
-                assert getattr(orisong, item) == getattr(copysong, item)
+            assert orisong == copysong
 
     def tearDown(self):
         pass
