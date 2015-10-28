@@ -97,7 +97,7 @@ class SetList(BoxLayout):
     def _monitor_curSet(self, sender, **kwargs):
         setObject = kwargs.get('Set')
         self._setInit = setObject
-        songList = [(s.filepath, s.title) for s in setObject.list_songs()]
+        songList = setObject.list_songs()
         self.name.text = setObject.name
         self.filepath.text = setObject.filepath
         self.content.set_data(songList)

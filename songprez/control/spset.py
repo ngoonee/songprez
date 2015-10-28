@@ -79,15 +79,6 @@ class SPSet(object):
         # differently by xmltodict
         for item in items:
             if item['@type'] == 'song':
-                songPath = (basedir + os.path.sep + 'Songs' + os.path.sep +
-                            item['@path'] + os.path.sep + item['@name'])
-                songPath = os.path.normpath(songPath)
-                try:
-                    item['song'] = SPSong.read_from_file(songPath)
-                except FileNotFoundError:
-                    item['song'] = SPSong()
-                    SPSong.title = 'File was not found'
-                    SPSong.filepath = songPath
                 retval._items.append(item)
             elif item['@type'] == 'scripture':
                 retval._items.append(item)
@@ -104,8 +95,6 @@ class SPSet(object):
         _items = []
         for item in self._items:
             it = deepcopy(item)
-            if it['@type'] == 'song':
-                it.pop('song')
             _items.append(it)
         setobj = OrderedDict()
         setobj['@name'] = self.name
@@ -123,8 +112,8 @@ class SPSet(object):
         filepath = songObj.filepath
         basedir, name = os.path.split(filepath)
         item = OrderedDict([('@name', name), ('@type', 'song'),
-                           ('@presentation', ''), ('@path', basedir),
-                           ('song', songObj)])
+                           ('@presentation', ''), ('@path', basedir),])
+                           #('song', songObj)])
         self._items.append(item)
 
     def remove_song(self, obj):
@@ -133,8 +122,9 @@ class SPSet(object):
         '''
         i = None
         for index, item in enumerate(self._items):
-            if (item['@type'] == 'song' and
-                    item['song'].filepath == obj.filepath):
+            itempath = os.path.join(item['@path'], item['@name'])
+            if (item['@type'] == 'song' and itempath == obj.filepath):
+                    #item['song'].filepath == obj.filepath):
                 i = index
         if i != None:
             self._items.pop(i)
@@ -145,7 +135,9 @@ class SPSet(object):
         '''
         i = None
         for index, item in enumerate(self._items):
-            if item['@type'] == 'song' and item['song'] == obj:
+            itempath = os.path.join(item['@path'], item['@name'])
+            if item['@type'] == 'song' and itempath == obj.filepath:
+                #item['song'] == obj:
                 i = index
         if i is not None and i+1 < len(self._items):
             self._items[i], self._items[i+1] = self._items[i+1], self._items[i]
@@ -156,10 +148,13 @@ class SPSet(object):
         '''
         i = None
         for index, item in enumerate(self._items):
-            if item['@type'] == 'song' and item['song'] == obj:
+            itempath = os.path.join(item['@path'], item['@name'])
+            if item['@type'] == 'song' and itempath == obj.filepath:
+                #item['song'] == obj:
                 i = index
         if i and i > 0:
             self._items[i], self._items[i-1] = self._items[i-1], self._items[i]
 
     def list_songs(self):
-        return [s['song'] for s in self._items if s['@type'] == 'song']
+        return [(os.path.join(s['@path'], s['@name']), s['@name'])
+                for s in self._items if s['@type'] == 'song']
