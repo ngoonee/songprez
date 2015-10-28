@@ -2,6 +2,9 @@
 
 import os
 import xmltodict
+import sys
+if sys.version_info[0] < 3:
+    from codecs import open  # 'UTF-8 aware open'
 from xml.parsers.expat import ExpatError
 from collections import OrderedDict
 from copy import deepcopy
@@ -44,7 +47,7 @@ class SPSet(object):
         Loads an XML file at filepath to create a Set object. Returns None if
         filepath is not a valid XML.
         '''
-        with open(filepath, 'rb') as f:
+        with open(filepath, 'r', encoding='UTF-8') as f:
             data = f.read()
             try:
                 obj = xmltodict.parse(data)
@@ -110,13 +113,8 @@ class SPSet(object):
         setobj['slide_groups']['slide_group'] = _items
         obj = OrderedDict()
         obj['set'] = setobj
-        try:
-            with open(filepath, 'w', encoding='UTF-8') as f:
-                f.write(xmltodict.unparse(obj, pretty=True))
-        except TypeError:
-            # 'encoding' is not a valid keyword argument in python2
-            with open(filepath, 'wb') as f:
-                f.write(xmltodict.unparse(obj, pretty=True))
+        with open(filepath, 'w', encoding='UTF-8') as f:
+            f.write(xmltodict.unparse(obj, pretty=True))
 
     def add_song(self, songObj):
         '''

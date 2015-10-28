@@ -5,6 +5,9 @@ from xml.parsers.expat import ExpatError
 import os
 from warnings import warn
 import re
+import sys
+if sys.version_info[0] < 3:
+    from codecs import open  # 'UTF-8 aware open'
 from collections import OrderedDict
 from .spchords import SPTranspose
 
@@ -33,7 +36,7 @@ class SPSong(object):
             filepath = unicode(filepath)
         except NameError:
             pass
-        with open(filepath, 'rb') as f:
+        with open(filepath, 'r', encoding='UTF-8') as f:
             data = f.read()
             try:
                 obj = xmltodict.parse(data)
@@ -72,13 +75,8 @@ class SPSong(object):
             songobj[val] = getattr(self, val)
         obj = OrderedDict()
         obj['song'] = songobj
-        try:
-            with open(filepath, 'w', encoding='UTF-8') as f:
-                f.write(xmltodict.unparse(obj, pretty=True))
-        except TypeError:
-            # 'encoding' is not a valid keyword argument in python2
-            with open(filepath, 'wb') as f:
-                f.write(xmltodict.unparse(obj, pretty=True))
+        with open(filepath, 'w', encoding='UTF-8') as f:
+            f.write(xmltodict.unparse(obj, pretty=True))
 
     def __repr__(self):
         strrep = "<Song Object - Title: %s" % (self.title)
