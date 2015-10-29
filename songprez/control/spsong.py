@@ -30,14 +30,17 @@ class SPSong(object):
     def read_from_file(cls, filepath):
         '''
         Loads an XML file at filepath to create a Song object. Returns None if
-        filepath is not a valid XML.
+        filepath is not a valid Unicode XML.
         '''
         try:
             filepath = unicode(filepath)
         except NameError:
             pass
         with open(filepath, 'r', encoding='UTF-8') as f:
-            data = f.read()
+            try:
+                data = f.read()
+            except UnicodeDecodeError:
+                return
             try:
                 obj = xmltodict.parse(data)
             except ExpatError:
