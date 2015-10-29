@@ -24,7 +24,7 @@ from math import ceil, floor
 
 Builder.load_string("""
 <CustomListItemButton>:
-    font_name: 'songprez/fonts/NSimSun.ttf'
+    font_name: 'songprez/fonts/NotoSansMonoCJKsc-Regular.otf'
 <ListView>:
     scroll: scroll
     container: container

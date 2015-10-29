@@ -12,6 +12,9 @@ Builder.load_string("""
 #:import FallOutTransition kivy.uix.screenmanager.FallOutTransition
 #:import NoTransition kivy.uix.screenmanager.NoTransition
 #:import SwapTransition kivy.uix.screenmanager.SwapTransition
+<Widget>: # Used instead of Label because TextInput inherits from this
+    font_name: 'songprez/fonts/NotoSansCJK-Regular.ttc'
+    font_size: 15
 <BaseWidget>:
     songedit: editscreen.songedit
     contentlist: editscreen.contentlist

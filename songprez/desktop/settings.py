@@ -16,7 +16,6 @@ Builder.load_string("""
     Label:
         text: root.value or ''
         pos: root.pos
-        font_size: '15sp'
 """)
 
 

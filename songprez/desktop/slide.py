@@ -26,8 +26,8 @@ Builder.load_string("""
 
 class SlideElement(BoxLayout):
     text = StringProperty('')
-    font_name = StringProperty('Roboto')
-    font_size = NumericProperty('15sp')
+    font_name = StringProperty('')
+    font_size = NumericProperty('')
     min_font_size = NumericProperty('5sp')
     halign = OptionProperty('left', options=['left', 'center', 'right',
                             'justify'])
