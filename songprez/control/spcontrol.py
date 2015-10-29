@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+from twisted.internet import reactor, threads
 from threading import Thread
 from blinker import signal
 from time import sleep
@@ -85,9 +86,7 @@ class SPControl(Thread):
         self._setList = None
         self._curSong = None
         self._curSet = None
-        self._searchTerm = ''
         self._searchList = None
-        self._quit = False
 
     def run(self):
         self._update_songs()
@@ -111,17 +110,13 @@ class SPControl(Thread):
         signal('search').connect(self._search)
         signal('publishAll').connect(self._publish_all)
         signal('initialized').send(self)
-        while True:
-            if self._quit:
-                break
-            if self._searchTerm:
-                self._searchList = self._searchObj.search(self._searchTerm)
-                self._searchTerm = ''
-                signal('searchList').send(self, List=self._searchList)
-            sleep(0.1)
+        reactor.run(installSignalHandlers=0)  # Don't try to catch SigInt etc.
 
     def quit(self):
-        self._quit = True
+        try:
+            reactor.stop()
+        except:
+            pass  # Does it really matter if there's an error here?
 
     ### Methods handling songList. _songs holds the list, _songList holds the
     ### return object. Should only be accessed by _get_songs()
@@ -236,7 +231,12 @@ class SPControl(Thread):
 
     ### Methods handling search results.
     def _search(self, sender, **kwargs):
-        self._searchTerm = kwargs.get('SearchTerm', '')
+        searchTerm = kwargs.get('SearchTerm', '')
+        reactor.callFromThread(self._threadedsearch, searchTerm)
+
+    def _threadedsearch(self, term):
+        self._searchList = self._searchObj.search(term)
+        signal('searchList').send(self, List=self._searchList)
 
     ### Methods handling general requests
     def _get_set(self, sender, **kwargs):
