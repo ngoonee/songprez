@@ -10,6 +10,7 @@ from docx.oxml.ns import qn
 import os
 import re
 from songprez.control import spset
+from songprez.control import spsong
 
 
 def _make_style(document, ptSize=12, fontName="Consolas", styleName="Custom Style"):
@@ -25,7 +26,15 @@ def _make_style(document, ptSize=12, fontName="Consolas", styleName="Custom Styl
 def _append_songs(document, setpath, textStyle, lyricsOnly=False):
     mySet = spset.SPSet.read_from_file(setpath)
     songs = mySet.list_songs()
-    for s in songs:
+    basedir, filename = os.path.split(setpath)
+    while filename != 'Sets':
+        basedir, filename = os.path.split(basedir)
+        if filename == '':
+            raise IOError("%s is not in a proper directory structure"
+                          % filepath)
+    for so in songs:
+        songpath = os.path.join(basedir,'Songs',so[0])
+        s = spsong.SPSong.read_from_file(songpath)
         p = document.add_paragraph(s.title, style=textStyle)
         p.runs[0].bold = True
         p.runs[0].underline = True
