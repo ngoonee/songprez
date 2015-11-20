@@ -103,7 +103,7 @@ class SPSong(object):
 
     @property
     def lyrics(self):
-        return "\n".join(self._lyrics)
+        return u"\n".join(self._lyrics)
 
     @lyrics.setter
     def lyrics(self, val):
@@ -145,7 +145,7 @@ class SPSong(object):
             while ret[-1] == "":  # Remove any trailing blank lines
                 ret.pop()
 
-        return "\n".join(ret)
+        return u"\n".join(ret)
 
     def _split_lyric_line(self, lyricLine, chordLine):
         '''
