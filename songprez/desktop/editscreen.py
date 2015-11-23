@@ -7,7 +7,6 @@ from kivy.core.window import Window
 from kivy.clock import Clock
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.screenmanager import Screen
-from blinker import signal
 from .button import FocusButton, NormalSizeFocusButton
 from .itemlist import ItemList
 from .setlist import SetList
@@ -15,7 +14,6 @@ from .contentlist import ContentList
 from .songedit import SongEdit
 
 Builder.load_string("""
-#:import signal blinker.signal
 <EditScreen>:
     songedit: songedit
     contentlist: contentlist
@@ -95,8 +93,10 @@ class EditScreen(Screen):
                 elif keycode[1] == 'g':
                     app = App.get_running_app()
                     app.open_settings()
-                elif keycode[1] in ('up', 'down'):
-                    signal(keycode[1] + 'Song').send(self)
+                elif keycode[1] == 'up':
+                    self.currentset._up_song()
+                elif keycode[1] == 'down':
+                    self.currentset._down_song()
                 else:
                     return False
             return True

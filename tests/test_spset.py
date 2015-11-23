@@ -14,19 +14,6 @@ import unittest
 from songprez.control import spset
 from songprez.control import spsong
 
-'''
-def test_set_read_write(tmpdir):
-    p = tmpdir.mkdir('settest')
-    se = SPSet()
-    s = SPSong()
-    for item in spsong._xmlkeys:
-        setattr(s, item, "test")
-    s.write_to_file(p.join('test').__str__())
-    s2 = SPSong.read_from_file(p.join('test').__str__())
-    for item in spsong._xmlkeys:
-        assert getattr(s, item) == getattr(s2, item)
-        '''
-
 def test_read_non_set(tmpdir):
     p = tmpdir.mkdir('settest')
     testfile = p.join('testfile').__str__()
@@ -63,17 +50,6 @@ class TestSPSet(unittest.TestCase):
         assert len(self.set2.list_songs()) == 2
         self.set2.remove_song(so)
         assert len(self.set2.list_songs()) == 2
-
-    def test_moving_song(self):
-        songitem = self.set2.list_songs()[-1]
-        so = os.path.join(self.baseDir, 'Songs', songitem[0])
-        so = spsong.SPSong.read_from_file(so)
-        self.set2.move_song_down(so)
-        assert songitem == self.set2.list_songs()[-1]
-        self.set2.move_song_up(so)
-        assert songitem == self.set2.list_songs()[-2]
-        self.set2.move_song_down(so)
-        assert songitem == self.set2.list_songs()[-1]
 
     def test_writing(self):
         baseDir = self.baseDir

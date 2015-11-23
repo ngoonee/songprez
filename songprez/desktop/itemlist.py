@@ -46,7 +46,9 @@ Builder.load_string("""
 
 class CustomListItemButton(ListItemButton):
     _was_pressed = BooleanProperty(False)
-    filepath = StringProperty('')
+    filepath = StringProperty(u'')
+    presentation = StringProperty(u'')
+    itemtype = StringProperty(u'')
     index = NumericProperty(-1)
 
 
@@ -174,7 +176,7 @@ class ItemList(FocusBehavior, ListView):
             self.scroll.scroll_y = targetY
 
     def set_data(self, datalist):
-        item = 0
+        item = None
         try:
             oldindex = self.adapter.selection[0].index
             item = self.adapter.get_view(oldindex)
@@ -191,16 +193,22 @@ class ItemList(FocusBehavior, ListView):
         if item:
             newitem = 0
             for i, data in enumerate(self.adapter.data):
-                if item.filepath == data[0]:
-                    newitem = self.adapter.get_view(i)
-                    break
+                if data.get('filepath'):
+                    if item.filepath == data['filepath']:
+                        newitem = self.adapter.get_view(i)
+                        break
             if newitem:
                 self.adapter.handle_selection(newitem, hold_dispatch=True)
                 self._scroll_to_item(self.adapter)
 
+    def get_data(self):
+        return self.adapter.data
+
     def args_converter(self, row_index, an_obj):
-        return {'text': an_obj[1],
+        return {'text': an_obj['name'],
                 'size_hint_y': None,
                 'height': 15*1.5,
-                'filepath': an_obj[0],
+                'filepath': an_obj.get('filepath', u''),
+                'itemtype': an_obj.get('itemtype', u''),
+                'presentation': an_obj.get('presentation', u''),
                 'index': row_index}

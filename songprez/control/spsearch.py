@@ -78,7 +78,7 @@ class SPSearch(object):
                                       ix.schema)
             query = parser.parse(term)
             results = searcher.search(query, limit=None)
-            output = [(r['filepath'], r['title']) for r in results]
+            output = [{'filepath': r['filepath'], 'name': r['title']} for r in results]
         return output
 
     def _obtain_index(self):

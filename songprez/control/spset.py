@@ -132,32 +132,42 @@ class SPSet(object):
         if i != None:
             self._items.pop(i)
 
-    def move_song_down(self, obj):
-        '''
-        Move this Song (if it exists) further behind in the set.
-        '''
-        i = None
-        for index, item in enumerate(self._items):
-            itempath = os.path.join(item['@path'], item['@name'])
-            if item['@type'] == 'song' and itempath == obj.filepath:
-                #item['song'] == obj:
-                i = index
-        if i is not None and i+1 < len(self._items):
-            self._items[i], self._items[i+1] = self._items[i+1], self._items[i]
-
-    def move_song_up(self, obj):
-        '''
-        Move this Song (if it exists) further behind in the set.
-        '''
-        i = None
-        for index, item in enumerate(self._items):
-            itempath = os.path.join(item['@path'], item['@name'])
-            if item['@type'] == 'song' and itempath == obj.filepath:
-                #item['song'] == obj:
-                i = index
-        if i and i > 0:
-            self._items[i], self._items[i-1] = self._items[i-1], self._items[i]
-
     def list_songs(self):
-        return [(os.path.join(s['@path'], s['@name']), s['@name'])
-                for s in self._items if s['@type'] == 'song']
+        retval = []
+        for s in self._items:
+            if s['@type'] == 'song':
+                retval.append({'name': s['@name'],
+                               'itemtype': s['@type'],
+                               'presentation': s['@presentation'],
+                               'filepath': os.path.join(s['@path'],
+                                           s['@name'])})
+            elif s['@type'] == 'scripture':
+                retval.append({'name': s['@name'],
+                               'itemtype': s['@type'],
+                               'print': s['@print'],
+                               'seconds': s['@seconds'],
+                               'loop': s['@loop'],
+                               'transition': s['@transition']})
+            else:
+                retval.append({'name': s['@name'],
+                               'itemtype': s['@type']})
+        return retval
+
+    def from_song_list(self, songList):
+        self._items = []
+        for s in songList:
+            if s['itemtype'] == 'song':
+                self._items.append({'@name': s['name'],
+                                    '@type': s['itemtype'],
+                                    '@presentation': s['presentation'],
+                                    '@path': os.path.dirname(s['filepath'])})
+            elif s['itemtype'] == 'scripture':
+                self._items.append({'@name': s['name'],
+                                    '@type': s['itemtype'],
+                                    '@print': s['print'],
+                                    '@seconds': s['seconds'],
+                                    '@loop': s['loop'],
+                                    '@transition': s['transition']})
+            else:
+                self._items.append({'@name': s['name'],
+                                    '@type': s['itemtype']})

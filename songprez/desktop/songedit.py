@@ -5,13 +5,13 @@ from kivy.app import App
 from kivy.lang import Builder
 from kivy.clock import Clock
 from kivy.uix.boxlayout import BoxLayout
-from blinker import signal
 from copy import deepcopy
 from .textinput import SingleLineTextInput, RegisteredTextInput
 from .filenamedialog import FilenameDialog
 from .label import MinimalLabel
 from ..control.spsong import SPSong
 from .spinner import FocusSpinner
+from ..network.messages import *
 
 Builder.load_string("""
 <SongEdit>:
@@ -37,6 +37,7 @@ Builder.load_string("""
     scroll: scroll
     addtoset: addtoset
     removefromset: removefromset
+    sendMessage: app.sendMessage
     orientation: 'vertical'
     padding: 0
     spacing: app.rowspace
@@ -202,12 +203,12 @@ Builder.load_string("""
             id: addtoset
             markup: True
             text: '[color=ffff00][b]A[/b][/color]dd to Set'
-            on_press: signal('addSong').send(None)
+            on_press: root._add_song()
         NormalSizeFocusButton:
             id: removefromset
             markup: True
             text: '[color=ffff00][b]R[/b][/color]emove from Set'
-            on_press: signal('removeSong').send(None)
+            on_press: root._remove_song()
         Widget:
         NormalSizeFocusButton:
             text: 'Save Song As'
@@ -221,12 +222,10 @@ Builder.load_string("""
 class SongEdit(BoxLayout):
     def __init__(self, **kwargs):
         super(SongEdit, self).__init__(**kwargs)
-        signal('curSong').connect(self._update_song)
 
-    def _update_song(self, sender, **kwargs):
-        songObject = kwargs.get('Song')
-        self._songInit = songObject
-        self._song_to_textinput(songObject)
+    def _edit_song(self, song):
+        self._songInit = song
+        self._song_to_textinput(song)
 
     def _song_to_textinput(self, songObject):
         self.title.text = songObject.title
@@ -252,12 +251,13 @@ class SongEdit(BoxLayout):
         try:
             songObject = deepcopy(self._songInit)
         except AttributeError:
+            return None
             # Hit if transpose is run before song is loaded
-            songObject = SPSong()
         songObject.title = self.title.text
         songObject.author = self.author.text
         songObject.aka = self.aka.text
         songObject.key_line = self.key_line.text
+        songObject.filepath = self.filepath.text 
         songObject.presentation = self.presentation.text
         songObject.copyright = self.copyright.text
         songObject.ccli = self.ccli.text
@@ -275,18 +275,33 @@ class SongEdit(BoxLayout):
 
     def _save(self):
         songObject = self._song_from_textinput()
-        if songObject != self._songInit:
-            signal('saveSong').send(self, Song=songObject)
+        if songObject and songObject != self._songInit:
+            self.sendMessage(SaveEditItem, itemtype='song', item=songObject,
+                             relpath=songObject.filepath)
 
     def _save_as(self):
         songObject = self._song_from_textinput()
-        view = FilenameDialog('saveSong', Song=songObject)
-        view.textinput.text = songObject.filepath
-        view.open()
+        if songObject:
+            view = FilenameDialog(SaveEditItem, inittext=songObject.filepath,
+                                  itemtype='song', item=songObject)
 
     def _transpose(self, interval):
         numInterval = int(interval)
-        if numInterval:
-            songObject = self._song_from_textinput()
+        songObject = self._song_from_textinput()
+        if songObject and numInterval:
             songObject.transpose(numInterval)
             self._song_to_textinput(songObject)
+
+    def _add_song(self):
+        songObject = self._song_from_textinput()
+        app = App.get_running_app()
+        if songObject and app.base.currentset._set:
+            app.base.currentset._set.add_song(songObject)
+            app.base.currentset._set_to_list()
+
+    def _remove_song(self):
+        songObject = self._song_from_textinput()
+        app = App.get_running_app()
+        if songObject and app.base.currentset._set:
+            app.base.currentset._set.remove_song(songObject)
+            app.base.currentset._set_to_list()

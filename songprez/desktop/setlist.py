@@ -5,16 +5,16 @@ from kivy.app import App
 from kivy.lang import Builder
 from kivy.clock import Clock
 from kivy.uix.boxlayout import BoxLayout
-from kivy.properties import StringProperty
-from blinker import signal
+from kivy.properties import StringProperty, ObjectProperty
 from copy import deepcopy
 from .itemlist import ItemList
 from .button import NormalSizeFocusButton
 from .filenamedialog import FilenameDialog
 from .textinput import SingleLineTextInput
+from ..control.spset import SPSet
+from ..network.messages import *
 
 Builder.load_string("""
-#:import signal blinker.signal
 <SetList>:
     name: name
     filepath: filepath
@@ -22,6 +22,7 @@ Builder.load_string("""
     orientation: 'vertical'
     padding: 0
     spacing: app.rowspace
+    sendMessage: app.sendMessage
     BoxLayout:
         size_hint_y: None
         height: app.rowheight
@@ -53,10 +54,10 @@ Builder.load_string("""
         Widget:
         NormalSizeFocusButton:
             text: 'Move Song Up'
-            on_press: signal('upSong').send(None)
+            on_press: root._up_song()
         NormalSizeFocusButton:
             text: 'Move Song Down'
-            on_press: signal('downSong').send(None)
+            on_press: root._down_song()
     BoxLayout:
         orientation: 'horizontal'
         size_hint_y: None
@@ -66,10 +67,10 @@ Builder.load_string("""
         Widget:
         NormalSizeFocusButton:
             text: 'Save Set As'
-            on_press: root._save_set_as()
+            on_press: root._save_as()
         NormalSizeFocusButton:
             text: 'Save Set'
-            on_press: signal('saveSet').send(None)
+            on_press: root._save()
 """)
 
 
@@ -81,8 +82,8 @@ class SetList(BoxLayout):
 
     def __init__(self, **kwargs):
         super(SetList, self).__init__(**kwargs)
-        signal('curSet').connect(self._monitor_curSet)
-        signal('curSong').connect(self._monitor_curSong)
+        self._setInit = None
+        self._set = None
         Clock.schedule_once(self._finish_init)
 
     def _finish_init(self, dt):
@@ -92,30 +93,57 @@ class SetList(BoxLayout):
         instance.adapter.bind(on_selection_change=self._song_selected)
 
     def _song_selected(self, adapter):
-        signal('changeSong').send(self, Path=adapter.selection[0].filepath)
+        self.sendMessage(ChangeEditItem, itemtype='song', relpath=adapter.selection[0].filepath)
 
-    def _monitor_curSet(self, sender, **kwargs):
-        setObject = kwargs.get('Set')
+    def _edit_set(self, set):
+        setObject = deepcopy(set)
         self._setInit = setObject
-        songList = setObject.list_songs()
-        self.name.text = setObject.name
-        self.filepath.text = setObject.filepath
-        self.content.set_data(songList)
+        self._set = setObject
+        self._set_to_list()
 
-    def _monitor_curSong(self, sender, **kwargs):
+    def _edit_item(self, itemtype, item):
         '''
         If the current song is in the currently displayed set, select it
         '''
-        songObject = kwargs.get('Song')
-        dataObject = (songObject.filepath, songObject.title)
+        dataObject = (item.filepath, item.title)
         if dataObject in self.content.adapter.data:
             index = self.content.adapter.data.index(dataObject)
             view = self.content.adapter.get_view(index)
             self.content.adapter.handle_selection(view, True)
 
-    def _save_set_as(self):
+    def _set_to_list(self):
+        songList = self._set.list_songs()
+        self.name.text = self._set.name
+        self.filepath.text = self._set.filepath
+        self.content.set_data(songList)
+
+    def _list_to_set(self):
         setObject = deepcopy(self._setInit)
         setObject.name = self.name.text
-        view = FilenameDialog('saveSet', Set=setObject)
+        setObject.filepath = self.filepath.text
+        songList = self.content.get_data()
+        setObject.from_song_list(songList)
+        return setObject
+
+    def _save_as(self):
+        setObject = self._list_to_set()
+        view = FilenameDialog(SaveEditSet, inittext=setObject.filepath, set=setObject)
         view.textinput.text = self.name.text
-        view.open()
+
+    def _save(self):
+        setObject = self._list_to_set()
+        self.sendMessage(SaveEditSet, relpath=setObject.filepath, set=setObject)
+
+    def _up_song(self):
+        songList = self.content.get_data()
+        i = self.content.adapter.selection[-1].index
+        if i > 0:
+            songList[i], songList[i-1] = songList[i-1], songList[i]
+        self.content.set_data(songList)
+
+    def _down_song(self):
+        songList = self.content.get_data()
+        i = self.content.adapter.selection[-1].index
+        if i < len(songList)-1:
+            songList[i], songList[i+1] = songList[i+1], songList[i]
+        self.content.set_data(songList)

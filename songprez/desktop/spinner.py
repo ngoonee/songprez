@@ -30,7 +30,6 @@ class SpinnerOption(FocusBehavior, Button):
 
     def keyboard_on_key_down(self, window, keycode, text, modifiers):
         super(SpinnerOption, self).keyboard_on_key_down(window, keycode, text, modifiers)
-        print(keycode, modifiers)
         if keycode[1] in ("enter", "spacebar"):
             self.trigger_action()
             return True

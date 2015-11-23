@@ -7,13 +7,13 @@ from kivy.clock import Clock
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.tabbedpanel import TabbedPanel, TabbedPanelItem, TabbedPanelHeader
 from kivy.uix.behaviors import FocusBehavior
-from blinker import signal
 from .itemlist import ItemList
 from .button import NormalSizeFocusButton
 from .filenamedialog import FilenameDialog
+from ..control.spsong import SPSong
+from ..network.messages import *
 
 Builder.load_string("""
-#:import signal blinker.signal
 <ContentList>:
     songlist: songlist
     searchlist: searchlist
@@ -25,6 +25,7 @@ Builder.load_string("""
     orientation: 'vertical'
     padding: 0
     spacing: app.rowspace
+    sendMessage: app.sendMessage
     TabbedPanel:
         id: panel
         do_default_tab: False
@@ -57,8 +58,8 @@ Builder.load_string("""
                 padding: app.rowspace
                 spacing: app.rowspace
                 SingleLineTextInput:
-                    on_text_validate: signal('search').send(None, SearchTerm=self.text); searchlist.focus = True
-                    on_text_update: signal('search').send(None, SearchTerm=self.text)
+                    on_text_validate: root._send_search(self.text); searchlist.focus = True
+                    on_text_update: root._send_search(self.text);
                 ItemList:
                     id: searchlist
             BoxLayout:
@@ -118,9 +119,6 @@ class FocusPanelHeader(FocusBehavior, TabbedPanelHeader):
 class ContentList(BoxLayout):
     def __init__(self, **kwargs):
         super(ContentList, self).__init__(**kwargs)
-        signal('setList').connect(self._monitor_setList)
-        signal('songList').connect(self._monitor_songList)
-        signal('searchList').connect(self._monitor_searchList)
         Clock.schedule_once(self._finish_init)
 
     def _finish_init(self, dt):
@@ -141,86 +139,91 @@ class ContentList(BoxLayout):
         instance.adapter.bind(on_selection_change=self._search_selected)
 
     def _song_selected(self, adapter):
-        signal('changeSong').send(self, Path=adapter.selection[0].filepath)
+        self.sendMessage(ChangeEditItem, itemtype='song',
+                        relpath=adapter.selection[0].filepath)
 
     def _set_selected(self, adapter):
-        signal('changeSet').send(self, Path=adapter.selection[0].filepath)
+        self.sendMessage(ChangeEditSet, relpath=adapter.selection[0].filepath)
 
     def _search_selected(self, adapter):
-        signal('changeSong').send(self, Path=adapter.selection[0].filepath)
+        self.sendMessage(ChangeEditItem, itemtype='song',
+                        relpath=adapter.selection[0].filepath)
 
-    def _monitor_setList(self, sender, **kwargs):
-        setList = kwargs.get('List')
-        self.setlist.set_data(setList)
+    def _send_search(self, text):
+        self.sendMessage(Search, term=text)
 
-    def _monitor_songList(self, sender, **kwargs):
-        songList = kwargs.get('List')
-        self.songlist.set_data(songList)
+    def _song_list(self, listofsong):
+        self.songlist.set_data(listofsong)
 
-    def _monitor_searchList(self, sender, **kwargs):
-        searchList = kwargs.get('List')
-        self.searchlist.set_data(searchList)
+    def _set_list(self, listofset):
+        self.setlist.set_data(listofset)
+
+    def _search_list(self, listofsearch):
+        self.searchlist.set_data(listofsearch)
 
     def _new_action(self):
-        def do_new(signalSuffix):
-            # Return value is a list of tuple-pairs (func, val), take first pair
-            view = FilenameDialog('new' + signalSuffix)
-            view.textinput.text = 'A New Song'
-            view.open()
-        def handle_song(song=None):
-            do_new('Song')
+        def do_new(message, **kwargs):
+            view = FilenameDialog(message, **kwargs)
+        def handle_song():
+            do_new(NewEditItem, inittext=u'A New Song', itemtype='song')
         def handle_search():
-            do_new('Song')
+            do_new(NewEditItem, inittext=u'A New Song', itemtype='song')
         def handle_set():
-            do_new('Set')
+            do_new(NewEditSet, inittext=u'A New Set')
         {self.songheader.text: handle_song,
          self.searchheader.text: handle_search,
          self.setheader.text: handle_set}.get(self.panel.current_tab.text)()
 
     def _rename_action(self):
-        def do_rename(signalSuffix, filepath):
-            # Return value is a list of tuple-pairs (func, val), take first pair
-            songObject = signal('get' + signalSuffix).send(None, Path=filepath)[0][1]
-            view = FilenameDialog('save' + signalSuffix, Song=songObject)
-            view.textinput.text = filepath
-            view.open()
-        def handle_song(song=None):
+        def handle_song():
             filepath = (self.songlist.adapter.selection[0].filepath if
                         self.songlist.adapter.selection else None)
             if filepath:
-                do_rename('Song', filepath)
+                def act(result, *args, **kwargs):
+                    view = FilenameDialog(SaveEditItem, inittext=filepath,
+                                          delmessage=DeleteEditItem,
+                                          itemtype='song', item=result)
+                self.sendMessage(GetItem, itemtype='song', relpath=filepath,
+                                 callback=act)
         def handle_search():
             filepath = (self.searchlist.adapter.selection[0].filepath if
                         self.searchlist.adapter.selection else None)
             if filepath:
-                do_rename('Song', filepath)
+                def act(result, *args, **kwargs):
+                    view = FilenameDialog(SaveEditItem, inittext=filepath,
+                                          delmessage=DeleteEditItem,
+                                          itemtype='song', item=result)
+                self.sendMessage(GetItem, itemtype='song', relpath=filepath,
+                                 callback=act)
         def handle_set():
             filepath = (self.setlist.adapter.selection[0].filepath if
                         self.setlist.adapter.selection else None)
             if filepath:
-                do_rename('Set', filepath)
+                def act(result, *args, **kwargs):
+                    view = FilenameDialog(SaveEditSet, inittext=filepath,
+                                          delmessage=DeleteEditSet,
+                                          set=result)
+                self.sendMessage(GetSet, relpath=filepath, callback=act)
         {self.songheader.text: handle_song,
          self.searchheader.text: handle_search,
          self.setheader.text: handle_set}.get(self.panel.current_tab.text)()
 
     def _delete_action(self):
-        def do_delete(signalSuffix, filepath):
-            signal('delete' + signalSuffix).send(None, Path=filepath)
         def handle_song():
             filepath = (self.songlist.adapter.selection[0].filepath if
                         self.songlist.adapter.selection else None)
             if filepath:
-                do_delete('Song', filepath)
+                self.sendMessage(DeleteEditItem, itemtype='song', relpath=filepath)
         def handle_search():
             filepath = (self.searchlist.adapter.selection[0].filepath if
                         self.searchlist.adapter.selection else None)
             if filepath:
-                do_delete('Song', filepath)
+                self.sendMessage(DeleteEditItem, itemtype='song', relpath=filepath)
         def handle_set():
             filepath = (self.setlist.adapter.selection[0].filepath if
                         self.setlist.adapter.selection else None)
             if filepath:
-                do_delete('Set', filepath)
+                self.sendMessage(DeleteEditSet, relpath=filepath)
         {self.songheader.text: handle_song,
          self.searchheader.text: handle_search,
          self.setheader.text: handle_set}.get(self.panel.current_tab.text)()

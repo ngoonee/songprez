@@ -52,3 +52,29 @@ class BaseWidget(ScreenManager):
         if keycode[1] == 'escape':
             return True
         return False
+
+    def on_connection(self, connection):
+        print('connected successfully')
+        app = App.get_running_app()
+        app.sendMessage = connection.sendMessage
+
+    def _running(self):
+        app = App.get_running_app()
+        app._control_loaded()
+
+    def _song_list(self, listofsong):
+        self.contentlist._song_list(listofsong)
+
+    def _set_list(self, listofset):
+        self.contentlist._set_list(listofset)
+
+    def _search_list(self, listofsearch):
+        self.contentlist._search_list(listofsearch)
+
+    def _edit_item(self, itemtype, item):
+        if itemtype == 'song':
+            self.songedit._edit_song(item)
+        self.currentset._edit_item(itemtype, item)
+
+    def _edit_set(self, item):
+        self.currentset._edit_set(item)

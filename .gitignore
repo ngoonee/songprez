@@ -50,3 +50,5 @@ plan/*
 
 # Font files
 *.ttf
+*.ttc
+*.otf

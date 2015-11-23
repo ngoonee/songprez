@@ -4,6 +4,11 @@ import kivy
 from kivy.config import Config
 Config.set('kivy', 'desktop', 1)
 Config.set('kivy', 'keyboard_mode', "")
+# install_twisted_rector must be called before importing the reactor, so do
+# it here before anything else is loaded
+from kivy.support import install_twisted_reactor
+install_twisted_reactor()
+from twisted.internet import reactor
 import os
 from kivy.app import App
 from kivy.uix.settings import SettingsWithSidebar
@@ -11,11 +16,11 @@ from kivy.clock import Clock
 from kivy.properties import StringProperty, BooleanProperty, ListProperty
 from kivy.properties import NumericProperty, ObjectProperty, DictProperty
 from kivy.uix.behaviors import FocusBehavior
-from blinker import signal
 from ..control import spcontrol
 from .basewidget import BaseWidget
 from .settings import SPSettings
 from .settingsjson import _default_settings, _build_settings
+from ..network.spclient import SPClientFactory
 from time import sleep
 
 
@@ -28,12 +33,12 @@ class SongPrezApp(App):
     inhibit = BooleanProperty(False)
     dataDir = StringProperty('')
     indexDir = StringProperty('')
+    sendMessage = ObjectProperty(None)
 
     def build(self):
         self.settings_cls = SPSettings
         self.use_kivy_settings = False
         self.control = None
-        signal('initialized').connect(self._control_loaded)
         self.base = BaseWidget()
         self.base.bind(colwidth=self._colwidth)
         self.base.bind(colspace=self._colspace)
@@ -48,8 +53,7 @@ class SongPrezApp(App):
     def _verify_spcontrol(self, dt):
         try:
             self.control = spcontrol.SPControl(self.indexDir, self.dataDir)
-            self.control.daemon = True
-            self.control.start()
+            reactor.connectTCP('localhost', 1916, SPClientFactory(self.base))
         except Exception as e:
             print(e)
             self.open_settings()
@@ -57,7 +61,7 @@ class SongPrezApp(App):
     def on_stop(self):
         self.control.quit()
 
-    def _control_loaded(self, sender, **kwargs):
+    def _control_loaded(self):
         self.base.current = 'EditScreen'
         self.inhibit = False
 
