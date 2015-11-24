@@ -67,15 +67,24 @@ class EditScreen(Screen):
         super(EditScreen, self).__init__(**kwargs)
         self._app = App.get_running_app()
         self._keyboard = Window.request_keyboard(None, self, 'text')
-        self._keyboard.bind(on_key_down=self._on_keyboard_down)
+        self.bind(parent=self._parent)
         Clock.schedule_once(self._finish_init)
 
     def _finish_init(self, dt):
         pass
 
+    def _parent(self, instance, value):
+        '''
+        Activated whenever this Screen obtains or loses a parent, use this to
+        only bind keyboard when this is the active screen.
+        '''
+        if value:  # Has a parent - is the active screen
+            self._keyboard.bind(on_key_down=self._on_keyboard_down)
+        else:
+            self._keyboard.unbind(on_key_down=self._on_keyboard_down)
+
     def _on_keyboard_down(self, keyboard, keycode, text, modifiers):
-        if self._app.base.current == 'EditScreen' and not self._app.inhibit:
-            print(keycode, text, modifiers)
+        if not self._app.inhibit:
             # Handle shortcut keys
             if modifiers == ['alt']:
                 if keycode[1] == 's':
