@@ -59,6 +59,7 @@ Builder.load_string("""
                 size_hint_y: None
                 height: app.rowheight*2 + app.rowspace
                 text: 'Present'
+                on_press: root._present()
 """)
 
 
@@ -82,6 +83,10 @@ class EditScreen(Screen):
             self._keyboard.bind(on_key_down=self._on_keyboard_down)
         else:
             self._keyboard.unbind(on_key_down=self._on_keyboard_down)
+            # Unfocus any focused widgets
+            for widget in self.walk(restrict=True):
+                if hasattr(widget, 'focus'):
+                    widget.focus = False
 
     def _on_keyboard_down(self, keyboard, keycode, text, modifiers):
         if not self._app.inhibit:
@@ -109,3 +114,7 @@ class EditScreen(Screen):
                 else:
                     return False
             return True
+
+    def _present(self):
+        self.parent.current = 'ShowScreen'
+        self.parent.current_screen._generate()

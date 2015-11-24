@@ -7,6 +7,7 @@ from kivy.app import App
 from kivy.properties import BooleanProperty
 from kivy.uix.screenmanager import ScreenManager
 from .editscreen import EditScreen
+from .showscreen import ShowScreen
 
 Builder.load_string("""
 #:import FallOutTransition kivy.uix.screenmanager.FallOutTransition
@@ -42,10 +43,12 @@ Builder.load_string("""
             halign: 'center'
             valign: 'middle'
             text: "Please wait for loading..."
-    Screen:
+    EditScreen:
         name: 'EditScreen'
-        EditScreen:
-            id: editscreen
+        id: editscreen
+    ShowScreen:
+        name: 'ShowScreen'
+        id: showscreen
 """)
 
 
