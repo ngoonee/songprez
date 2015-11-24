@@ -9,6 +9,7 @@ class Running(amp.Command):
     '''Emitted when server is fully started'''
     arguments = []
     response = []
+    requiresAnswer = False
 
 
 class SetList(amp.Command):
@@ -19,6 +20,7 @@ class SetList(amp.Command):
     arguments = [('curpage', amp.Integer()), ('totalpage', amp.Integer()),
                  ('jsonlist', amp.ListOf(amp.String()))]
     response = []
+    requiresAnswer = False
 
 
 class SongList(amp.Command):
@@ -29,6 +31,7 @@ class SongList(amp.Command):
     arguments = [('curpage', amp.Integer()), ('totalpage', amp.Integer()),
                  ('jsonlist', amp.ListOf(amp.String()))]
     response = []
+    requiresAnswer = False
 
 
 class SearchList(amp.Command):
@@ -39,6 +42,7 @@ class SearchList(amp.Command):
     arguments = [('curpage', amp.Integer()), ('totalpage', amp.Integer()),
                  ('jsonlist', amp.ListOf(amp.String()))]
     response = []
+    requiresAnswer = False
 
 
 ''' Utility methods (client-to-server) '''
@@ -57,6 +61,7 @@ class GetSet(amp.Command):
 class Search(amp.Command):
     arguments = [('term', amp.Unicode())]
     response = []
+    requiresAnswer = False
 
 
 ''' Edit messages (server-to-client) '''
@@ -65,11 +70,13 @@ class Search(amp.Command):
 class EditItem(amp.Command):
     arguments = [('itemtype', amp.String()), ('jsonitem', amp.String())]
     response = []
+    requiresAnswer = False
 
 
 class EditSet(amp.Command):
     arguments = [('jsonset', amp.String())]
     response = []
+    requiresAnswer = False
 
 
 ''' Edit messages (client-to-server) '''
@@ -78,42 +85,50 @@ class EditSet(amp.Command):
 class ChangeEditItem(amp.Command):
     arguments = [('itemtype', amp.String()), ('relpath', amp.Unicode())]
     response = []
+    requiresAnswer = False
 
 
 class SaveEditItem(amp.Command):
     arguments = [('itemtype', amp.String()), ('jsonitem', amp.String()),
                  ('relpath', amp.Unicode())]
     response = []
+    requiresAnswer = False
 
 
 class NewEditItem(amp.Command):
     arguments = [('itemtype', amp.String()), ('relpath', amp.Unicode())]
     response = []
+    requiresAnswer = False
 
 
 class DeleteEditItem(amp.Command):
     arguments = [('itemtype', amp.String()), ('relpath', amp.Unicode())]
     response = []
+    requiresAnswer = False
 
 
 class ChangeEditSet(amp.Command):
     arguments = [('relpath', amp.Unicode())]
     response = []
+    requiresAnswer = False
 
 
 class SaveEditSet(amp.Command):
     arguments = [('jsonset', amp.String()), ('relpath', amp.Unicode())]
     response = []
+    requiresAnswer = False
 
 
 class NewEditSet(amp.Command):
     arguments = [('relpath', amp.Unicode())]
     response = []
+    requiresAnswer = False
 
 
 class DeleteEditSet(amp.Command):
     arguments = [('relpath', amp.Unicode())]
     response = []
+    requiresAnswer = False
 
 
 ''' Show messages (server-to-client) '''
@@ -133,6 +148,7 @@ class ShowSlides(amp.Command):
     arguments = [('curpage', amp.Integer()), ('totalpage', amp.Integer()),
                  ('jsonlist', amp.ListOf(amp.String()))]
     response = []
+    requiresAnswer = False
 
 
 class ShowItems(amp.Command):
@@ -144,6 +160,7 @@ class ShowItems(amp.Command):
     arguments = [('curpage', amp.Integer()), ('totalpage', amp.Integer()),
                  ('jsonlist', amp.ListOf(amp.String()))]
     response = []
+    requiresAnswer = False
 
 
 class ShowSet(amp.Command):
@@ -152,6 +169,7 @@ class ShowSet(amp.Command):
     '''
     arguments = [('jsonset', amp.String())]
     response = []
+    requiresAnswer = False
 
 
 class ShowPosition(amp.Command):
@@ -162,6 +180,7 @@ class ShowPosition(amp.Command):
     '''
     arguments = [('item', amp.Integer()), ('slide', amp.Integer())]
     response = []
+    requiresAnswer = False
 
 
 class ShowToggles(amp.Command):
@@ -171,6 +190,7 @@ class ShowToggles(amp.Command):
     '''
     argument = [('toggle', amp.String())]
     response = []
+    requiresAnswer = False
 
 
 ''' Show messages (client-to-server) '''
@@ -182,6 +202,7 @@ class Resolution(amp.Command):
     '''
     arguments = [('width', amp.Integer()), ('height', amp.Integer())]
     response = []
+    requiresAnswer = False
 
 
 class ChangeShowSet(amp.Command):
@@ -190,6 +211,7 @@ class ChangeShowSet(amp.Command):
     '''
     arguments = [('relpath', amp.Unicode())]
     response = []
+    requiresAnswer = False
 
 
 class AddShowItem(amp.Command):
@@ -199,6 +221,7 @@ class AddShowItem(amp.Command):
     arguments = [('itemtype', amp.String()), ('relpath', amp.Unicode()),
                  ('position', amp.Integer())]
     response = []
+    requiresAnswer = False
 
 
 class RemoveShowItem(amp.Command):
@@ -207,6 +230,7 @@ class RemoveShowItem(amp.Command):
     '''
     arguments = [('position', amp.Integer())]
     response = []
+    requiresAnswer = False
 
 
 class UpdateShowPosition(amp.Command):
@@ -217,6 +241,7 @@ class UpdateShowPosition(amp.Command):
     '''
     arguments = [('item', amp.Integer()), ('slide', amp.Integer())]
     response = []
+    requiresAnswer = False
 
 
 class UpdateShowToggles(amp.Command):
@@ -226,3 +251,4 @@ class UpdateShowToggles(amp.Command):
     '''
     argument = [('toggle', amp.String())]
     response = []
+    requiresAnswer = False

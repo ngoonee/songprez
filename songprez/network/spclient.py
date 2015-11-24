@@ -53,6 +53,8 @@ class SPClientProtocol(amp.AMP):
         if itemtype:
             kwargs['itemtype'] = itemtype
         d = self.callRemote(message, **kwargs)
+        if not d:
+            return
         d.addErrback(self.printerr)
         if callback:
             def json_to_obj(AMPresponse):

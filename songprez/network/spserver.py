@@ -125,11 +125,6 @@ class SPServerFactory(protocol.Factory):
         print(addr, 'connected')
         return self.protocol(self)
 
-    def printerr(self, error):
-        from pprint import pprint
-        pprint(error)
-        return
-
     def sendAll(self, message, **kwargs):
         if kwargs.get('list'):
             list = kwargs.pop('list')
@@ -151,4 +146,3 @@ class SPServerFactory(protocol.Factory):
                 kwargs['jsonset'] = json.dumps(set.__dict__)
             for p in self.peers:
                 d = p.callRemote(message, **kwargs)
-                d.addErrback(self.printerr)
