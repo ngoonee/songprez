@@ -12,8 +12,15 @@ Builder.load_string("""
 #:import FallOutTransition kivy.uix.screenmanager.FallOutTransition
 #:import NoTransition kivy.uix.screenmanager.NoTransition
 #:import SwapTransition kivy.uix.screenmanager.SwapTransition
-<Widget>: # Used instead of Label because TextInput inherits from this
+<Widget>:
+    # Use same font throughout. Needed because SlideElement is a BoxLayout and
+    # needs to have a font_name.
     font_name: 'songprez/fonts/NotoSansCJK-Regular.ttc'
+<Label>:
+    # If we use Widget instead even layouts get a font_size which wrecks
+    # SlideElement
+    font_size: 15
+<TextInput>: # Inherits from Widget, so doesn't get the above font_size
     font_size: 15
 <BaseWidget>:
     songedit: editscreen.songedit
