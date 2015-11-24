@@ -20,14 +20,21 @@ Builder.load_string("""
     OutlinedLabel:
         id: label
         mipmap: True
-        text_size: (bl.parent.size[0] - bl.padding[0] - bl.padding[2], None)
+        #text_size: (bl.parent.size[0] - bl.padding[0] - bl.padding[2], None)
+        text_size: (bl.size[0] - bl.padding[0] - bl.padding[2], None)
+        text: bl.text
+        font_name: bl.font_name
+        target_font_size: bl.font_size
+        halign: bl.halign
+        valign: bl.valign
+        border_thickness: bl.border_thickness
 """)
 
 
 class SlideElement(BoxLayout):
     text = StringProperty('')
     font_name = StringProperty('')
-    font_size = NumericProperty('')
+    font_size = NumericProperty('15sp')
     min_font_size = NumericProperty('5sp')
     halign = OptionProperty('left', options=['left', 'center', 'right',
                             'justify'])
@@ -35,37 +42,13 @@ class SlideElement(BoxLayout):
     border_thickness = OptionProperty('regular', options=['thick', 'regular',
                                       'thin', 'minimal', 'none'])
 
-    def on_text(self, instance, val):
-        self.label.text = val
-
-    def on_font_name(self, instance, val):
-        self.label.font_name = val
-
-    def on_font_size(self, instance, val):
-        if val < self.min_font_size:
-            self.font_size = self.min_font_size
-        else:
-            self.label.font_size = val
-
-    def on_min_font_size(self, instance, val):
-        self.label.min_font_size = val
-
-    def on_halign(self, instance, val):
-        self.label.halign = val
-
-    def on_valign(self, instance, val):
-        self.label.valign = val
-
-    def on_border_thickness(self, instance, val):
-        self.label.border_thickness = val
-
     def on_padding(self, instance, val):
         print(val)
 
 
 class OutlinedLabel(Label, StencilView):
     min_font_size = NumericProperty('5sp')
-    target_font_size = NumericProperty('15sp')
+    target_font_size = NumericProperty(0)
     border_thickness = OptionProperty('regular', options=['thick', 'regular',
                                       'thin', 'minimal', 'none'])
 
@@ -75,18 +58,9 @@ class OutlinedLabel(Label, StencilView):
 
     def _finish_init(self, dt):
         self._outline = []
-        self.bind(font_size=self._save_font_size, size=self._redraw,
+        self.bind(target_font_size=self._redraw, size=self._redraw,
                   border_thickness=self._redraw, text=self._redraw)
-        self._save_font_size(self, self.font_size)
-
-    def _save_font_size(self, instance, value):
-        '''
-        Due to the many calls to _redraw, font_size can be unstable. This
-        saves the desired font size so later calls to _redraw don't justify
-        repeatedly use min_font_size as the target
-        '''
-        self.target_font_size = value
-        self._redraw(instance, value)
+        self._redraw(None, None)
 
     def _redraw(self, instance, value):
         '''
@@ -102,8 +76,6 @@ class OutlinedLabel(Label, StencilView):
         except AttributeError:
             pass
         with self.canvas.before:
-            # Unbind font_size as we will change it repeatedly
-            self.unbind(font_size=self._save_font_size)
             self.font_size = self.target_font_size
             self.texture_update()
             if self.texture_size[1] > self.size[1]:
@@ -126,8 +98,6 @@ class OutlinedLabel(Label, StencilView):
                 self.font_size = lower
                 self.texture_update()
                 # At this point, maximum allowable font size has been achieved
-            # Remember to rebind font_size
-            self.bind(font_size=self._save_font_size)
 
             if self.border_thickness == 'none':
                 return
