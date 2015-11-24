@@ -123,7 +123,7 @@ class SPSong(object):
         split = self._lyrics
         removed = [line for line in split
                    if len(line) is 0 or
-                   (line[0] is not "." and "|" not in line)]
+                   (line[0] != "." and "|" not in line)]
         ret = []
         previousblank = True
         for l in removed:
