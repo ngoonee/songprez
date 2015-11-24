@@ -9,6 +9,25 @@ from ..control.spset import SPSet
 
 
 class SPClientProtocol(amp.AMP):
+    '''
+    Implicitly defines the API of a SongPrez client.
+
+    The required methods are:-
+        on_connection()
+        _running()
+        _set_list(setList)
+        _song_list(songList)
+        _search_list(searchList)
+
+    The optional methods are:-
+        _edit_item(SPSong)
+        _edit_set(SPSet)
+        _show_slides(slideList)
+        _show_items(itemList)
+        _show_set(SPSet)
+        _show_position(item, slide)
+        _show_toggles(toggles)
+    '''
     def connectionMade(self):
         self.factory.resetDelay()
         self.factory.client.on_connection(self)
@@ -45,12 +64,13 @@ class SPClientProtocol(amp.AMP):
             d.addCallbacks(callback, self.printerr)
 
     @Running.responder
-    def running(self):
+    def Running(self):
+        print('received running')
         self.factory.client._running()
         return {}
 
     @SetList.responder
-    def setList(self, curpage, totalpage, jsonlist):
+    def SetList(self, curpage, totalpage, jsonlist):
         if curpage == 0:
             self._partSetList = []
         listofset = [json.loads(d) for d in jsonlist]
@@ -60,7 +80,7 @@ class SPClientProtocol(amp.AMP):
         return {}
 
     @SongList.responder
-    def songList(self, curpage, totalpage, jsonlist):
+    def SongList(self, curpage, totalpage, jsonlist):
         if curpage == 0:
             self._partSongList = []
         listofsong = [json.loads(d) for d in jsonlist]
@@ -70,7 +90,7 @@ class SPClientProtocol(amp.AMP):
         return {}
 
     @SearchList.responder
-    def searchList(self, curpage, totalpage, jsonlist):
+    def SearchList(self, curpage, totalpage, jsonlist):
         if curpage == 0:
             self._partSearchList = []
         listofsearch = [json.loads(d) for d in jsonlist]
@@ -80,7 +100,9 @@ class SPClientProtocol(amp.AMP):
         return {}
 
     @EditItem.responder
-    def editItem(self, itemtype, jsonitem):
+    def EditItem(self, itemtype, jsonitem):
+        if '_edit_item' in dir(self.factory.client):
+            return {}  # Optional method, return if not found
         if itemtype == 'song':
             item = SPSong()
         else:  # Unimplemented itemtype
@@ -90,10 +112,59 @@ class SPClientProtocol(amp.AMP):
         return {}
 
     @EditSet.responder
-    def editSet(self, jsonset):
+    def EditSet(self, jsonset):
+        if '_edit_set' in dir(self.factory.client):
+            return {}  # Optional method, return if not found
         item = SPSet()
         item.__dict__ = json.loads(jsonset)
         self.factory.client._edit_set(item)
+        return {}
+
+    @ShowSlides.responder
+    def ShowSlides(self, curpage, totalpage, jsonlist):
+        if '_show_slides' in dir(self.factory.client):
+            return {}  # Optional method, return if not found
+        if curpage == 0:
+            self._partShowSlideList = []
+        showslidelist = [json.loads(d) for d in jsonlist]
+        self._partShowSlideList.extend(showslidelist)
+        if curpage == totalpage-1:
+            self.factory.client._show_slides(self._partShowSlideList)
+        return {}
+
+    @ShowItems.responder
+    def ShowItems(self, curpage, totalpage, jsonlist):
+        if '_show_items' in dir(self.factory.client):
+            return {}  # Optional method, return if not found
+        if curpage == 0:
+            self._partShowItemList = []
+        showitemlist = [json.loads(d) for d in jsonlist]
+        self._partShowItemList.extend(showitemlist)
+        if curpage == totalpage-1:
+            self.factory.client._show_items(self._partShowItemList)
+        return {}
+
+    @ShowSet.responder
+    def ShowSet(self, jsonset):
+        if '_show_set' in dir(self.factory.client):
+            return {}  # Optional method, return if not found
+        s = SPSet()
+        s.__dict__ = json.loads(jsonset)
+        self.factory.client._show_set(s)
+        return {}
+
+    @ShowPosition.responder
+    def ShowPosition(self, item, slide):
+        if '_show_position' in dir(self.factory.client):
+            return {}  # Optional method, return if not found
+        self.factory.client._show_position(item, slide)
+        return {}
+
+    @ShowToggles.responder
+    def ShowToggles(self, toggle):
+        if '_show_toggles' in dir(self.factory.client):
+            return {}  # Optional method, return if not found
+        self.factory.client._show_toggles(toggles)
         return {}
 
 
