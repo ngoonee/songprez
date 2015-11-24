@@ -38,7 +38,7 @@ class SPClientProtocol(amp.AMP):
         return
 
     def sendMessage(self, message, term=None, item=None, set=None, itemtype=None,
-                    relpath=None, callback=None):
+                    relpath=None, callback=None, callbackKeywords={}):
         kwargs = {}
         if term:
             kwargs['term'] = term
@@ -63,7 +63,7 @@ class SPClientProtocol(amp.AMP):
                 s.__dict__ = json.loads(AMPresponse[name])
                 return s
             d.addCallbacks(json_to_obj, self.printerr)
-            d.addCallbacks(callback, self.printerr)
+            d.addCallbacks(callback, self.printerr, callbackKeywords=callbackKeywords)
 
     @Running.responder
     def Running(self):

@@ -125,18 +125,25 @@ class SPServerFactory(protocol.Factory):
         print(addr, 'connected')
         return self.protocol(self)
 
+    def _sendPartial(self, message, jsonlist, **kwargs):
+        maxitems = 300
+        splitjson = [jsonlist[i:i+maxitems]
+                     for i in range(0, len(jsonlist), maxitems)]
+        for p in self.peers:
+            for i, lis in enumerate(splitjson):
+                kwargs['jsonlist'] = lis
+                d = p.callRemote(message, curpage=i,
+                                 totalpage=len(splitjson), **kwargs)
+
     def sendAll(self, message, **kwargs):
         if kwargs.get('list'):
             list = kwargs.pop('list')
             jsonlist = [json.dumps(s) for s in list]
-            maxitems = 300
-            splitjson = [jsonlist[i:i+maxitems]
-                         for i in range(0, len(jsonlist), maxitems)]
-            for p in self.peers:
-                for i, lis in enumerate(splitjson):
-                    kwargs['jsonlist'] = lis
-                    d = p.callRemote(message, curpage=i,
-                                     totalpage=len(splitjson), **kwargs)
+            self._sendPartial(message, jsonlist, **kwargs)
+        elif kwargs.get('itemlist'):
+            itemlist = kwargs.pop('itemlist')
+            jsonlist = [json.dump(s.__dict__) for s in itemlist]
+            self._sendPartial(message, jsonlist, **kwargs)
         else:
             if kwargs.get('item'):
                 item = kwargs.pop('item')

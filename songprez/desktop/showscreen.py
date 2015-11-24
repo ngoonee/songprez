@@ -16,12 +16,15 @@ from kivy.core.window import Window
 from kivy.clock import Clock
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.screenmanager import Screen
+from ..control.spsong import SPSong
 from .slide import SlideElement
 from ..network.spclient import SPClientFactory
+from ..network.messages import *
 
 Builder.load_string("""
 <ShowScreen>:
     carousel: carousel
+    sendMessage: app.sendMessage
     FloatLayout:
         Carousel:
             id: carousel
@@ -93,7 +96,11 @@ class ShowScreen(Screen):
         self._generate()
 
     def _show_set(self, set):
+        print(set)
         self._set = set
+        self._items = set.list_songs()
+        self._slides = set.list_songs()
+        print(self._set)
         self._generate()
 
     def _show_position(self, item, slide):
@@ -103,27 +110,6 @@ class ShowScreen(Screen):
         pass
 
     def _generate(self):
-        s = SlideElement(padding=(100,100,100,100), font_size=180,
-                         halign='center', valign='middle')
-        s.font_size = 180
-        s.text = '''Did we in our own strength confide, our striving would be losing;
- Were not the right Man on our side, the Man of God's own choosing;
- Dost ask who that may be: Christ Jesus it is He;
- Lord Sabbaoth His Name, from age to age the same,
- And He must win the battle.'''
-        s2 = SlideElement(padding=(0,0,0,0), font_size=180,
-                         halign='center', valign='middle')
-        s2.text = u"""The sun comes up, it's a new day dawning
- 太阳升起 新的一天來臨
- It's time to sing Your song again
- 又是時候 唱你的歌
- Whatever may pass, and whatever lies before me
- 不管發生過什麼, 不管接下來如何
- Let me be singing when the evening comes
- 讓我在黃昏前 在讚美神"""
-        self.carousel.add_widget(s)
-        self.carousel.add_widget(s2)
-        return
         slideList, itemList, set = self._slides, self._items, self._set
         if (len(slideList) == len(itemList) and
                 len(itemList) == len(set.list_songs())):
@@ -132,4 +118,11 @@ class ShowScreen(Screen):
                 # Verify using item and data that same sets
                 # Create a SlideElement based on slide and item
                 # Add SlideElement to carousel
-                pass
+                def act(so, carousel):
+                    slides = so.words.split("\n\n")
+                    for sl in slides:
+                        s = SlideElement(padding=(100,100,100,100), font_size=180,
+                                         halign='center', valign='middle')
+                        s.text = sl
+                        carousel.add_widget(s)
+                self.sendMessage(GetItem, itemtype='song', relpath=data['filepath'], callback=act, callbackKeywords={'carousel': self.carousel})

@@ -61,6 +61,9 @@ class SPControl(object):
         self._searchList = None
         self._searchTerm = u''
         self._running = False
+        self._showSet = None
+        self._showItems = None
+        self._showSlides = None
         factory = reactor.listenTCP(1916, SPServerFactory(self)).factory
         self.sendAll = factory.sendAll
         reactor.callInThread(self._start)
@@ -221,6 +224,8 @@ class SPControl(object):
         pass
 
     def _change_show_set(self, relpath):
+        self._showSet = SPSet.read_from_file(os.path.join(self._setPath, relpath))
+        self.sendAll(ShowSet, set=self._showSet)
         pass
 
     def _add_show_item(self, itemtype, relpath, position):

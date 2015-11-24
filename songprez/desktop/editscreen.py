@@ -12,12 +12,14 @@ from .itemlist import ItemList
 from .setlist import SetList
 from .contentlist import ContentList
 from .songedit import SongEdit
+from ..network.messages import *
 
 Builder.load_string("""
 <EditScreen>:
     songedit: songedit
     contentlist: contentlist
     currentset: currentset
+    sendMessage: app.sendMessage
     BoxLayout:
         orientation: 'horizontal'
         padding: (self.width - app.colwidth*12 - app.colspace*11)//2
@@ -117,4 +119,4 @@ class EditScreen(Screen):
 
     def _present(self):
         self.parent.current = 'ShowScreen'
-        self.parent.current_screen._generate()
+        self.sendMessage(ChangeShowSet, relpath=self.currentset.filepath.text)
