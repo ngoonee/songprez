@@ -21,66 +21,96 @@ class SPServerProtocol(amp.AMP):
         self.factory.peers.remove(self)
 
     @GetItem.responder
-    def getItem(self, itemtype, relpath):
+    def GetItem(self, itemtype, relpath):
         retval = self.control._get_item(itemtype, relpath)
         if not retval:
             return {}
         return {'jsonitem': json.dumps(retval.__dict__)}
 
     @GetSet.responder
-    def getSet(self, relpath):
+    def GetSet(self, relpath):
         retval = self.control._get_set(relpath)
         if not retval:
             return {}
         return {'jsonset': json.dumps(retval.__dict__)}
 
     @Search.responder
-    def search(self, term):
-        retval = self.control._search(term)
+    def Search(self, term):
+        self.control._search(term)
         return {}
 
     @ChangeEditItem.responder
-    def changeEditItem(self, itemtype, relpath):
-        retval = self.control._change_edit_item(itemtype, relpath)
+    def ChangeEditItem(self, itemtype, relpath):
+        self.control._change_edit_item(itemtype, relpath)
         return {}
 
     @SaveEditItem.responder
-    def saveEditItem(self, itemtype, jsonitem, relpath):
+    def SaveEditItem(self, itemtype, jsonitem, relpath):
         item = SPSong()
         item.__dict__ = json.loads(jsonitem)
-        retval = self.control._save_edit_item(itemtype, item, relpath)
+        self.control._save_edit_item(itemtype, item, relpath)
         return {}
 
     @NewEditItem.responder
-    def newEditItem(self, itemtype, relpath):
-        retval = self.control._new_edit_item(itemtype, relpath)
+    def NewEditItem(self, itemtype, relpath):
+        self.control._new_edit_item(itemtype, relpath)
         return {}
 
     @DeleteEditItem.responder
-    def deleteEditItem(self, itemtype, relpath):
-        retval = self.control._delete_edit_item(itemtype, relpath)
+    def DeleteEditItem(self, itemtype, relpath):
+        self.control._delete_edit_item(itemtype, relpath)
         return {}
 
     @ChangeEditSet.responder
-    def changeEditSet(self, relpath):
-        retval = self.control._change_edit_set(relpath)
+    def ChangeEditSet(self, relpath):
+        self.control._change_edit_set(relpath)
         return {}
 
     @SaveEditSet.responder
-    def saveEditSet(self, jsonset, relpath):
+    def SaveEditSet(self, jsonset, relpath):
         item = SPSet()
         item.__dict__ = json.loads(jsonset)
-        retval = self.control._save_edit_set(item, relpath)
+        self.control._save_edit_set(item, relpath)
         return {}
 
     @NewEditSet.responder
-    def newEditSet(self, relpath):
-        retval = self.control._new_edit_set(relpath)
+    def NewEditSet(self, relpath):
+        self.control._new_edit_set(relpath)
         return {}
 
     @DeleteEditSet.responder
-    def deleteEditSet(self, relpath):
-        retval = self.control._delete_edit_set(relpath)
+    def DeleteEditSet(self, relpath):
+        self.control._delete_edit_set(relpath)
+        return {}
+
+    @Resolution.responder
+    def Resolution(self, width, height):
+        self.control._resolution(width, height)
+        return {}
+
+    @ChangeShowSet.responder
+    def ChangeShowSet(self, relpath):
+        self.control._change_show_set(relpath)
+        return {}
+
+    @AddShowItem.responder
+    def AddShowItem(self, itemtype, relpath, position):
+        self.control._add_show_item(itemtype, relpath, position)
+        return {}
+
+    @RemoveShowItem.responder
+    def RemoveShowItem(self, position):
+        self.control._remove_show_item(position)
+        return {}
+
+    @UpdateShowPosition.responder
+    def UpdateShowPosition(self, item, slide):
+        self.control._update_show_position(item, slide)
+        return {}
+
+    @UpdateShowToggles.responder
+    def UpdateShowToggles(self, toggle):
+        self.contro._update_show_toggles(toggle)
         return {}
 
 

@@ -216,3 +216,21 @@ class SPControl(object):
         if os.path.exists(relpath):
             os.remove(relpath)
         self._update_sets()
+
+    def _resolution(self, width, height):
+        pass
+
+    def _change_show_set(self, relpath):
+        pass
+
+    def _add_show_item(self, itemtype, relpath, position):
+        pass
+
+    def _remove_show_item(self, position):
+        pass
+
+    def _update_show_position(self, item, slide):
+        pass
+
+    def _update_show_toggles(self, toggle):
+        pass
