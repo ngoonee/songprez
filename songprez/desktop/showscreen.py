@@ -11,6 +11,7 @@ except Exception as e:
     print(e)
 from twisted.internet import reactor
 from kivy.app import App
+from kivy.properties import ObjectProperty
 from kivy.lang import Builder
 from kivy.core.window import Window
 from kivy.clock import Clock
@@ -24,7 +25,6 @@ from ..network.messages import *
 Builder.load_string("""
 <ShowScreen>:
     carousel: carousel
-    sendMessage: app.sendMessage
     FloatLayout:
         Carousel:
             id: carousel
@@ -34,6 +34,8 @@ Builder.load_string("""
 
 
 class ShowScreen(Screen):
+    sendMessage = ObjectProperty(None)
+
     def __init__(self, **kwargs):
         super(ShowScreen, self).__init__(**kwargs)
         self._app = App.get_running_app()
@@ -73,7 +75,7 @@ class ShowScreen(Screen):
             return True
 
     def on_connection(self, connection):
-        pass
+        self.sendMessage = connection.sendMessage
 
     def _running(self):
         pass
