@@ -43,7 +43,7 @@ class TestSPSet(unittest.TestCase):
         assert len(self.set2.list_songs()) == 5
 
     def test_removing_song(self):
-        so = self.set2.list_songs()[1][0]
+        so = self.set2.list_songs()[1]['filepath']
         so = os.path.join(self.baseDir, 'Songs', so)
         so = spsong.SPSong.read_from_file(so)
         self.set2.remove_song(so)
