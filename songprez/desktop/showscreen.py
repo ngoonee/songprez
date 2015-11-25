@@ -29,7 +29,7 @@ Builder.load_string("""
         Carousel:
             id: carousel
             direction: 'right'
-            anim_move_duration: 0
+            anim_move_duration: 0.3
 """)
 
 
@@ -67,9 +67,15 @@ class ShowScreen(Screen):
         if not self._app.inhibit:
             # Handle shortcut keys
             if keycode[1] == 'down':
+                oldduration = self.carousel.anim_move_duration
+                self.carousel.anim_move_duration = 0
                 self.carousel.load_next()
+                self.carousel.anim_move_duration = oldduration
             elif keycode[1] == 'up':
+                oldduration = self.carousel.anim_move_duration
+                self.carousel.anim_move_duration = 0
                 self.carousel.load_previous()
+                self.carousel.anim_move_duration = oldduration
             else:
                 return False
             return True
