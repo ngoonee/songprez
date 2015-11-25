@@ -127,10 +127,10 @@ class ShowScreen(Screen):
                 # Create a SlideElement based on slide and item
                 # Add SlideElement to carousel
                 def act(so, carousel):
-                    slides = so.words.split("\n\n")
+                    slides = so.split_slides(presentation=data['presentation'])
                     for sl in slides:
                         s = SlideElement(padding=(100,100,100,100), font_size=180,
                                          halign='center', valign='middle')
-                        s.text = sl
+                        s.text = sl['string']
                         carousel.add_widget(s)
                 self.sendMessage(GetItem, itemtype='song', relpath=data['filepath'], callback=act, callbackKeywords={'carousel': self.carousel})

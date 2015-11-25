@@ -9,6 +9,7 @@ import sys
 if sys.version_info[0] < 3:
     from codecs import open  # 'UTF-8 aware open'
 from collections import OrderedDict
+from copy import deepcopy
 from .spchords import SPTranspose
 
 _xmlkeys = ('title', 'author', 'copyright', 'hymn_number', 'presentation',
@@ -310,3 +311,81 @@ class SPSong(object):
         t = SPTranspose()
         self.key = t.transpose_unit(self.key, interval, toneGaps[0])
         self._lyrics = lyrics
+
+    def split_slides(self, presentation=None):
+        '''
+        Splits the lyrics into multiple slides. Optionally re-orders using
+        presentation (priority given to presentation input, otherwise use
+        instance presentation settings).
+
+        Returns a list of {marker, string, startLine, endLine} objects.
+        '''
+        # Go through lines, get markers/splits
+        # Also keep a record of which object is in which Marker
+        limit = len(self._lyrics)
+        slides = []
+        template = {'marker': u'', 'string': [], 'start': None, 'end': None}
+        slides.append(deepcopy(template))
+        slides[-1]['start'] = 0
+        for i, l in enumerate(self._lyrics):
+            if len(l) > 0 and l[0] == "[":  # A marker
+                # Mark previous line as end (if exists)
+                slides[-1]['end'] = i-1 if i else 0
+                # Create new object
+                slides.append(deepcopy(template))
+                # Set the marker
+                marker = re.search(r"\[([A-Za-z0-9 ]+)\]", l)
+                marker = marker.group(1) if marker else u''
+                slides[-1]['marker'] = marker
+                # Mark next line as start (if exists)
+                slides[-1]['start'] = i+1 if i+1 < limit else limit-1
+            elif l.lstrip()[0:2] == '||':  # Manual slide split
+                # Get previous marker (may be blank)
+                marker = slides[-1]['marker']
+                # Mark previous line as end (if exists)
+                slides[-1]['end'] = i-1 if i else 0
+                # Create new object with the same marker
+                slides.append(deepcopy(template))
+                slides[-1]['marker'] = marker
+                # Mark next line as start (if exists)
+                slides[-1]['start'] = i+1 if i+1 < limit else limit-1
+            else:  # Just a normal line, add it
+                # Add this line to the current object's string list
+                slides[-1]['string'].append(l)
+                # Mark this line as end (just in case its the last line, will
+                # be overwritten in any case if that's not true
+                slides[-1]['end'] = i
+        # Remove any objects which have less than one line
+        for o in slides[:]:  # Operate on a copy
+            if o['end'] - o['start'] < 1:
+                slides.remove(o)
+        for o in slides:  # Convert to string, strip extra blank lines
+            for s in o['string']:  # strip from start
+                if s.isspace() or s == u'':
+                    o['start'] += 1
+                else:
+                    break
+            for s in reversed(o['string']):  # strip from end
+                if s.isspace() or s == u'':
+                    o['end'] -= 1
+                else:
+                    break
+            o['string'] = u"\n".join(o['string']).strip("\n")
+        # If no presentation, set presentation to be the song's own preset
+        # presentation order
+        if not presentation:
+            presentation = self.presentation
+        # If presentation is still not set, just return what we have
+        if not presentation:
+            return slides
+        # At this point, there is a presentation string. Split it into markers
+        markers = presentation.split(' ')
+        newslides = []
+        for m in markers:  # Operate on a copy
+            if m:  # Ignore blank markers, indicates extra spaces
+                for s in slides:
+                    # Iterate through slides, add each object (separately) to
+                    # newslides if it matches the current marker
+                    if m == s['marker']:
+                        newslides.append(s)
+        return newslides
