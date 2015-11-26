@@ -115,7 +115,7 @@ class EditScreen(Screen):
                     self.currentset._down_song()
                 else:
                     return False
-            return True
+                return True
 
     def _present(self):
         self.parent.current = 'ShowScreen'
