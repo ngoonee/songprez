@@ -133,7 +133,10 @@ class ShowScreen(Screen):
                     se = SlideElement(padding=(100, 100, 100, 100),
                                      font_size=180,
                                      halign='center', valign='middle')
-                    se.text = sl['string']
+                    if 0:
+                        se.text = sl['string']
+                    else:
+                        se.text = so.remove_chords(sl['string'])
                     carousel.add_widget(se)
             self.sendMessage(GetItem, itemtype='song', relpath=s['filepath'],
                              callback=act,

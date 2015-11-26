@@ -47,6 +47,7 @@ def test_chord_removal():
     l.append("[V]")
     l.append(".C D/F#     F G")
     l.append(" First line of   song")
+    l.append(" |")
     l.append(".E G# Bbo")
     l.append(" Secon_d l__ine")
     l.append("")
@@ -55,6 +56,7 @@ def test_chord_removal():
     l.append(".G F Eb Am")
     l.append(" The  chorus starts!  ")
     l.append("; A comment line is here")
+    l.append(" ||")
     l.append(".F F     C/E D/F#")
     l.append(" End of our  s__ong")
     l.append('')
@@ -62,6 +64,7 @@ def test_chord_removal():
     l2 = []
     l2.append("[V]")
     l2.append("First line of song")
+    l2.append("")
     l2.append("Second line")
     l2.append("")
     l2.append("[C]")

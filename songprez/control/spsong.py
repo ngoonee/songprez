@@ -121,14 +121,18 @@ class SPSong(object):
 
         Also remove comments, extra whitespace, and the '_' character properly
         '''
-        split = self._lyrics
+        return self.remove_chords(u"\n".join(self._lyrics))
+
+    def remove_chords(self, text):
+        split = text.split("\n")
         removed = [line for line in split
                    if len(line) is 0 or
-                   (line[0] != "." and "|" not in line)]
+                   (line[0] != "." and "||" not in line)]
         ret = []
         previousblank = True
         for l in removed:
             l = l.replace("_", "")  # Remove expanders
+            l = l.replace("|", "")  # Remove vertical spacers
             l = l.strip()  # Remove whitespace at each end
             while "  " in l:  # Remove all doubled-whitespace characters
                 l = l.replace("  ", " ")
@@ -145,8 +149,8 @@ class SPSong(object):
         if len(ret):
             while ret[-1] == "":  # Remove any trailing blank lines
                 ret.pop()
-
         return u"\n".join(ret)
+
 
     def _split_lyric_line(self, lyricLine, chordLine):
         '''
