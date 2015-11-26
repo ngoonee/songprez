@@ -65,6 +65,7 @@ class ShowScreen(Screen):
     def _on_keyboard_down(self, keyboard, keycode, text, modifiers):
         if not self._app.inhibit:
             # Handle shortcut keys
+            print(self.carousel.index, self._indices)
             if keycode[1] == 'down':
                 oldduration = self.carousel.anim_move_duration
                 self.carousel.anim_move_duration = 0
@@ -74,6 +75,22 @@ class ShowScreen(Screen):
                 oldduration = self.carousel.anim_move_duration
                 self.carousel.anim_move_duration = 0
                 self.carousel.load_previous()
+                self.carousel.anim_move_duration = oldduration
+            elif keycode[1] == 'right':
+                oldduration = self.carousel.anim_move_duration
+                cur = self.carousel.index
+                for i in self._indices:
+                    if i > cur:
+                        self.carousel.index = i
+                        break
+                self.carousel.anim_move_duration = oldduration
+            elif keycode[1] == 'left':
+                oldduration = self.carousel.anim_move_duration
+                cur = self.carousel.index
+                for i in reversed(self._indices):
+                    if i < cur:
+                        self.carousel.index = i
+                        break
                 self.carousel.anim_move_duration = oldduration
             else:
                 return False
@@ -105,11 +122,13 @@ class ShowScreen(Screen):
         pass
 
     def _generate(self):
+        self._indices = []
         for i, s in enumerate(self._set.list_songs()):
             # Create a SlideElement based on slide and item
             # Add SlideElement to carousel
             def act(so, carousel):
                 slides = so.split_slides(presentation=s['presentation'])
+                self._indices.append(len(carousel.slides))
                 for sl in slides:
                     se = SlideElement(padding=(100, 100, 100, 100),
                                      font_size=180,
