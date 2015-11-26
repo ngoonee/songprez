@@ -17,6 +17,7 @@ from kivy.core.window import Window
 from kivy.clock import Clock
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.screenmanager import Screen
+from time import time
 from ..control.spsong import SPSong
 from .slide import SlideElement
 from ..network.spclient import SPClientFactory
@@ -42,8 +43,6 @@ class ShowScreen(Screen):
         self._keyboard = Window.request_keyboard(None, self, 'text')
         self.bind(parent=self._parent)
         self._set = []
-        self._items = []
-        self._slides = []
         Clock.schedule_once(self._finish_init)
 
     def _finish_init(self, dt):
@@ -95,20 +94,8 @@ class ShowScreen(Screen):
     def _search_list(self, searchList):
         pass
 
-    def _show_slides(self, slideList):
-        self._slides = slideList
-        self._generate()
-
-    def _show_items(self, itemList):
-        self._items = itemList
-        self._generate()
-
     def _show_set(self, set):
-        print(set)
         self._set = set
-        self._items = set.list_songs()
-        self._slides = set.list_songs()
-        print(self._set)
         self._generate()
 
     def _show_position(self, item, slide):
@@ -118,19 +105,17 @@ class ShowScreen(Screen):
         pass
 
     def _generate(self):
-        slideList, itemList, set = self._slides, self._items, self._set
-        if (len(slideList) == len(itemList) and
-                len(itemList) == len(set.list_songs())):
-            for slide, item, data in zip(slideList, itemList,
-                                         set.list_songs()):
-                # Verify using item and data that same sets
-                # Create a SlideElement based on slide and item
-                # Add SlideElement to carousel
-                def act(so, carousel):
-                    slides = so.split_slides(presentation=data['presentation'])
-                    for sl in slides:
-                        s = SlideElement(padding=(100,100,100,100), font_size=180,
-                                         halign='center', valign='middle')
-                        s.text = sl['string']
-                        carousel.add_widget(s)
-                self.sendMessage(GetItem, itemtype='song', relpath=data['filepath'], callback=act, callbackKeywords={'carousel': self.carousel})
+        for i, s in enumerate(self._set.list_songs()):
+            # Create a SlideElement based on slide and item
+            # Add SlideElement to carousel
+            def act(so, carousel):
+                slides = so.split_slides(presentation=s['presentation'])
+                for sl in slides:
+                    se = SlideElement(padding=(100, 100, 100, 100),
+                                     font_size=180,
+                                     halign='center', valign='middle')
+                    se.text = sl['string']
+                    carousel.add_widget(se)
+            self.sendMessage(GetItem, itemtype='song', relpath=s['filepath'],
+                             callback=act,
+                             callbackKeywords={'carousel': self.carousel})
