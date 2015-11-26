@@ -43,6 +43,8 @@ class ShowScreen(Screen):
         self._keyboard = Window.request_keyboard(None, self, 'text')
         self.bind(parent=self._parent)
         self._set = []
+        self._indices = []
+        self._showchords = False
         Clock.schedule_once(self._finish_init)
 
     def _finish_init(self, dt):
@@ -65,7 +67,6 @@ class ShowScreen(Screen):
     def _on_keyboard_down(self, keyboard, keycode, text, modifiers):
         if not self._app.inhibit:
             # Handle shortcut keys
-            print(self.carousel.index, self._indices)
             if keycode[1] == 'down':
                 oldduration = self.carousel.anim_move_duration
                 self.carousel.anim_move_duration = 0
@@ -77,21 +78,20 @@ class ShowScreen(Screen):
                 self.carousel.load_previous()
                 self.carousel.anim_move_duration = oldduration
             elif keycode[1] == 'right':
-                oldduration = self.carousel.anim_move_duration
                 cur = self.carousel.index
                 for i in self._indices:
                     if i > cur:
                         self.carousel.index = i
                         break
-                self.carousel.anim_move_duration = oldduration
             elif keycode[1] == 'left':
-                oldduration = self.carousel.anim_move_duration
                 cur = self.carousel.index
                 for i in reversed(self._indices):
                     if i < cur:
                         self.carousel.index = i
                         break
-                self.carousel.anim_move_duration = oldduration
+            elif keycode[1] == 't':
+                self._showchords = not self._showchords
+                self._generate()
             else:
                 return False
             return True
@@ -123,6 +123,10 @@ class ShowScreen(Screen):
 
     def _generate(self):
         self._indices = []
+        # Save current index and length to reapply for the regenerating case
+        # TODO: use specific content in specific item instead
+        cur = self.carousel.index
+        length = len(self.carousel.slides)
         for i, s in enumerate(self._set.list_songs()):
             # Create a SlideElement based on slide and item
             # Add SlideElement to carousel
@@ -130,14 +134,27 @@ class ShowScreen(Screen):
                 slides = so.split_slides(presentation=s['presentation'])
                 self._indices.append(len(carousel.slides))
                 for sl in slides:
+                    # If showing chords, need a different font and string
+                    halign = 'left' if self._showchords else 'center'
+                    if self._showchords:
+                        font = 'songprez/fonts/NotoSansMonoCJKsc-Regular.otf' 
+                    else:
+                        font = 'songprez/fonts/NotoSansCJK-Regular.ttc' 
                     se = SlideElement(padding=(100, 100, 100, 100),
-                                     font_size=180,
-                                     halign='center', valign='middle')
-                    if 0:
+                                     font_size=180, font_name=font,
+                                     halign=halign, valign='middle')
+                    if self._showchords:
                         se.text = sl['string']
                     else:
                         se.text = so.remove_chords(sl['string'])
                     carousel.add_widget(se)
+                    # This check succeeds on last call if regenerating
+                    # identical collection of slides
+                    if len(carousel.slides) == length:
+                        carousel.index = cur
+                    else:
+                        carousel.index = 0
+            self.carousel.clear_widgets()
             self.sendMessage(GetItem, itemtype='song', relpath=s['filepath'],
                              callback=act,
                              callbackKeywords={'carousel': self.carousel})

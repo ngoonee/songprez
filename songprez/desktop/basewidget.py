@@ -17,12 +17,10 @@ Builder.load_string("""
     # Use same font throughout. Needed because SlideElement is a BoxLayout and
     # needs to have a font_name.
     font_name: 'songprez/fonts/NotoSansCJK-Regular.ttc'
-<Label>:
-    # If we use Widget instead even layouts get a font_size which wrecks
-    # SlideElement
     font_size: 15
-<TextInput>: # Inherits from Widget, so doesn't get the above font_size
-    font_size: 15
+    # Sometime between revision 700 (g048821a) and 828 (g132be35) this was made
+    # to work. Before that we needed to apply font_size separately to label and
+    # TextInput.
 <BaseWidget>:
     songedit: editscreen.songedit
     contentlist: editscreen.contentlist
