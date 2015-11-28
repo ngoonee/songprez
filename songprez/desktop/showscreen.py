@@ -150,7 +150,8 @@ class ShowScreen(Screen):
                         se.text = sl['string']
                     else:
                         se.text = so.remove_chords(sl['string'])
-                    carousel.add_widget(se)
+                    if se.text:  # No point having a blank slide
+                        carousel.add_widget(se)
                     # This check succeeds on last call if regenerating
                     # identical collection of slides
                     if len(carousel.slides) == length:
