@@ -6,6 +6,7 @@ from kivy.lang import Builder
 from kivy.clock import Clock
 from kivy.uix.behaviors import FocusBehavior
 from kivy.uix.button import Button
+from kivy.graphics import Color, Line
 
 Builder.load_string("""
 <NormalSizeFocusButton>:
@@ -14,8 +15,22 @@ Builder.load_string("""
 
 
 class FocusButton(FocusBehavior, Button):
-    def on_focus(self, instance, value):
-        self.bold = value
+    def __init__(self, **kwargs):
+        super(FocusButton, self).__init__(**kwargs)
+        self.bind(pos=self._draw_outline)
+        self.bind(size=self._draw_outline)
+        self.bind(focus=self._draw_outline)
+
+    def _draw_outline(self, instance, value):
+        try:
+            self.canvas.remove(self._outline)
+        except AttributeError:
+            pass
+        if self.focus:
+            with self.canvas:
+                Color(1, 0, 0, 0.6)
+                rectOpt = (self.pos[0], self.pos[1], self.size[0], self.size[1])
+                self._outline = Line(rectangle=rectOpt, width=2)
 
     def keyboard_on_key_down(self, window, keycode, text, modifiers):
         super(FocusButton, self).keyboard_on_key_down(window, keycode, text, modifiers)

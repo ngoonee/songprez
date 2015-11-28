@@ -7,6 +7,7 @@ from kivy.clock import Clock
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.tabbedpanel import TabbedPanel, TabbedPanelItem, TabbedPanelHeader
 from kivy.uix.behaviors import FocusBehavior
+from kivy.graphics import Color, Line
 from .itemlist import ItemList
 from .button import NormalSizeFocusButton
 from .filenamedialog import FilenameDialog
@@ -88,15 +89,20 @@ Builder.load_string("""
 class FocusPanelHeader(FocusBehavior, TabbedPanelHeader):
     def __init__(self, **kwargs):
         super(FocusPanelHeader, self).__init__(**kwargs)
-        self.bind(content=self._content_updated)
+        self.bind(pos=self._draw_outline)
+        self.bind(size=self._draw_outline)
+        self.bind(focus=self._draw_outline)
 
-    def _content_updated(self, instance, value):
-        for widget in self.content.walk(restrict=True):
-            if isinstance(widget, FocusBehavior):
-                widget.bind(focus=self.on_focus)
-
-    def on_focus(self, instance, value):
-        self.bold = value
+    def _draw_outline(self, instance, value):
+        try:
+            self.canvas.remove(self._outline)
+        except AttributeError:
+            pass
+        if self.focus:
+            with self.canvas:
+                Color(1, 0, 0, 0.6)
+                rectOpt = (self.pos[0], self.pos[1], self.size[0], self.size[1])
+                self._outline = Line(rectangle=rectOpt, width=2)
 
     def keyboard_on_key_down(self, window, keycode, text, modifiers):
         super(FocusPanelHeader, self).keyboard_on_key_down(window, keycode, text, modifiers)

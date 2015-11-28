@@ -4,6 +4,7 @@ import kivy
 from kivy.lang import Builder
 from kivy.uix.textinput import TextInput
 from kivy.properties import BooleanProperty
+from kivy.graphics import Color, Line
 
 Builder.load_string("""
 <RegisteredTextInput>:
@@ -18,6 +19,23 @@ Builder.load_string("""
 
 
 class RegisteredTextInput(TextInput):
+    def __init__(self, **kwargs):
+        super(RegisteredTextInput, self).__init__(**kwargs)
+        self.bind(pos=self._draw_outline)
+        self.bind(size=self._draw_outline)
+        self.bind(focus=self._draw_outline)
+
+    def _draw_outline(self, instance, value):
+        try:
+            self.canvas.after.remove(self._outline)
+        except AttributeError:
+            pass
+        if self.focus:
+            with self.canvas.after:
+                Color(1, 0, 0, 0.6)
+                rectOpt = (self.pos[0], self.pos[1], self.size[0], self.size[1])
+                self._outline = Line(rectangle=rectOpt, width=2)
+
     def keyboard_on_key_down(self, window, keycode, text, modifiers):
         if keycode[1] == "escape":
             # Prevent escape from defocusing
