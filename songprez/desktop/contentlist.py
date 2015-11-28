@@ -7,6 +7,7 @@ from kivy.clock import Clock
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.tabbedpanel import TabbedPanel, TabbedPanelItem, TabbedPanelHeader
 from kivy.uix.behaviors import FocusBehavior
+from kivy.uix.stencilview import StencilView
 from kivy.graphics import Color, Line
 from .itemlist import ItemList
 from .button import NormalSizeFocusButton
@@ -47,6 +48,11 @@ Builder.load_string("""
             markup: True
             text: 'S[color=ffff00][b]e[/b][/color]ts'
             content: setcontent.__self__
+        FocusPanelHeader:
+            id: scriptureheader:
+            markup: True
+            text: 'Scripture'
+            content: scripturecontent.__self__
         FloatLayout:
             BoxLayout:
                 id: songcontent
@@ -68,6 +74,11 @@ Builder.load_string("""
                 padding: app.rowspace
                 ItemList:
                     id: setlist
+            BoxLayout:
+                id: scripturecontent
+                padding: app.rowspace
+                ItemList:
+                    id: scripturelist
     BoxLayout:
         orientation: 'horizontal'
         size_hint_y: None
@@ -122,7 +133,7 @@ class FocusPanelHeader(FocusBehavior, TabbedPanelHeader):
 
 
 
-class ContentList(BoxLayout):
+class ContentList(BoxLayout, StencilView):
     def __init__(self, **kwargs):
         super(ContentList, self).__init__(**kwargs)
         Clock.schedule_once(self._finish_init)
