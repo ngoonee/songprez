@@ -92,6 +92,9 @@ class ShowScreen(Screen):
             elif keycode[1] == 't':
                 self._showchords = not self._showchords
                 self._generate()
+            elif keycode[1] == 'escape':
+                self.carousel.clear_widgets()
+                self.parent.current = 'EditScreen'
             else:
                 return False
             return True
