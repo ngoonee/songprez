@@ -2,6 +2,7 @@
 
 import os
 from twisted.internet import reactor, threads
+from twisted.internet.endpoints import serverFromString
 from threading import Thread
 from time import sleep
 from .spsearch import SPSearch
@@ -64,8 +65,11 @@ class SPControl(object):
         self._showSet = None
         self._showItems = None
         self._showSlides = None
-        factory = reactor.listenTCP(1916, SPServerFactory(self)).factory
-        self.sendAll = factory.sendAll
+        server = serverFromString(reactor, 'tcp:1916')
+        d = server.listen(SPServerFactory(self))
+        def save_factory(response):
+            self.sendAll = response.factory.sendAll
+        d.addCallback(save_factory)
         reactor.callInThread(self._start)
 
     def _start(self):

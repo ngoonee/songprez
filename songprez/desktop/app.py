@@ -9,6 +9,7 @@ Config.set('kivy', 'keyboard_mode', "")
 from kivy.support import install_twisted_reactor
 install_twisted_reactor()
 from twisted.internet import reactor
+from twisted.internet.endpoints import clientFromString
 import os
 from kivy.app import App
 from kivy.uix.settings import SettingsWithSidebar
@@ -53,7 +54,8 @@ class SongPrezApp(App):
     def _verify_spcontrol(self, dt):
         try:
             self.control = spcontrol.SPControl(self.indexDir, self.dataDir)
-            reactor.connectTCP('localhost', 1916, SPClientFactory(self.base))
+            client = clientFromString(reactor, 'tcp:localhost:1916')
+            client.connect(SPClientFactory(self.base))
         except Exception as e:
             print(e)
             self.open_settings()

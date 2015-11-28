@@ -10,6 +10,7 @@ try:
 except Exception as e:
     print(e)
 from twisted.internet import reactor
+from twisted.internet.endpoints import clientFromString
 from kivy.app import App
 from kivy.properties import ObjectProperty
 from kivy.lang import Builder
@@ -48,7 +49,8 @@ class ShowScreen(Screen):
         Clock.schedule_once(self._finish_init)
 
     def _finish_init(self, dt):
-        reactor.connectTCP('localhost', 1916, SPClientFactory(self))
+        client = clientFromString(reactor, 'tcp:host=localhost:port=1916')
+        client.connect(SPClientFactory(self))
 
     def _parent(self, instance, value):
         '''
