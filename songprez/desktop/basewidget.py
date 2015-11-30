@@ -71,13 +71,13 @@ class BaseWidget(ScreenManager):
         app._control_loaded()
 
     def _song_list(self, listofsong):
-        self.contentlist._song_list(listofsong)
+        self.contentlist.panel._song_list(listofsong)
 
     def _set_list(self, listofset):
-        self.contentlist._set_list(listofset)
+        self.contentlist.panel._set_list(listofset)
 
     def _search_list(self, listofsearch):
-        self.contentlist._search_list(listofsearch)
+        self.contentlist.panel._search_list(listofsearch)
 
     def _edit_item(self, itemtype, item):
         if itemtype == 'song':
