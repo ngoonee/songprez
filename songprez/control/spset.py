@@ -145,9 +145,9 @@ class SPSet(object):
                 retval.append({'name': s['@name'],
                                'itemtype': s['@type'],
                                'print': s['@print'],
-                               'seconds': s['@seconds'],
-                               'loop': s['@loop'],
-                               'transition': s['@transition']})
+                               'seconds': s.get('@seconds'),
+                               'loop': s.get('@loop'),
+                               'transition': s.get('@transition')})
             else:
                 retval.append({'name': s['@name'],
                                'itemtype': s['@type']})
