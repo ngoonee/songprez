@@ -49,7 +49,7 @@ class SearchList(amp.Command):
 
 
 class GetItem(amp.Command):
-    arguments = [('itemtype', amp.String()), ('relpath', amp.Unicode())]
+    arguments = [('itemtype', amp.Unicode()), ('relpath', amp.Unicode())]
     response = [('jsonitem', amp.String())]
 
 
@@ -68,7 +68,7 @@ class Search(amp.Command):
 
 
 class EditItem(amp.Command):
-    arguments = [('itemtype', amp.String()), ('jsonitem', amp.String())]
+    arguments = [('itemtype', amp.Unicode()), ('jsonitem', amp.String())]
     response = []
     requiresAnswer = False
 
@@ -83,26 +83,26 @@ class EditSet(amp.Command):
 
 
 class ChangeEditItem(amp.Command):
-    arguments = [('itemtype', amp.String()), ('relpath', amp.Unicode())]
+    arguments = [('itemtype', amp.Unicode()), ('relpath', amp.Unicode())]
     response = []
     requiresAnswer = False
 
 
 class SaveEditItem(amp.Command):
-    arguments = [('itemtype', amp.String()), ('jsonitem', amp.String()),
+    arguments = [('itemtype', amp.Unicode()), ('jsonitem', amp.String()),
                  ('relpath', amp.Unicode())]
     response = []
     requiresAnswer = False
 
 
 class NewEditItem(amp.Command):
-    arguments = [('itemtype', amp.String()), ('relpath', amp.Unicode())]
+    arguments = [('itemtype', amp.Unicode()), ('relpath', amp.Unicode())]
     response = []
     requiresAnswer = False
 
 
 class DeleteEditItem(amp.Command):
-    arguments = [('itemtype', amp.String()), ('relpath', amp.Unicode())]
+    arguments = [('itemtype', amp.Unicode()), ('relpath', amp.Unicode())]
     response = []
     requiresAnswer = False
 

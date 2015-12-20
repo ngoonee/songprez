@@ -93,7 +93,8 @@ class SetList(BoxLayout):
         instance.adapter.bind(on_selection_change=self._song_selected)
 
     def _song_selected(self, adapter):
-        self.sendMessage(ChangeEditItem, itemtype='song', relpath=adapter.selection[0].filepath)
+        selected = adapter.selection[0]
+        self.sendMessage(ChangeEditItem, itemtype=selected.itemtype, relpath=selected.filepath)
 
     def _edit_set(self, set):
         setObject = deepcopy(set)
