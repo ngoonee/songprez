@@ -46,7 +46,10 @@ class SPServerProtocol(amp.AMP):
 
     @SaveEditItem.responder
     def SaveEditItem(self, itemtype, jsonitem, relpath):
-        item = SPSong()
+        if itemtype == 'song':
+            item = SPSong()
+        else:  # Not implemented yet
+            return {}
         item.__dict__ = json.loads(jsonitem)
         self.control._save_edit_item(itemtype, item, relpath)
         return {}
@@ -110,7 +113,7 @@ class SPServerProtocol(amp.AMP):
 
     @UpdateShowToggles.responder
     def UpdateShowToggles(self, toggle):
-        self.contro._update_show_toggles(toggle)
+        self.control._update_show_toggles(toggle)
         return {}
 
 

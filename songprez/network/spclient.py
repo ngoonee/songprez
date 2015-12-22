@@ -58,8 +58,10 @@ class SPClientProtocol(amp.AMP):
         d.addErrback(self.printerr)
         if callback:
             def json_to_obj(AMPresponse):
-                s = SPSong() if itemtype else SPSet()
-                name = 'jsonitem' if itemtype else 'jsonset'
+                s, name = {None: (SPSet(), 'jsonset'),
+                           'song': (SPSong(), 'jsonitem'),
+                           'scripture': (None, 'jsonitem')}[itemtype]
+                            # Does not work yet, need SPScripture?
                 s.__dict__ = json.loads(AMPresponse[name])
                 return s
             d.addCallbacks(json_to_obj, self.printerr)

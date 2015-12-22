@@ -1,6 +1,29 @@
 from twisted.protocols import amp
 
-''' These are AMP commands to be sent to the display '''
+'''
+These are AMP commands to be sent between the server (some instance of
+SPControl) and the client (responsible for UI and/or display).
+
+A {Set,Song,Search}List contains a list of json-encoded dictionaries. They are
+paginated and json-decoded automatically (transparently to the receiver) so the
+receiver receives a list of dictionaries.
+
+A Set is a json-encoded SPSet.__dict__. It is json-decoded automatically, the
+requester receives an SPSet object. They are uniquely identified (by requester)
+by a filepath (actually a relpath).
+
+A Item is a json-encoded SPSong.__dict__ (or some other item type to be added
+later). It is json-decoded automatically, the requester receives the actual
+object. They are uniquely identified by a relpath. In the case of scripture,
+this relpath take the form of <Book Chapter:Verse(s)|Translation>.
+
+The list of supported values for itemtype (when sending/receiving Item objects)
+    song (fully supported via SPSong)
+    scripture (being implemented)
+    image (not yet implemented)
+    custom (not yet implemented)
+
+'''
 
 ''' Utility methods (server-to-client) '''
 
