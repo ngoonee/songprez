@@ -34,6 +34,7 @@ class SPClientProtocol(amp.AMP):
 
     def printerr(self, error):
         from pprint import pprint
+        pprint(self.factory.client)
         pprint(error)
         return
 
@@ -77,8 +78,7 @@ class SPClientProtocol(amp.AMP):
     def SetList(self, curpage, totalpage, jsonlist):
         if curpage == 0:
             self._partSetList = []
-        listofset = [json.loads(d) for d in jsonlist]
-        self._partSetList.extend(listofset)
+        self._partSetList.extend([json.loads(d) for d in jsonlist])
         if curpage == totalpage-1:
             self.factory.client._set_list(self._partSetList)
         return {}
@@ -87,8 +87,7 @@ class SPClientProtocol(amp.AMP):
     def SongList(self, curpage, totalpage, jsonlist):
         if curpage == 0:
             self._partSongList = []
-        listofsong = [json.loads(d) for d in jsonlist]
-        self._partSongList.extend(listofsong)
+        self._partSongList.extend([json.loads(d) for d in jsonlist])
         if curpage == totalpage-1:
             self.factory.client._song_list(self._partSongList)
         return {}
@@ -97,8 +96,7 @@ class SPClientProtocol(amp.AMP):
     def SearchList(self, curpage, totalpage, jsonlist):
         if curpage == 0:
             self._partSearchList = []
-        listofsearch = [json.loads(d) for d in jsonlist]
-        self._partSearchList.extend(listofsearch)
+        self._partSearchList.extend([json.loads(d) for d in jsonlist])
         if curpage == totalpage-1:
             self.factory.client._search_list(self._partSearchList)
         return {}
