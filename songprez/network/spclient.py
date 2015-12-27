@@ -38,21 +38,15 @@ class SPClientProtocol(amp.AMP):
         pprint(error)
         return
 
-    def sendMessage(self, message, term=None, item=None, set=None, itemtype=None,
-                    relpath=None, callback=None, callbackKeywords={}):
-        kwargs = {}
-        if term:
-            kwargs['term'] = term
-        if relpath:
-            kwargs['relpath'] = relpath
-        if item:
-            jsonitem = json.dumps(item.__dict__)
+    def sendMessage(self, message, **kwargs):
+        if kwargs.get('item'):
+            jsonitem = json.dumps(kwargs.pop('item').__dict__)
             kwargs['jsonitem'] = jsonitem
-        if set:
-            jsonset = json.dumps(set.__dict__)
+        if kwargs.get('set'):
+            jsonset = json.dumps(kwargs.pop('set').__dict__)
             kwargs['jsonset'] = jsonset
-        if itemtype:
-            kwargs['itemtype'] = itemtype
+        callback = kwargs.pop('callback', None)
+        callbackKeywords = kwargs.pop('callbackKeywords', None)
         d = self.callRemote(message, **kwargs)
         if not d:
             return
