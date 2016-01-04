@@ -8,6 +8,7 @@ from time import sleep
 from .spsearch import SPSearch
 from .spset import SPSet
 from .spsong import SPSong
+from .spscripture import SPScripture
 from .sputil import list_files
 from ..network.spserver import SPServerFactory
 from ..network.messages import *
@@ -44,12 +45,16 @@ class SPControl(object):
         super(SPControl, self).__init__(**kwargs)
         self._songPath = os.path.normpath(os.path.join(dirPath, 'Songs'))
         self._setPath = os.path.normpath(os.path.join(dirPath, 'Sets'))
+        self._scripturePath = os.path.normpath(os.path.join(dirPath, 'Scripture'))
         if not os.path.exists(self._songPath):
             raise IOError('dirPath does not contain a Songs folder at ' +
                           self._songPath)
         if not os.path.exists(self._setPath):
             raise IOError('dirPath does not contain a Sets folder at ' +
                           self._setPath)
+        if not os.path.exists(self._scripturePath):
+            raise IOError('dirPath does not contain a Scripture folder at ' +
+                          self._scripturePath)
         if not os.path.exists(indexPath):
             raise IOError('indexPath does not exist at ' + indexPath)
         self._searchObj = SPSearch(indexPath, self._songPath)
@@ -65,6 +70,8 @@ class SPControl(object):
         self._showSet = None
         self._showItems = None
         self._showSlides = None
+        self._scriptureList = None
+        self._scripture = None
         server = serverFromString(reactor, 'tcp:1916')
         d = server.listen(SPServerFactory(self))
         def save_factory(response):
@@ -77,11 +84,13 @@ class SPControl(object):
         self._update_sets()
         self._running = True
         self.sendAll(Running)
+        self._update_scripture()
 
     def _connection_made(self):
         if self._running:
             self._get_songs()
             self._get_sets()
+            self._get_scripture()
             self.sendAll(Running)
 
     def quit(self):
@@ -122,6 +131,15 @@ class SPControl(object):
         self._setList = [{'filepath': s.filepath, 'name': s.name} for s in self._sets]
         self.sendAll(SetList, list=self._setList)
 
+    def _update_scripture(self):
+        self._scriptureList = ({'filepath': os.path.split(f)[1],
+                                'name': os.path.split(f)[1]}
+                               for f in list_files(self._scripturePath))
+        self._get_scripture()
+
+    def _get_scripture(self):
+        self.sendAll(ScriptureList, list=self._scriptureList)
+
     def _get_item(self, itemtype, relpath):
         if itemtype == 'song':
             obj = self._searchObj.get_song_from_cache(relpath)
@@ -143,12 +161,52 @@ class SPControl(object):
         self._searchTerm = searchTerm
         reactor.callInThread(self._threadedsearch)
 
+    def _get_books(self, version):
+        if self._scripture and self._scripture.name == version:
+            pass
+        else:
+            filepath = os.path.join(self._scripturePath, version)
+            self._scripture = SPScripture.read_from_file(filepath)
+        return self._scripture._booklist
+
+    def _get_chapters(self, version, book):
+        if self._scripture and self._scripture.name == version:
+            pass
+        else:
+            filepath = os.path.join(self._scripturePath, version)
+            self._scripture = SPScripture.read_from_file(filepath)
+        return self._scripture._chapdict[book]
+
+    def _get_verses(self, version, book, chapter):
+        if self._scripture and self._scripture.name == version:
+            pass
+        else:
+            filepath = os.path.join(self._scripturePath, version)
+            self._scripture = SPScripture.read_from_file(filepath)
+        verselist = self._scripture._chapdict[book][chapter]
+        verses = self._scripture.full_chapter(book, chapter)
+        return verselist, verses
+
     def _change_edit_item(self, itemtype, relpath):
         if itemtype == 'song':
             if not os.path.isabs(relpath):
                 relpath = os.path.join(self._songPath, relpath)
             self._editSong = SPSong.read_from_file(relpath)
             self.sendAll(EditItem, itemtype='song', item=self._editSong)
+        elif itemtype == 'scripture':
+            import time
+            print(time.time())
+            if not os.path.isabs(relpath):
+                relpath = os.path.join(self._scripturePath, relpath)
+            if self._scripture and self._scripture.name == os.path.split(relpath)[-1]:
+                pass  # Already been loaded
+            else:
+                self._scripture = SPScripture.read_from_file(relpath)
+            import time
+            print(time.time())
+            sendval = self._scripture.skeleton()
+            self.sendAll(EditItem, itemtype='scripture', item=sendval)
+            print('selecting scripture at %s' % relpath)
 
     def _save_edit_item(self, itemtype, item, relpath):
         if itemtype == 'song':

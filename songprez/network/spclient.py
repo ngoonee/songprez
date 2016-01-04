@@ -18,6 +18,7 @@ class SPClientProtocol(amp.AMP):
         _set_list(setList)
         _song_list(songList)
         _search_list(searchList)
+        _scripture_list(scriptureList)
 
     The optional methods are:-
         _edit_item(SPSong)
@@ -94,6 +95,15 @@ class SPClientProtocol(amp.AMP):
         self._partSearchList.extend([json.loads(d) for d in jsonlist])
         if curpage == totalpage-1:
             self.factory.client._search_list(self._partSearchList)
+        return {}
+
+    @ScriptureList.responder
+    def ScriptureList(self, curpage, totalpage, jsonlist):
+        if curpage == 0:
+            self._partScriptureList = []
+        self._partScriptureList.extend([json.loads(d) for d in jsonlist])
+        if curpage == totalpage-1:
+            self.factory.client._scripture_list(self._partScriptureList)
         return {}
 
     @EditItem.responder

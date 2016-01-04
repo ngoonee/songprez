@@ -22,7 +22,9 @@ Builder.load_string("""
     # to work. Before that we needed to apply font_size separately to label and
     # TextInput.
 <BaseWidget>:
+    editor: editscreen.editor
     songedit: editscreen.songedit
+    scriptureedit: editscreen.scriptureedit
     contentlist: editscreen.contentlist
     currentset: editscreen.currentset
     colwidth: self.width//13
@@ -79,9 +81,15 @@ class BaseWidget(ScreenManager):
     def _search_list(self, listofsearch):
         self.contentlist.panel._search_list(listofsearch)
 
+    def _scripture_list(self, listofscripture):
+        self.contentlist.panel._scripture_list(listofscripture)
+
     def _edit_item(self, itemtype, item):
         if itemtype == 'song':
+            self.editor.current = 'SongEdit'
             self.songedit._edit_song(item)
+        elif itemtype == 'scripture':
+            self.editor.current = 'ScriptureEdit'
         self.currentset._edit_item(itemtype, item)
 
     def _edit_set(self, item):

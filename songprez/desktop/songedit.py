@@ -5,6 +5,7 @@ from kivy.app import App
 from kivy.lang import Builder
 from kivy.clock import Clock
 from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.screenmanager import Screen
 from copy import deepcopy
 from .textinput import SingleLineTextInput, RegisteredTextInput
 from .filenamedialog import FilenameDialog
@@ -38,188 +39,189 @@ Builder.load_string("""
     addtoset: addtoset
     removefromset: removefromset
     sendMessage: app.sendMessage
-    orientation: 'vertical'
-    padding: 0
-    spacing: app.rowspace
-    size_hint_x: None
-    width: app.colwidth*7 + app.colspace*6
-    GridLayout:
-        cols: 4
-        orientation: 'horizontal'
-        size_hint_y: None
-        height: 2*title.height + app.rowspace
-        spacing: [app.colspace, app.rowspace]
-        MinimalLabel:
-            text: 'Title:'
-        SingleLineTextInput:
-            id: title
-        MinimalLabel:
-            text: ' Author:'
-        SingleLineTextInput:
-            id: author
-        # Next line
-        MinimalLabel:
-            text: 'AKA:'
-        SingleLineTextInput:
-            id: aka
-        MinimalLabel:
-            text: 'Key Line:'
-        SingleLineTextInput:
-            id: key_line
     BoxLayout:
-        orientation: 'horizontal'
-        size_hint_y: None
-        padding_y: app.rowspace
-        height: app.rowheight
-        MinimalLabel:
-            text: 'Song saved as '
-            id: filepath_pre
-        MinimalLabel:
-            size_hint_x: 1
-            text_size: self.parent.width - filepath_pre.width - filepath_post.width - 2*app.rowspace, None
-            shorten: True
-            id: filepath
-        BoxLayout:
-            id: filepath_post
-            orientation: 'horizontal'
-            size_hint_x: None
-            spacing: app.colspace
-            width: transposelabel.width + transposespinner.width + app.colspace
-            MinimalLabel:
-                id: transposelabel
-                markup: True
-                text: ' [color=ffff00][b]T[/b][/color]ranspose:'
-            FocusSpinner:
-                mimic_size: True
-                id: transposespinner
-                size_hint: None, None
-                size: app.colwidth, app.rowheight
-                values: (str(n) if n<1 else '+' + str(n) for n in range(-6,7))
-                text: '0'
-                on_text: root._transpose(self.text); self.text='0'
-    ScrollView:
-        bar_width: 20
-        scroll_type: ['bars', 'content']
-        effect_cls: 'ScrollEffect'
+        orientation: 'vertical'
+        padding: 0
+        spacing: app.rowspace
+        size_hint_x: None
+        width: app.colwidth*7 + app.colspace*6
         GridLayout:
-            cols: 1
-            id: scroll
+            cols: 4
+            orientation: 'horizontal'
             size_hint_y: None
-            spacing: app.rowspace
-            height: lyrics.height + presentation.height + copyright.height\
-                    + key.height + theme.height + user1.height + user2.height\
-                    + user3.height + 7*app.rowspace
-            RegisteredTextInput:
-                font_name: 'songprez/fonts/NotoSansMonoCJKsc-Regular.otf'
-                line_spacing: -lyrics.font_size/2.4
-                size_hint_y: None
-                # Required, otherwise last line is half cut off
-                height: self.minimum_height - self.line_spacing
-                id: lyrics
+            height: 2*title.height + app.rowspace
+            spacing: [app.colspace, app.rowspace]
+            MinimalLabel:
+                text: 'Title:'
+            SingleLineTextInput:
+                id: title
+            MinimalLabel:
+                text: ' Author:'
+            SingleLineTextInput:
+                id: author
+            # Next line
+            MinimalLabel:
+                text: 'AKA:'
+            SingleLineTextInput:
+                id: aka
+            MinimalLabel:
+                text: 'Key Line:'
+            SingleLineTextInput:
+                id: key_line
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint_y: None
+            padding_y: app.rowspace
+            height: app.rowheight
+            MinimalLabel:
+                text: 'Song saved as '
+                id: filepath_pre
+            MinimalLabel:
+                size_hint_x: 1
+                text_size: self.parent.width - filepath_pre.width - filepath_post.width - 2*app.rowspace, None
+                shorten: True
+                id: filepath
             BoxLayout:
+                id: filepath_post
                 orientation: 'horizontal'
-                size_hint_y: None
+                size_hint_x: None
                 spacing: app.colspace
-                height: presentation.height
+                width: transposelabel.width + transposespinner.width + app.colspace
                 MinimalLabel:
-                    text: 'Presentation Order:'
-                SingleLineTextInput:
-                    size_hint_x: 3
-                    id: presentation
-                MinimalLabel:
-                    text: ' Hymn Number:'
-                SingleLineTextInput:
-                    size_hint_x: 1
-                    id: hymn_number
-            BoxLayout:
-                orientation: 'horizontal'
-                size_hint_y: None
-                spacing: app.colspace
-                height: copyright.height
-                MinimalLabel:
-                    text: 'Copyright:'
-                SingleLineTextInput:
-                    id: copyright
-                MinimalLabel:
-                    text: ' CCLI:'
-                SingleLineTextInput:
-                    id: ccli
-            BoxLayout:
-                orientation: 'horizontal'
-                size_hint_y: None
-                spacing: app.colspace
-                height: key.height
-                MinimalLabel:
-                    text: 'Key:'
-                SingleLineTextInput:
-                    id: key
-                MinimalLabel:
-                    text: ' Capo:'
-                SingleLineTextInput:
-                    id: capo
-                MinimalLabel:
-                    text: ' Tempo:'
-                SingleLineTextInput:
-                    id: tempo
-                MinimalLabel:
-                    text: ' Time Sig:'
-                SingleLineTextInput:
-                    id: time_sig
+                    id: transposelabel
+                    markup: True
+                    text: ' [color=ffff00][b]T[/b][/color]ranspose:'
+                FocusSpinner:
+                    mimic_size: True
+                    id: transposespinner
+                    size_hint: None, None
+                    size: app.colwidth, app.rowheight
+                    values: (str(n) if n<1 else '+' + str(n) for n in range(-6,7))
+                    text: '0'
+                    on_text: root._transpose(self.text); self.text='0'
+        ScrollView:
+            bar_width: 20
+            scroll_type: ['bars', 'content']
+            effect_cls: 'ScrollEffect'
             GridLayout:
-                cols: 2
+                cols: 1
+                id: scroll
                 size_hint_y: None
                 spacing: app.rowspace
-                height: theme.height + user1.height + user2.height +\
-                        user3.height + 3*app.rowspace
-                MinimalLabel:
-                    text: 'Theme:'
-                SingleLineTextInput:
-                    id: theme
-                MinimalLabel:
-                    text: 'User 1:'
+                height: lyrics.height + presentation.height + copyright.height\
+                        + key.height + theme.height + user1.height + user2.height\
+                        + user3.height + 7*app.rowspace
                 RegisteredTextInput:
-                    id: user1
+                    font_name: 'songprez/fonts/NotoSansMonoCJKsc-Regular.otf'
+                    line_spacing: -lyrics.font_size/2.4
                     size_hint_y: None
-                    height: self.minimum_height
-                MinimalLabel:
-                    text: 'User 2:'
-                RegisteredTextInput:
-                    id: user2
+                    # Required, otherwise last line is half cut off
+                    height: self.minimum_height - self.line_spacing
+                    id: lyrics
+                BoxLayout:
+                    orientation: 'horizontal'
                     size_hint_y: None
-                    height: self.minimum_height
-                MinimalLabel:
-                    text: 'User 3:'
-                RegisteredTextInput:
-                    id: user3
+                    spacing: app.colspace
+                    height: presentation.height
+                    MinimalLabel:
+                        text: 'Presentation Order:'
+                    SingleLineTextInput:
+                        size_hint_x: 3
+                        id: presentation
+                    MinimalLabel:
+                        text: ' Hymn Number:'
+                    SingleLineTextInput:
+                        size_hint_x: 1
+                        id: hymn_number
+                BoxLayout:
+                    orientation: 'horizontal'
                     size_hint_y: None
-                    height: self.minimum_height
-    BoxLayout:
-        orientation: 'horizontal'
-        size_hint_y: None
-        height: app.rowheight
-        padding: 0
-        spacing: app.colspace
-        NormalSizeFocusButton:
-            id: addtoset
-            markup: True
-            text: '[color=ffff00][b]A[/b][/color]dd to Set'
-            on_press: root._add_song()
-        NormalSizeFocusButton:
-            id: removefromset
-            markup: True
-            text: '[color=ffff00][b]R[/b][/color]emove from Set'
-            on_press: root._remove_song()
-        Widget:
-        NormalSizeFocusButton:
-            text: 'Save Song As'
-            on_press: root._save_as()
-        NormalSizeFocusButton:
-            text: 'Save Song'
-            on_press: root._save()
+                    spacing: app.colspace
+                    height: copyright.height
+                    MinimalLabel:
+                        text: 'Copyright:'
+                    SingleLineTextInput:
+                        id: copyright
+                    MinimalLabel:
+                        text: ' CCLI:'
+                    SingleLineTextInput:
+                        id: ccli
+                BoxLayout:
+                    orientation: 'horizontal'
+                    size_hint_y: None
+                    spacing: app.colspace
+                    height: key.height
+                    MinimalLabel:
+                        text: 'Key:'
+                    SingleLineTextInput:
+                        id: key
+                    MinimalLabel:
+                        text: ' Capo:'
+                    SingleLineTextInput:
+                        id: capo
+                    MinimalLabel:
+                        text: ' Tempo:'
+                    SingleLineTextInput:
+                        id: tempo
+                    MinimalLabel:
+                        text: ' Time Sig:'
+                    SingleLineTextInput:
+                        id: time_sig
+                GridLayout:
+                    cols: 2
+                    size_hint_y: None
+                    spacing: app.rowspace
+                    height: theme.height + user1.height + user2.height +\
+                            user3.height + 3*app.rowspace
+                    MinimalLabel:
+                        text: 'Theme:'
+                    SingleLineTextInput:
+                        id: theme
+                    MinimalLabel:
+                        text: 'User 1:'
+                    RegisteredTextInput:
+                        id: user1
+                        size_hint_y: None
+                        height: self.minimum_height
+                    MinimalLabel:
+                        text: 'User 2:'
+                    RegisteredTextInput:
+                        id: user2
+                        size_hint_y: None
+                        height: self.minimum_height
+                    MinimalLabel:
+                        text: 'User 3:'
+                    RegisteredTextInput:
+                        id: user3
+                        size_hint_y: None
+                        height: self.minimum_height
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint_y: None
+            height: app.rowheight
+            padding: 0
+            spacing: app.colspace
+            NormalSizeFocusButton:
+                id: addtoset
+                markup: True
+                text: '[color=ffff00][b]A[/b][/color]dd to Set'
+                on_press: root._add_song()
+            NormalSizeFocusButton:
+                id: removefromset
+                markup: True
+                text: '[color=ffff00][b]R[/b][/color]emove from Set'
+                on_press: root._remove_song()
+            Widget:
+            NormalSizeFocusButton:
+                text: 'Save Song As'
+                on_press: root._save_as()
+            NormalSizeFocusButton:
+                text: 'Save Song'
+                on_press: root._save()
 """)
 
 
-class SongEdit(BoxLayout):
+class SongEdit(Screen):
     def __init__(self, **kwargs):
         super(SongEdit, self).__init__(**kwargs)
 

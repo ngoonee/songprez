@@ -6,19 +6,22 @@ from kivy.lang import Builder
 from kivy.core.window import Window
 from kivy.clock import Clock
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.screenmanager import Screen
+from kivy.uix.screenmanager import Screen, ScreenManager
 from .button import FocusButton, NormalSizeFocusButton
 from .itemlist import ItemList
 from .setlist import SetList
 from .contentlist import ContentList
 from .songedit import SongEdit
+from .scriptureedit import ScriptureEdit
 from ..network.messages import *
 
 Builder.load_string("""
 <EditScreen>:
     songedit: songedit
+    scriptureedit: scriptureedit
     contentlist: contentlist
     currentset: currentset
+    editor: editor
     sendMessage: app.sendMessage
     BoxLayout:
         orientation: 'horizontal'
@@ -36,8 +39,14 @@ Builder.load_string("""
             SetList:
                 id: currentset
                 size_hint_y: 3
-        SongEdit:
-            id: songedit
+        ScreenManager:
+            id: editor
+            SongEdit:
+                id: songedit
+                name: 'SongEdit'
+            ScriptureEdit:
+                id: scriptureedit
+                name: 'ScriptureEdit'
         BoxLayout:
             orientation: 'vertical'
             padding: 0
@@ -120,3 +129,11 @@ class EditScreen(Screen):
     def _present(self):
         self.parent.current = 'ShowScreen'
         self.sendMessage(ChangeShowSet, relpath=self.currentset.filepath.text)
+
+    def get_scripture(self, version):
+        def act(AMPresponse):
+            self.editor.current = 'ScriptureEdit'
+            self.scriptureedit.update_booklist(version=version,
+                                               booklist=AMPresponse['booklist'])
+        d = self.sendMessage(GetBooks, version=version)
+        d.addCallback(act)

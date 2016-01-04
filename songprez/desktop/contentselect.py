@@ -9,6 +9,8 @@ from kivy.uix.tabbedpanel import TabbedPanel, TabbedPanelItem, TabbedPanelHeader
 from kivy.uix.behaviors import FocusBehavior
 from kivy.uix.stencilview import StencilView
 from kivy.graphics import Color, Line
+from kivy.properties import ObjectProperty
+from kivy.uix.screenmanager import Screen
 from .itemlist import ItemList
 from .button import NormalSizeFocusButton
 from .filenamedialog import FilenameDialog
@@ -20,6 +22,7 @@ Builder.load_string("""
     songlist: songlist
     searchlist: searchlist
     setlist: setlist
+    scripturelist: scripturelist
     songheader: songheader
     searchheader: searchheader
     setheader: setheader
@@ -110,6 +113,8 @@ class FocusPanelHeader(FocusBehavior, TabbedPanelHeader):
 
 
 class ContentSelect(TabbedPanel):
+    basescreen = ObjectProperty(None)
+
     def __init__(self, **kwargs):
         super(ContentSelect, self).__init__(**kwargs)
         Clock.schedule_once(self._finish_init)
@@ -118,9 +123,14 @@ class ContentSelect(TabbedPanel):
         self.songlist.bind(adapter=self._update_song_adapter)
         self.setlist.bind(adapter=self._update_set_adapter)
         self.searchlist.bind(adapter=self._update_search_adapter)
+        self.scripturelist.bind(adapter=self._update_scripture_adapter)
         self.searchlist.set_data([])
         self.songlist.set_data([])
         self.setlist.set_data([])
+        self.scripturelist.set_data([])
+        self.basescreen = self.parent
+        while not isinstance(self.basescreen, Screen):
+            self.basescreen = self.basescreen.parent
 
     def _update_song_adapter(self, instance, value):
         instance.adapter.bind(on_selection_change=self._song_selected)
@@ -130,6 +140,9 @@ class ContentSelect(TabbedPanel):
 
     def _update_search_adapter(self, instance, value):
         instance.adapter.bind(on_selection_change=self._search_selected)
+
+    def _update_scripture_adapter(self, instance, value):
+        instance.adapter.bind(on_selection_change=self._scripture_selected)
 
     def _song_selected(self, adapter):
         self.sendMessage(ChangeEditItem, itemtype='song',
@@ -142,6 +155,9 @@ class ContentSelect(TabbedPanel):
         self.sendMessage(ChangeEditItem, itemtype='song',
                         relpath=adapter.selection[0].filepath)
 
+    def _scripture_selected(self, adapter):
+        self.basescreen.get_scripture(version=adapter.selection[0].filepath)
+
     def _send_search(self, text):
         self.sendMessage(Search, term=text)
 
@@ -153,3 +169,6 @@ class ContentSelect(TabbedPanel):
 
     def _search_list(self, listofsearch):
         self.searchlist.set_data(listofsearch)
+
+    def _scripture_list(self, listofscripture):
+        self.scripturelist.set_data(listofscripture)

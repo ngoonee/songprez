@@ -22,7 +22,6 @@ The list of supported values for itemtype (when sending/receiving Item objects)
     scripture (being implemented)
     image (not yet implemented)
     custom (not yet implemented)
-
 '''
 
 ''' Utility methods (server-to-client) '''
@@ -68,6 +67,13 @@ class SearchList(amp.Command):
     requiresAnswer = False
 
 
+class ScriptureList(amp.Command):
+    arguments = [('curpage', amp.Integer()), ('totalpage', amp.Integer()),
+                 ('jsonlist', amp.ListOf(amp.String()))]
+    response = []
+    requiresAnswer = False
+
+
 ''' Utility methods (client-to-server) '''
 
 
@@ -85,6 +91,23 @@ class Search(amp.Command):
     arguments = [('term', amp.Unicode())]
     response = []
     requiresAnswer = False
+
+
+class GetBooks(amp.Command):
+    arguments = [('version', amp.Unicode())]
+    response = [('booklist', amp.ListOf(amp.Unicode()))]
+
+
+class GetChapters(amp.Command):
+    arguments = [('version', amp.Unicode()), ('book', amp.Unicode())]
+    response = [('chapterlist', amp.ListOf(amp.Unicode()))]
+
+
+class GetVerses(amp.Command):
+    arguments = [('version', amp.Unicode()), ('book', amp.Unicode()),
+                 ('chapter', amp.Unicode())]
+    response = [('verselist', amp.ListOf(amp.Unicode())),
+                ('verses', amp.ListOf(amp.ListOf(amp.Unicode())))]
 
 
 ''' Edit messages (server-to-client) '''

@@ -18,24 +18,34 @@ from kivy.core.window import Window
 from kivy.clock import Clock
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.screenmanager import Screen
+from kivy.uix.stencilview import StencilView
 from time import time
 from ..control.spsong import SPSong
 from .slide import SlideElement
 from ..network.spclient import SPClientFactory
 from ..network.messages import *
+from .contentselect import ContentSelect
 
 Builder.load_string("""
 <ShowScreen>:
     carousel: carousel
+    panel: panel
     FloatLayout:
         Carousel:
             id: carousel
             direction: 'right'
             anim_move_duration: 0.3
+        ContentSelect:
+            id: panel
+            tab_height: app.rowheight
+            tab_width: app.colwidth
+            size_hint_x: None
+            width: app.colwidth*3 + app.colspace*2
+            width: 0
 """)
 
 
-class ShowScreen(Screen):
+class ShowScreen(Screen, StencilView):
     sendMessage = ObjectProperty(None)
 
     def __init__(self, **kwargs):
@@ -107,13 +117,16 @@ class ShowScreen(Screen):
     def _running(self):
         pass
 
-    def _song_list(self, songList):
-        pass
+    def _song_list(self, listofsong):
+        self.panel._song_list(listofsong)
 
-    def _set_list(self, setList):
-        pass
+    def _set_list(self, listofset):
+        self.panel._set_list(listofset)
 
-    def _search_list(self, searchList):
+    def _search_list(self, listofsearch):
+        self.panel._search_list(listofsearch)
+
+    def _scripture_list(self, listofscripture):
         pass
 
     def _show_set(self, set):
@@ -132,35 +145,38 @@ class ShowScreen(Screen):
         # TODO: use specific content in specific item instead
         cur = self.carousel.index
         length = len(self.carousel.slides)
+        self.carousel.clear_widgets()
         for i, s in enumerate(self._set.list_songs()):
-            # Create a SlideElement based on slide and item
-            # Add SlideElement to carousel
-            def act(so, carousel):
-                slides = so.split_slides(presentation=s['presentation'])
-                self._indices.append(len(carousel.slides))
-                for sl in slides:
-                    # If showing chords, need a different font and string
-                    halign = 'left' if self._showchords else 'center'
-                    if self._showchords:
-                        font = 'songprez/fonts/NotoSansMonoCJKsc-Regular.otf' 
-                    else:
-                        font = 'songprez/fonts/NotoSansCJK-Regular.ttc' 
-                    se = SlideElement(padding=(100, 100, 100, 100),
-                                     font_size=180, font_name=font,
-                                     halign=halign, valign='middle')
-                    if self._showchords:
-                        se.text = sl['string']
-                    else:
-                        se.text = so.remove_chords(sl['string'])
-                    if se.text:  # No point having a blank slide
-                        carousel.add_widget(se)
-                    # This check succeeds on last call if regenerating
-                    # identical collection of slides
-                    if len(carousel.slides) == length:
-                        carousel.index = cur
-                    else:
-                        carousel.index = 0
-            self.carousel.clear_widgets()
-            self.sendMessage(GetItem, itemtype='song', relpath=s['filepath'],
-                             callback=act,
-                             callbackKeywords={'carousel': self.carousel})
+            if s['itemtype'] == 'song':
+                # Create a SlideElement based on slide and item
+                # Add SlideElement to carousel
+                def act(so):
+                    carousel = self.carousel
+                    slides = so.split_slides(presentation=s['presentation'])
+                    self._indices.append(len(carousel.slides))
+                    for sl in slides:
+                        # If showing chords, need a different font and string
+                        halign = 'left' if self._showchords else 'center'
+                        if self._showchords:
+                            font = 'songprez/fonts/NotoSansMonoCJKsc-Regular.otf' 
+                        else:
+                            font = 'songprez/fonts/NotoSansCJK-Regular.ttc' 
+                        se = SlideElement(padding=(100, 100, 100, 100),
+                                         font_size=180, font_name=font,
+                                         halign=halign, valign='middle')
+                        if self._showchords:
+                            se.text = sl['string']
+                        else:
+                            se.text = so.remove_chords(sl['string'])
+                        if se.text:  # No point having a blank slide
+                            carousel.add_widget(se)
+                        # This check succeeds on last call if regenerating
+                        # identical collection of slides
+                        if len(carousel.slides) == length:
+                            carousel.index = cur
+                        else:
+                            carousel.index = 0
+                self.sendMessage(GetItem, itemtype='song', relpath=s['filepath'],
+                                 callback=act)
+            elif s['itemtype'] == 'scripture':
+                print('not yet done scripture!')

@@ -23,21 +23,32 @@ class SPServerProtocol(amp.AMP):
     @GetItem.responder
     def GetItem(self, itemtype, relpath):
         retval = self.control._get_item(itemtype, relpath)
-        if not retval:
-            return {}
         return {'jsonitem': json.dumps(retval.__dict__)}
 
     @GetSet.responder
     def GetSet(self, relpath):
         retval = self.control._get_set(relpath)
-        if not retval:
-            return {}
         return {'jsonset': json.dumps(retval.__dict__)}
 
     @Search.responder
     def Search(self, term):
         self.control._search(term)
         return {}
+
+    @GetBooks.responder
+    def GetBooks(self, version):
+        retval = self.control._get_books(version)
+        return {'booklist': retval}
+
+    @GetChapters.responder
+    def GetChapters(self, version, book):
+        retval = self.control._get_chapters(version, book)
+        return {'chapterlist': retval}
+
+    @GetVerses.responder
+    def GetVerses(self, version, book, chapter):
+        verselist, verses = self.control._get_verses(version, book, chapter)
+        return {'verselist': verselist, 'verses': verses }
 
     @ChangeEditItem.responder
     def ChangeEditItem(self, itemtype, relpath):
