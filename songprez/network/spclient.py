@@ -55,12 +55,13 @@ class SPClientProtocol(amp.AMP):
             def json_to_obj(AMPresponse):
                 s, name = {None: (SPSet(), 'jsonset'),
                            'song': (SPSong(), 'jsonitem'),
-                           'scripture': (None, 'jsonitem')}[itemtype]
+                           'scripture': (None, 'jsonitem')}[kwargs.get('itemtype')]
                             # Does not work yet, need SPScripture?
                 s.__dict__ = json.loads(AMPresponse[name])
                 return s
             d.addCallbacks(json_to_obj, self.printerr)
             d.addCallbacks(callback, self.printerr, callbackKeywords=callbackKeywords)
+        return d
 
     @Running.responder
     def Running(self):
