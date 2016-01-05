@@ -33,7 +33,7 @@ def _append_songs(document, setpath, textStyle, lyricsOnly=False):
             raise IOError("%s is not in a proper directory structure"
                           % filepath)
     for so in songs:
-        songpath = os.path.join(basedir,'Songs',so[0])
+        songpath = os.path.join(basedir,'Songs',so['filepath'])
         s = spsong.SPSong.read_from_file(songpath)
         p = document.add_paragraph(s.title, style=textStyle)
         p.runs[0].bold = True
