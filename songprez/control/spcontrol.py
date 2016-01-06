@@ -8,7 +8,7 @@ from time import sleep
 from .spsearch import SPSearch
 from .spset import SPSet
 from .spsong import SPSong
-from .spscripture import SPScripture
+from .spscripture import SPBible
 from .sputil import list_files
 from ..network.spserver import SPServerFactory
 from ..network.messages import *
@@ -166,7 +166,7 @@ class SPControl(object):
             pass
         else:
             filepath = os.path.join(self._scripturePath, version)
-            self._scripture = SPScripture.read_from_file(filepath)
+            self._scripture = SPBible.read_from_file(filepath)
         return self._scripture._booklist
 
     def _get_chapters(self, version, book):
@@ -174,7 +174,7 @@ class SPControl(object):
             pass
         else:
             filepath = os.path.join(self._scripturePath, version)
-            self._scripture = SPScripture.read_from_file(filepath)
+            self._scripture = SPBible.read_from_file(filepath)
         return self._scripture._chapdict[book]
 
     def _get_verses(self, version, book, chapter):
@@ -182,7 +182,7 @@ class SPControl(object):
             pass
         else:
             filepath = os.path.join(self._scripturePath, version)
-            self._scripture = SPScripture.read_from_file(filepath)
+            self._scripture = SPBible.read_from_file(filepath)
         verselist = self._scripture._chapdict[book][chapter]
         verses = self._scripture.full_chapter(book, chapter)
         return verselist, verses
@@ -201,7 +201,7 @@ class SPControl(object):
             if self._scripture and self._scripture.name == os.path.split(relpath)[-1]:
                 pass  # Already been loaded
             else:
-                self._scripture = SPScripture.read_from_file(relpath)
+                self._scripture = SPBible.read_from_file(relpath)
             import time
             print(time.time())
             sendval = self._scripture.skeleton()

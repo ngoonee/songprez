@@ -7,7 +7,7 @@ if sys.version_info[0] < 3:
     from codecs import open  # 'UTF-8 aware open'
 from collections import OrderedDict
 
-class SPScripture(object):
+class SPBible(object):
     def __init__(self, **kwargs):
         self._bible = None
         self._booklist = None
@@ -15,7 +15,7 @@ class SPScripture(object):
         self.name = u''
 
     def skeleton(self):
-        retval = SPScripture()
+        retval = SPBible()
         retval.name = self.name
         retval._booklist = self._booklist
         retval._chapdict = self._chapdict
@@ -36,6 +36,7 @@ class SPScripture(object):
         obj = None
         with open(filepath, 'r', encoding=encoding) as f:
             data = f.read()
+            # Most of the time taken by xmltodict, would lkml save time?
             obj = xmltodict.parse(data)
         retval = cls()
         retval._bible = obj
