@@ -146,13 +146,17 @@ class ShowScreen(Screen, StencilView):
         cur = self.carousel.index
         length = len(self.carousel.slides)
         self.carousel.clear_widgets()
-        for i, s in enumerate(self._set.list_songs()):
-            if s['itemtype'] == 'song':
+        for i, item in enumerate(self._set.list_songs()):
+            if item['itemtype'] == 'song':
                 # Create a SlideElement based on slide and item
                 # Add SlideElement to carousel
-                def act(so):
+                def act(song, presentation):
+                    # s must be passed-through by sendMessage otherwise will
+                    # always use the last value of s (the last item). self is
+                    # passed through so that settings/carousel can be obtained
+                    # which is fine because those don't change
                     carousel = self.carousel
-                    slides = so.split_slides(presentation=s['presentation'])
+                    slides = song.split_slides(presentation=presentation)
                     self._indices.append(len(carousel.slides))
                     for sl in slides:
                         # If showing chords, need a different font and string
@@ -167,7 +171,7 @@ class ShowScreen(Screen, StencilView):
                         if self._showchords:
                             se.text = sl['string']
                         else:
-                            se.text = so.remove_chords(sl['string'])
+                            se.text = song.remove_chords(sl['string'])
                         if se.text:  # No point having a blank slide
                             carousel.add_widget(se)
                         # This check succeeds on last call if regenerating
@@ -176,7 +180,16 @@ class ShowScreen(Screen, StencilView):
                             carousel.index = cur
                         else:
                             carousel.index = 0
-                self.sendMessage(GetItem, itemtype='song', relpath=s['filepath'],
-                                 callback=act)
-            elif s['itemtype'] == 'scripture':
+                self.sendMessage(GetItem, itemtype='song',
+                                 relpath=item['filepath'], callback=act,
+                                 callbackKeywords={'presentation':
+                                                   item['presentation']})
+            elif item['itemtype'] == 'scripture':
+                font = 'songprez/fonts/NotoSansCJK-Regular.ttc' 
+                halign='left'
+                se = SlideElement(padding=(100, 100, 100, 100),
+                                 font_size=180, font_name=font,
+                                 halign=halign, valign='middle')
+                se.text = item['name']
+                self.carousel.add_widget(se)
                 print('not yet done scripture!')
