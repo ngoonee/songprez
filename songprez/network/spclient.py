@@ -127,30 +127,6 @@ class SPClientProtocol(amp.AMP):
         self.factory.client._edit_set(item)
         return {}
 
-    @ShowSlides.responder
-    def ShowSlides(self, curpage, totalpage, jsonlist):
-        if '_show_slides' not in dir(self.factory.client):
-            return {}  # Optional method, return if not found
-        if curpage == 0:
-            self._partShowSlideList = []
-        showslidelist = [json.loads(d) for d in jsonlist]
-        self._partShowSlideList.extend(showslidelist)
-        if curpage == totalpage-1:
-            self.factory.client._show_slides(self._partShowSlideList)
-        return {}
-
-    @ShowItems.responder
-    def ShowItems(self, curpage, totalpage, jsonlist):
-        if '_show_items' not in dir(self.factory.client):
-            return {}  # Optional method, return if not found
-        if curpage == 0:
-            self._partShowItemList = []
-        showitemlist = [json.loads(d) for d in jsonlist]
-        self._partShowItemList.extend(showitemlist)
-        if curpage == totalpage-1:
-            self.factory.client._show_items(self._partShowItemList)
-        return {}
-
     @ShowSet.responder
     def ShowSet(self, jsonset):
         if '_show_set' not in dir(self.factory.client):

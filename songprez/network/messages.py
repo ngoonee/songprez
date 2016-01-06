@@ -180,35 +180,6 @@ class DeleteEditSet(amp.Command):
 ''' Show messages (server-to-client) '''
 
 
-class ShowSlides(amp.Command):
-    '''
-    A list of slide-splits, json-encoded.
-    After decoding, each song-item in the list takes the following form:-
-        [[startline, endline, tag], [startline, endline, tag], ...]
-    Each scripture-item in the list takes the following form:-
-        [[startchap:startvers, endchap:endverse, book],
-         [startchap:startvers, endchap:endverse, book], ...]
-    Each item corresponds with one item in the current ShowSet (the ShowItem
-    at the same index)
-    '''
-    arguments = [('curpage', amp.Integer()), ('totalpage', amp.Integer()),
-                 ('jsonlist', amp.ListOf(amp.String()))]
-    response = []
-    requiresAnswer = False
-
-
-class ShowItems(amp.Command):
-    '''
-    Paginated list of songs. Unlike SongList, ShowItems sends the actual SPSong
-    objects (json-encoded __dict__) for proper synchronization using ShowSlides
-    values.
-    '''
-    arguments = [('curpage', amp.Integer()), ('totalpage', amp.Integer()),
-                 ('jsonlist', amp.ListOf(amp.String()))]
-    response = []
-    requiresAnswer = False
-
-
 class ShowSet(amp.Command):
     '''
     JSON-encoded __dict__ of an SPSet()
