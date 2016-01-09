@@ -2,7 +2,6 @@
 from twisted.internet import protocol
 from twisted.protocols import amp
 import json
-import blinker
 from .messages import *
 from ..control.spset import SPSet
 from ..control.spsong import SPSong
