@@ -9,9 +9,11 @@ SongPrez
         :target: https://pypi.python.org/pypi/songprez
 
 
-"Utilities for working with OpenSong formatted directories"
+"A cross-platform song/scripture presentation software for desktop, tablet, and smartphone. Still
+under heavy development and without a proper release (yet!). Pushed here to facilitate shared
+development between my various environments."
 
-* Free software: BSD license
+* Free software: MIT license
 * Documentation: https://songprez.readthedocs.org.
 
 Features
