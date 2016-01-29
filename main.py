@@ -1,6 +1,11 @@
 #!/usr/bin/env python
 __version__ = '0.1'
-from songprez.desktop.app import SongPrezApp
+import sys
 
 if __name__ == '__main__':
-    SongPrezApp().run()
+    if 'phone' in sys.argv:
+        from songprez.phone.app import SongPrezApp
+        SongPrezApp().run()
+    else:
+        from songprez.desktop.app import SongPrezApp
+        SongPrezApp().run()
