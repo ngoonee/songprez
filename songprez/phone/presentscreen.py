@@ -35,6 +35,7 @@ Builder.load_string("""
                     size: '36dp', '36dp'
                     pos: self.parent.size[0] - dp(54), dp(72)
                     markup: True
+                    on_press: app.base.to_screen('search')
                 Button:
                     id: pbtranspose
                     size_hint: None, None

@@ -60,11 +60,15 @@ Builder.load_string("""
 class BaseWidget(BoxLayout):
     def __init__(self, **kwargs):
         super(BaseWidget, self).__init__(**kwargs)
+        self._history = []
+        self._keyboard = Window.request_keyboard(None, self, 'text')
+        self._keyboard.bind(on_key_down=self._on_keyboard_down)
         self.sm.bind(current=self._change_title)
         self.sm.current = 'main'
 
     def _change_title(self, instance, data):
         title = self.title
+        # Set the main label
         if data == 'main':
             title.text = 'SongPrez'
         elif data == 'sets':
@@ -83,7 +87,36 @@ class BaseWidget(BoxLayout):
             title.text = (iconfont('edit') + ' Edit Set ' + iconfont('sets'))
         elif data == 'editsong':
             title.text = (iconfont('edit') + ' Edit Song ' + iconfont('songs'))
+        # Save screen history
+        if data == 'main':
+            self._history = ['main',]
+        elif data == 'settings':
+            pass
+        else:
+            scr_prio = {'main': 1,
+                        'present': 2, 'sets': 2,
+                        'editset': 3,
+                        'scripture': 4, 'search': 4, 'songs': 4,
+                        'editsong': 5}
+            diff = scr_prio[data] - scr_prio[self._history[-1]]
+            if diff == 0:  # Save level is sets<->present or songs<->search
+                self._history.pop()
+            elif diff > 0:  # Normal case, progressing up the chain
+                pass
+            else:  # 'Backward' jump, need to pare the list down
+                self._history = self._history[:scr_prio[data]-1]
+            self._history.append(data)
             
+    def _on_keyboard_down(self, keyboard, keycode, text, modifiers):
+        if keycode[1] == 'escape':
+            if len(self._history) > 1:
+                self.sm.current = self._history[-2]
+            elif self.sm.current == 'settings':
+                self.sm.current = self._history[-1]
+            else:
+                App.get_running_app().stop()  # Quit the app
+            return True
+        return False
 
     def on_connection(self, connection):
         print('connected successfully')
