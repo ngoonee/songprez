@@ -13,12 +13,12 @@ from twisted.internet.endpoints import clientFromString
 import os
 from kivy.app import App
 from kivy.clock import Clock
-from kivy.core.text import LabelBase
 from kivy.properties import StringProperty, BooleanProperty, ListProperty
 from kivy.properties import NumericProperty, ObjectProperty, DictProperty
 from ..control import spcontrol
 from .basewidget import BaseWidget
 from ..network.spclient import SPClientFactory
+from .iconfont import icon_font_register
 
 
 class SongPrezApp(App):
@@ -30,8 +30,7 @@ class SongPrezApp(App):
     def build(self):
         self.control = None
         self.base = BaseWidget()
-        LabelBase.register(name="MaterialDesignIcons",
-                           fn_regular="songprez/fonts/materialdesignicons-webfont.ttf")
+        icon_font_register()
         Clock.schedule_once(self._verify_spcontrol)
         return self.base
 

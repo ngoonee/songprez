@@ -7,6 +7,7 @@ from kivy.core.window import Window
 from kivy.clock import Clock
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.screenmanager import Screen, ScreenManager
+from iconfont import iconfont
 
 Builder.load_string("""
 <MainScreen>:
@@ -55,9 +56,9 @@ Builder.load_string("""
 
 """
 Icons we'll need
-square-inc-cash (Donate) f5b9
-menu (Menu) f44e
-library (Sets) f423
+square-inc-cash (donate) f5b9
+menu (menu) f44e
+library (sets) f423
 presentation-play (present) f518
 file-document (songs) f30e
 sword (scripture) f5d3
@@ -65,19 +66,19 @@ settings (settings) f582
 magnify (search) f43b
 pencil (edit) f4da
 content-save (save) f289
-music-note-off (chords off) f47b
-delete (trashcan) f2b5
+music-note-off (chordoff) f47b
+delete (delete) f2b5
 close-circle (cancel) f250
-plus (add new) f504
-playlist-plus (add to list) f501
-playlist-remove (remove from list) f502
+plus (new) f504
+playlist-plus (listadd) f501
+playlist-remove (listremove) f502
 content-copy (copy) f285
-at (save as) f15c
+at (saveas) f15c
 alphabetical (language) f5a9
-format-indent-increase (show set) f36b
-arrow-up-bold (move item up the list) f157
-arrow-down-bold (move item down the list) f145
-book (bible version) f1b0
+format-indent-increase (showset) f36b
+arrow-up-bold (listmoveup) f157
+arrow-down-bold (listmovedown) f145
+book (bibleversion) f1b0
 """
 
 class MainScreen(Screen):
@@ -86,15 +87,9 @@ class MainScreen(Screen):
         Clock.schedule_once(self._finish_init)
 
     def _finish_init(self, dt):
-        self.pbsets.text = u'''[font=MaterialDesignIcons][size=92dp]\uf423
-                               [/size][/font]\nSets'''
-        self.pbpresent.text = u'''[font=MaterialDesignIcons][size=92dp]\uf518
-                               [/size][/font]\nPresent'''
-        self.pbsongs.text = u'''[font=MaterialDesignIcons][size=92dp]\uf30e
-                               [/size][/font]\nSongs'''
-        self.pbsearch.text = u'''[font=MaterialDesignIcons][size=92dp]\uf43b
-                               [/size][/font]\nSearch'''
-        self.pbscripture.text = u'''[font=MaterialDesignIcons][size=92dp]\uf5d3
-                               [/size][/font]\nScripture'''
-        self.pbsettings.text = u'''[font=MaterialDesignIcons][size=92dp]\uf582
-                               [/size][/font]\nSettings'''
+        self.pbsets.text = iconfont('sets', '92sp') + '\nSets'
+        self.pbpresent.text = iconfont('present', '92sp') + '\nPresent'
+        self.pbsongs.text = iconfont('songs', '92sp') + '\nSongs'
+        self.pbsearch.text = iconfont('search', '92sp') + '\nSearch'
+        self.pbscripture.text = iconfont('scripture', '92sp') + '\nScripture'
+        self.pbsettings.text = iconfont('settings', '92sp') + '\nSettings'

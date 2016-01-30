@@ -63,27 +63,29 @@ class BaseWidget(BoxLayout):
         self.sm.current = 'main'
 
     def _change_title(self, instance, data):
-        titletext = self.title.text
+        title = self.title
         if data == 'main':
-            titletext = 'SongPrez'
+            title.text = 'SongPrez'
         elif data == 'sets':
-            titletext = u'Sets [font=MaterialDesignIcons]\uf423[/font]'
+            title.text = u'Sets [font=MaterialDesignIcons]\uf423[/font]'
         elif data == 'songs':
-            titletext = u'Songs [font=MaterialDesignIcons]\uf518[/font]'
+            title.text = u'Songs [font=MaterialDesignIcons]\uf30e[/font]'
+        elif data == 'present':
+            title.text = u'Present [font=MaterialDesignIcons]\uf518[/font]'
         elif data == 'search':
-            titletext = u'Search [font=MaterialDesignIcons]\uf43b[/font]'
+            title.text = u'Search [font=MaterialDesignIcons]\uf43b[/font]'
         elif data == 'scripture':
-            titletext = u'Scripture [font=MaterialDesignIcons]\uf5d3[/font]'
+            title.text = u'Scripture [font=MaterialDesignIcons]\uf5d3[/font]'
         elif data == 'settings':
-            titletext = u'Settings [font=MaterialDesignIcons]\uf582[/font]'
+            title.text = u'Settings [font=MaterialDesignIcons]\uf582[/font]'
         elif data == 'editset':
-            titletext = u'''[font=MaterialDesignIcons]\uf4da[\font]
-                            Edit Set
-                            [font=MaterialDesignIcons]\uf423[/font]'''
+            title.text = u'''[font=MaterialDesignIcons]\uf4da[\font]
+                             Edit Set
+                             [font=MaterialDesignIcons]\uf423[/font]'''
         elif data == 'editsong':
-            titletext = u'''[font=MaterialDesignIcons]\uf4da[\font]
-                            Edit Song
-                            [font=MaterialDesignIcons]\uf518[/font]'''
+            title.text = u'''[font=MaterialDesignIcons]\uf4da[\font]
+                             Edit Song
+                             [font=MaterialDesignIcons]\uf518[/font]'''
             
 
     def on_connection(self, connection):

@@ -7,6 +7,7 @@ from kivy.core.window import Window
 from kivy.clock import Clock
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.screenmanager import Screen, ScreenManager
+from .iconfont import iconfont
 
 Builder.load_string("""
 <MyStencil@BoxLayout+StencilView>
@@ -14,6 +15,8 @@ Builder.load_string("""
 
 <PresentScreen>:
     words: words
+    pbadd: pbadd
+    pbtranspose: pbtranspose
     BoxLayout:
         padding: '24dp'
         MyStencil:
@@ -27,19 +30,17 @@ Builder.load_string("""
                             size: self.size
                     id: words
                 Button:
+                    id: pbadd
                     size_hint: None, None
                     size: '36dp', '36dp'
                     pos: self.parent.size[0] - dp(54), dp(72)
                     markup: True
-                    font_name: 'MaterialDesignIcons'
-                    text: u'\uf508'
                 Button:
+                    id: pbtranspose
                     size_hint: None, None
                     size: '36dp', '36dp'
                     pos: self.parent.size[0] - self.size[0] - dp(18), dp(18)
                     markup: True
-                    font_name: 'MaterialDesignIcons'
-                    text: u'\uf478'
 """)
 
 
@@ -49,6 +50,8 @@ class PresentScreen(Screen):
         Clock.schedule_once(self._finish_init)
 
     def _finish_init(self, dt):
+        self.pbadd.text = iconfont('plus')
+        self.pbtranspose.text = iconfont('transpose')
         self.words.text = """
 [C]
 .F                   Bb      F
