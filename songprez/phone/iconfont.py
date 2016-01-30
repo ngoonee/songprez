@@ -3,6 +3,10 @@ import kivy
 # kivy.require('1.9.2')
 from kivy.core.text import LabelBase
 
+"""
+Fonts from https://github.com/Templarian/MaterialDesign-Webfont
+"""
+
 
 def icon_font_register():
         LabelBase.register(name="MaterialDesignIcons",
@@ -13,7 +17,7 @@ icon_map = {'donate': u'\uf5b9',  # square-inc-cash
             'sets': u'\uf423',  # library
             'present': u'\uf518',  # presentation-play
             'songs': u'\uf30e',  # file-document
-            'scripture': u'\uf5d3',  # sword
+            'scripture': u'\uf15e',  # audiobook (WILL BE BIBLE, KEEP CHECKING WEBSITE FOR UPDATE)
             'settings': u'\uf582',  # settings
             'search': u'\uf43b',  # magnify
             'edit': u'\uf4da',  # pencil
@@ -30,7 +34,7 @@ icon_map = {'donate': u'\uf5b9',  # square-inc-cash
             'showset': u'\uf36b',  # format-indent-increase
             'listmoveup': u'\uf157',  # arrow-up-bold
             'listmovedown': u'\uf145',  # arrow-down-bold
-            'bibleversion': u'\uf1b0',  # book
+            'bibleversion': u'\uf5d3',  # sword
             'plus': u'\uf508',  # plus-circle-outline
             'transpose': u'\uf478',  # music-note
             }

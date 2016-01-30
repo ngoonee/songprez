@@ -9,6 +9,7 @@ from kivy.uix.screenmanager import ScreenManager
 from kivy.uix.boxlayout import BoxLayout
 from .mainscreen import MainScreen
 from .presentscreen import PresentScreen
+from .iconfont import iconfont
 
 Builder.load_string("""
 #:import FallOutTransition kivy.uix.screenmanager.FallOutTransition
@@ -67,25 +68,21 @@ class BaseWidget(BoxLayout):
         if data == 'main':
             title.text = 'SongPrez'
         elif data == 'sets':
-            title.text = u'Sets [font=MaterialDesignIcons]\uf423[/font]'
+            title.text = 'Sets ' + iconfont('sets')
         elif data == 'songs':
-            title.text = u'Songs [font=MaterialDesignIcons]\uf30e[/font]'
+            title.text = 'Songs ' + iconfont('songs')
         elif data == 'present':
-            title.text = u'Present [font=MaterialDesignIcons]\uf518[/font]'
+            title.text = 'Present ' + iconfont('present')
         elif data == 'search':
-            title.text = u'Search [font=MaterialDesignIcons]\uf43b[/font]'
+            title.text = 'Search ' + iconfont('search')
         elif data == 'scripture':
-            title.text = u'Scripture [font=MaterialDesignIcons]\uf5d3[/font]'
+            title.text = 'Scripture ' + iconfont('scripture')
         elif data == 'settings':
-            title.text = u'Settings [font=MaterialDesignIcons]\uf582[/font]'
+            title.text = 'Settings ' + iconfont('settings')
         elif data == 'editset':
-            title.text = u'''[font=MaterialDesignIcons]\uf4da[\font]
-                             Edit Set
-                             [font=MaterialDesignIcons]\uf423[/font]'''
+            title.text = (iconfont('edit') + ' Edit Set ' + iconfont('sets'))
         elif data == 'editsong':
-            title.text = u'''[font=MaterialDesignIcons]\uf4da[\font]
-                             Edit Song
-                             [font=MaterialDesignIcons]\uf518[/font]'''
+            title.text = (iconfont('edit') + ' Edit Song ' + iconfont('songs'))
             
 
     def on_connection(self, connection):
