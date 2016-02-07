@@ -32,15 +32,15 @@ Builder.load_string("""
                 Button:
                     id: pbadd
                     size_hint: None, None
-                    size: '36dp', '36dp'
-                    pos: self.parent.size[0] - dp(54), dp(72)
+                    size: app.buttonsize, app.buttonsize
+                    pos: self.parent.size[0] - 1.5*app.buttonsize, 2*app.buttonsize
                     markup: True
                     on_press: app.base.to_screen('search')
                 Button:
                     id: pbtranspose
                     size_hint: None, None
-                    size: '36dp', '36dp'
-                    pos: self.parent.size[0] - self.size[0] - dp(18), dp(18)
+                    size: app.buttonsize, app.buttonsize
+                    pos: self.parent.size[0] - self.size[0] - 0.5*app.buttonsize, 0.5*app.buttonsize
                     markup: True
 """)
 

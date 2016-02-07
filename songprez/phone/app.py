@@ -15,6 +15,7 @@ from kivy.app import App
 from kivy.clock import Clock
 from kivy.properties import StringProperty, BooleanProperty, ListProperty
 from kivy.properties import NumericProperty, ObjectProperty, DictProperty
+from kivy.metrics import dp
 from ..control import spcontrol
 from .basewidget import BaseWidget
 from ..network.spclient import SPClientFactory
@@ -26,6 +27,7 @@ class SongPrezApp(App):
     dataDir = StringProperty('')
     indexDir = StringProperty('')
     sendMessage = ObjectProperty(None)
+    buttonsize = NumericProperty(dp(36))
 
     def build(self):
         self.control = None
