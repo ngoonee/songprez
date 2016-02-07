@@ -37,6 +37,8 @@ icon_map = {'donate': u'\uf5b9',  # square-inc-cash
             'bibleversion': u'\uf5d3',  # sword
             'plus': u'\uf508',  # plus-circle-outline
             'transpose': u'\uf478',  # music-note
+            'expand': u'\uf238',  # chevron-right
+            'collapse': u'\uf236',  # chevron-down
             }
 
 def iconfont(name, size=None):
