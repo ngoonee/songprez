@@ -9,6 +9,7 @@ from kivy.uix.screenmanager import ScreenManager
 from kivy.uix.boxlayout import BoxLayout
 from .mainscreen import MainScreen
 from .presentscreen import PresentScreen
+from .songscreen import SongScreen
 from .iconfont import iconfont
 
 Builder.load_string("""
@@ -42,7 +43,7 @@ Builder.load_string("""
             name: 'present'
         Screen:
             name: 'sets'
-        Screen:
+        SongScreen:
             name: 'songs'
         Screen:
             name: 'search'
@@ -65,6 +66,7 @@ class BaseWidget(BoxLayout):
         self._keyboard.bind(on_key_down=self._on_keyboard_down)
         self.sm.bind(current=self._change_title)
         self.sm.current = 'main'
+        self.sm.current = 'songs'
 
     def _change_title(self, instance, data):
         title = self.title
