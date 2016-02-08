@@ -66,10 +66,12 @@ Builder.load_string("""
             text: root.titletext
             shorten: True
             shorten_from: 'right'
+            font_size: app.ui_fs_main
         Label:
             id: expand
             size_hint_x: None
             width: app.buttonsize
+            font_size: app.ui_fs_button
             markup: True
     BoxLayout:
         id: bottombar
@@ -92,16 +94,17 @@ Builder.load_string("""
                 id: edit
                 markup: True
                 size_hint_y: None
-                height: app.buttonsize
+                font_size: app.ui_fs_button
             Label:
                 id: delete
                 markup: True
                 size_hint_y: None
-                height: app.buttonsize
+                font_size: app.ui_fs_button
             Widget:
 
 <SummaryLine>:
     size_hint_y: None
+    font_size: app.ui_fs_detail
     height: 0 if not self.text else self.texture_size[1]
     halign: 'left'
     text_size: self.width, None
@@ -143,6 +146,8 @@ class CustomListItemView(SelectableView, BoxLayout):
     def _finish_init(self, dt):
         self.expand.text = iconfont('expand')
         self.summary.height = 0
+        # Otherwise won't be initialized properly
+        self.on_is_selected(self, self.is_selected)
 
     def on_touch_down(self, touch):
         if self.topbar.collide_point(*touch.pos) or self.summary.collide_point(*touch.pos):
@@ -167,7 +172,9 @@ class CustomListItemView(SelectableView, BoxLayout):
                 self.summary.add_widget(Widget(size_hint_y=None, height=spacer))
                 self.summary.height = 2*app.buttonsize
             self.edit.text = iconfont('edit')
+            self.edit.height = app.buttonsize
             self.delete.text = iconfont('delete')
+            self.delete.height = app.buttonsize
             self.expand.text = iconfont('collapse')
         else:
             self.summary.clear_widgets()
@@ -177,7 +184,9 @@ class CustomListItemView(SelectableView, BoxLayout):
                 c.texture_update()
                 self.summary.height += c.height
             self.edit.text = ''
+            self.edit.height = 0
             self.delete.text = ''
+            self.delete.height = 0
             self.expand.text = iconfont('expand')
 
 

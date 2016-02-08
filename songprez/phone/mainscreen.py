@@ -26,31 +26,37 @@ Builder.load_string("""
             markup: True
             halign: 'center'
             on_press: app.base.to_screen('sets')
+            font_size: app.ui_fs_title
         Button:
             id: pbpresent
             markup: True
             halign: 'center'
             on_press: app.base.to_screen('present')
+            font_size: app.ui_fs_title
         Button:
             id: pbsongs
             markup: True
             halign: 'center'
             on_press: app.base.to_screen('songs')
+            font_size: app.ui_fs_title
         Button:
             id: pbsearch
             markup: True
             halign: 'center'
             on_press: app.base.to_screen('search')
+            font_size: app.ui_fs_title
         Button:
             id: pbscripture
             markup: True
             halign: 'center'
             on_press: app.base.to_screen('scripture')
+            font_size: app.ui_fs_title
         Button:
             id: pbsettings
             markup: True
             halign: 'center'
             on_press: app.base.to_screen('settings')
+            font_size: app.ui_fs_title
 """)
 
 
