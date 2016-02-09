@@ -141,53 +141,57 @@ class CustomListItemView(SelectableView, BoxLayout):
     summarytext = StringProperty('')
     def __init__(self, **kwargs):
         super(CustomListItemView, self).__init__(**kwargs)
+        self.register_event_type('on_release')
         Clock.schedule_once(self._finish_init)
 
     def _finish_init(self, dt):
-        self.expand.text = iconfont('expand')
-        self.summary.height = 0
-        # Otherwise won't be initialized properly
-        self.on_is_selected(self, self.is_selected)
+        # Need to initialize how the view looks once
+        if self.is_selected:
+            self.select()
+        else:
+            self.deselect()
 
     def on_touch_down(self, touch):
         if self.topbar.collide_point(*touch.pos) or self.summary.collide_point(*touch.pos):
-            self.is_selected = not self.is_selected
+            self.dispatch('on_release')
             return True
-        super(CustomListItemView, self).on_touch_down(touch)
-        return False
+        return super(CustomListItemView, self).on_touch_down(touch)
 
-    def on_is_selected(self, instance, value):
-        if value:
-            app = App.get_running_app()
-            lines = self.summarytext.split('\n')
-            self.summary.clear_widgets()
-            for l in lines:
-                self.summary.add_widget(SummaryLine(text=l))
-            self.summary.height = 0
-            for c in self.summary.children:
-                c.texture_update()
-                self.summary.height += c.height
-            if self.summary.height < 2*app.buttonsize:
-                spacer = 2*app.buttonsize - self.summary.height
-                self.summary.add_widget(Widget(size_hint_y=None, height=spacer))
-                self.summary.height = 2*app.buttonsize
-            self.edit.text = iconfont('edit')
-            self.edit.height = app.buttonsize
-            self.delete.text = iconfont('delete')
-            self.delete.height = app.buttonsize
-            self.expand.text = iconfont('collapse')
-        else:
-            self.summary.clear_widgets()
-            self.summary.add_widget(SummaryLine(text=self.subtitletext))
-            self.summary.height = 0
-            for c in self.summary.children:
-                c.texture_update()
-                self.summary.height += c.height
-            self.edit.text = ''
-            self.edit.height = 0
-            self.delete.text = ''
-            self.delete.height = 0
-            self.expand.text = iconfont('expand')
+    def on_release(self):
+        pass
+    
+    def select(self):
+        app = App.get_running_app()
+        lines = self.summarytext.split('\n')
+        self.summary.clear_widgets()
+        for l in lines:
+            self.summary.add_widget(SummaryLine(text=l))
+        self.summary.height = 0
+        for c in self.summary.children:
+            c.texture_update()
+            self.summary.height += c.height
+        if self.summary.height < 2*app.buttonsize:
+            spacer = 2*app.buttonsize - self.summary.height
+            self.summary.add_widget(Widget(size_hint_y=None, height=spacer))
+            self.summary.height = 2*app.buttonsize
+        self.edit.text = iconfont('edit')
+        self.edit.height = app.buttonsize
+        self.delete.text = iconfont('delete')
+        self.delete.height = app.buttonsize
+        self.expand.text = iconfont('collapse')
+    
+    def deselect(self):
+        self.summary.clear_widgets()
+        self.summary.add_widget(SummaryLine(text=self.subtitletext))
+        self.summary.height = 0
+        for c in self.summary.children:
+            c.texture_update()
+            self.summary.height += c.height
+        self.edit.text = ''
+        self.edit.height = 0
+        self.delete.text = ''
+        self.delete.height = 0
+        self.expand.text = iconfont('expand')
 
 
 def song_args_converter(row_index, an_obj):

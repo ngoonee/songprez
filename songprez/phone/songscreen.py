@@ -62,4 +62,11 @@ class SongScreen(Screen):
                 SPSong.read_from_file('/home/data/Dropbox/OpenSong/Songs/A Mighty Fortress Is Our God'),
                 SPSong.read_from_file('/home/data/Dropbox/OpenSong/Songs/Kasih Yang Mempersatukan (Hari Ini)'),
                 ]
-        self.listview.adapter = ListAdapter(args_converter=song_args_converter, cls=CustomListItemView, data=data)
+        self.listview.adapter = ListAdapter(args_converter=song_args_converter,
+                                            cls=CustomListItemView,
+                                            data=data,
+                                            selection_mode='multiple')
+        self.listview.adapter.bind(on_selection_change=self.test)
+
+    def test(self, value):
+        print([s.titletext for s in self.listview.adapter.selection])
