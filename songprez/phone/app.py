@@ -18,6 +18,8 @@ from kivy.properties import NumericProperty, ObjectProperty, DictProperty
 from kivy.metrics import dp, sp
 from ..control import spcontrol
 from .basewidget import BaseWidget
+from .settings import SPSettings
+from .settingsjson import default_settings, build_settings
 from ..network.spclient import SPClientFactory
 from .iconfont import icon_font_register
 
@@ -34,6 +36,7 @@ class SongPrezApp(App):
     ui_fs_detail = NumericProperty(sp(15))
 
     def build(self):
+        self.settings_cls = SPSettings
         self.control = None
         self.base = BaseWidget()
         icon_font_register()
@@ -42,12 +45,14 @@ class SongPrezApp(App):
 
     def _verify_spcontrol(self, dt):
         try:
-            self.control = spcontrol.SPControl(self.indexDir, self.dataDir)
+            indexDir = self.config.get("filesfolders", "indexdir")
+            dataDir = self.config.get("filesfolders", "datadir")
+            self.control = spcontrol.SPControl(indexDir, dataDir)
             client = clientFromString(reactor, 'tcp:localhost:1916')
             client.connect(SPClientFactory(self.base))
         except Exception as e:
             print(e)
-            #self.open_settings()
+            self.open_settings()
 
     def on_stop(self):
         self.control.quit()
@@ -57,3 +62,21 @@ class SongPrezApp(App):
 
     def get_application_config(self):
         return os.path.join(self.user_data_dir, 'songprez.ini')
+
+    def build_config(self, config):
+        default_settings(config)
+
+    def build_settings(self, settings):
+        build_settings(settings, self.config)
+
+    def on_config_change(self, config, section,
+                         key, value):
+        print(config, section, key, value)
+
+    def display_settings(self, settings):
+        super(SongPrezApp, self).display_settings(settings)
+
+    def close_settings(self, *largs):
+        super(SongPrezApp, self).close_settings(*largs)
+        if not self.control:
+            Clock.schedule_once(self._verify_spcontrol)
