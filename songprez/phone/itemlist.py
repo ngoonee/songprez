@@ -83,6 +83,7 @@ Builder.load_string("""
             id: summary
             orientation: 'vertical'
             size_hint_y: None
+            height: 0  # Initial value, this is set later
         BoxLayout:
             id: sidebar
             orientation: 'vertical'
