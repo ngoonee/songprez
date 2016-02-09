@@ -139,9 +139,16 @@ class SPServerFactory(protocol.Factory):
         return self.protocol(self)
 
     def _sendPartial(self, message, jsonlist, **kwargs):
-        maxitems = 300
-        splitjson = [jsonlist[i:i+maxitems]
-                     for i in range(0, len(jsonlist), maxitems)]
+        maxlength = 64000
+        splitjson = [[]]
+        length = 0
+        for i, elem in enumerate(jsonlist):
+            if length + len(elem) < maxlength:
+                splitjson[-1].append(elem)
+                length += len(elem)
+            else:
+                splitjson.append([elem,])
+                length = len(elem)
         for p in self.peers:
             for i, lis in enumerate(splitjson):
                 kwargs['jsonlist'] = lis
@@ -155,7 +162,7 @@ class SPServerFactory(protocol.Factory):
             self._sendPartial(message, jsonlist, **kwargs)
         elif kwargs.get('itemlist'):
             itemlist = kwargs.pop('itemlist')
-            jsonlist = [json.dump(s.__dict__) for s in itemlist]
+            jsonlist = [json.dumps(s.__dict__) for s in itemlist]
             self._sendPartial(message, jsonlist, **kwargs)
         else:
             if kwargs.get('item'):

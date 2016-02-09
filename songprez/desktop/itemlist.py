@@ -22,6 +22,8 @@ from kivy.properties import ObjectProperty, DictProperty, \
         NumericProperty, ListProperty, BooleanProperty, StringProperty
 from math import ceil, floor
 
+from ..control.spsong import SPSong
+
 Builder.load_string("""
 <CustomListItemButton>:
     font_name: 'songprez/fonts/NotoSansMonoCJKsc-Regular.otf'
@@ -205,10 +207,19 @@ class ItemList(FocusBehavior, ListView):
         return self.adapter.data
 
     def args_converter(self, row_index, an_obj):
-        return {'text': an_obj['name'],
-                'size_hint_y': None,
-                'height': 15*1.5,
-                'filepath': an_obj.get('filepath', u''),
-                'itemtype': an_obj.get('itemtype', u''),
-                'presentation': an_obj.get('presentation', u''),
-                'index': row_index}
+        if type(an_obj) == type(SPSong()):
+            return {'text': an_obj.title,
+                    'size_hint_y': None,
+                    'height': 15*1.5,
+                    'filepath': an_obj.filepath,
+                    'itemtype': u'song',
+                    'presentation': u'',
+                    'index': row_index}
+        else:
+            return {'text': an_obj['name'],
+                    'size_hint_y': None,
+                    'height': 15*1.5,
+                    'filepath': an_obj.get('filepath', u''),
+                    'itemtype': an_obj.get('itemtype', u''),
+                    'presentation': an_obj.get('presentation', u''),
+                    'index': row_index}

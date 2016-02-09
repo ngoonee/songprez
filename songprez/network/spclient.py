@@ -83,7 +83,11 @@ class SPClientProtocol(amp.AMP):
     def SongList(self, curpage, totalpage, jsonlist):
         if curpage == 0:
             self._partSongList = []
-        self._partSongList.extend([json.loads(d) for d in jsonlist])
+        def to_song(json_dict):
+            so = SPSong()
+            so.__dict__ = json.loads(json_dict)
+            return so
+        self._partSongList.extend([to_song(d) for d in jsonlist])
         if curpage == totalpage-1:
             self.factory.client._song_list(self._partSongList)
         return {}

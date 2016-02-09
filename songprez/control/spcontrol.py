@@ -114,9 +114,9 @@ class SPControl(object):
             reactor.callInThread(self._threadedsearch)
 
     def _get_songs(self):
-        self._songList = [{'filepath': s.filepath, 'name': s.title,
-                           'itemtype': 'song'} for s in self._songs]
-        self.sendAll(SongList, list=self._songList)
+        #self._songList = [{'filepath': s.filepath, 'name': s.title,
+                           #'itemtype': 'song'} for s in self._songs]
+        self.sendAll(SongList, itemlist=self._songs)
 
     def _update_sets(self):
         # Use a generator first, then check for None return-type (xml parsing
