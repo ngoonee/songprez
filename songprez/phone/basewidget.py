@@ -24,9 +24,10 @@ Builder.load_string("""
     # to work. Before that we needed to apply font_size separately to label and
     # TextInput.
 <BaseWidget>:
-    orientation: "vertical"
+    songs: songs
     sm: sm
     title: title
+    orientation: "vertical"
     Label:
         id: title
         size_hint_y: None
@@ -44,6 +45,7 @@ Builder.load_string("""
         Screen:
             name: 'sets'
         SongScreen:
+            id: songs
             name: 'songs'
         Screen:
             name: 'search'
@@ -133,7 +135,7 @@ class BaseWidget(BoxLayout):
         app._control_loaded()
 
     def _song_list(self, listofsong):
-        pass
+        self.songs.song_list(listofsong)
 
     def _set_list(self, listofset):
         pass

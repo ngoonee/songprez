@@ -31,40 +31,12 @@ class SongScreen(Screen):
         Clock.schedule_once(self._finish_init)
 
     def _finish_init(self, dt):
-        data = [
-                SPSong.read_from_file('/home/data/Dropbox/OpenSong/Songs/Amazing Grace'),
-                SPSong.read_from_file('/home/data/Dropbox/OpenSong/Songs/Jesus Christ Is The Lord Of All'),
-                SPSong.read_from_file('/home/data/Dropbox/OpenSong/Songs/A Mighty Fortress Is Our God'),
-                SPSong.read_from_file('/home/data/Dropbox/OpenSong/Songs/Kasih Yang Mempersatukan (Hari Ini)'),
-                SPSong.read_from_file('/home/data/Dropbox/OpenSong/Songs/Amazing Grace'),
-                SPSong.read_from_file('/home/data/Dropbox/OpenSong/Songs/Jesus Christ Is The Lord Of All'),
-                SPSong.read_from_file('/home/data/Dropbox/OpenSong/Songs/A Mighty Fortress Is Our God'),
-                SPSong.read_from_file('/home/data/Dropbox/OpenSong/Songs/Kasih Yang Mempersatukan (Hari Ini)'),
-                SPSong.read_from_file('/home/data/Dropbox/OpenSong/Songs/Amazing Grace'),
-                SPSong.read_from_file('/home/data/Dropbox/OpenSong/Songs/Jesus Christ Is The Lord Of All'),
-                SPSong.read_from_file('/home/data/Dropbox/OpenSong/Songs/A Mighty Fortress Is Our God'),
-                SPSong.read_from_file('/home/data/Dropbox/OpenSong/Songs/Kasih Yang Mempersatukan (Hari Ini)'),
-                SPSong.read_from_file('/home/data/Dropbox/OpenSong/Songs/Amazing Grace'),
-                SPSong.read_from_file('/home/data/Dropbox/OpenSong/Songs/Jesus Christ Is The Lord Of All'),
-                SPSong.read_from_file('/home/data/Dropbox/OpenSong/Songs/A Mighty Fortress Is Our God'),
-                SPSong.read_from_file('/home/data/Dropbox/OpenSong/Songs/Kasih Yang Mempersatukan (Hari Ini)'),
-                SPSong.read_from_file('/home/data/Dropbox/OpenSong/Songs/Amazing Grace'),
-                SPSong.read_from_file('/home/data/Dropbox/OpenSong/Songs/Jesus Christ Is The Lord Of All'),
-                SPSong.read_from_file('/home/data/Dropbox/OpenSong/Songs/A Mighty Fortress Is Our God'),
-                SPSong.read_from_file('/home/data/Dropbox/OpenSong/Songs/Kasih Yang Mempersatukan (Hari Ini)'),
-                SPSong.read_from_file('/home/data/Dropbox/OpenSong/Songs/Amazing Grace'),
-                SPSong.read_from_file('/home/data/Dropbox/OpenSong/Songs/Jesus Christ Is The Lord Of All'),
-                SPSong.read_from_file('/home/data/Dropbox/OpenSong/Songs/A Mighty Fortress Is Our God'),
-                SPSong.read_from_file('/home/data/Dropbox/OpenSong/Songs/Kasih Yang Mempersatukan (Hari Ini)'),
-                SPSong.read_from_file('/home/data/Dropbox/OpenSong/Songs/Amazing Grace'),
-                SPSong.read_from_file('/home/data/Dropbox/OpenSong/Songs/Jesus Christ Is The Lord Of All'),
-                SPSong.read_from_file('/home/data/Dropbox/OpenSong/Songs/A Mighty Fortress Is Our God'),
-                SPSong.read_from_file('/home/data/Dropbox/OpenSong/Songs/A Mighty Fortress Is Our God'),
-                SPSong.read_from_file('/home/data/Dropbox/OpenSong/Songs/Kasih Yang Mempersatukan (Hari Ini)'),
-                ]
+        pass
+
+    def song_list(self, listofsong):
         self.listview.adapter = ListAdapter(args_converter=song_args_converter,
                                             cls=CustomListItemView,
-                                            data=data,
+                                            data=listofsong,
                                             selection_mode='multiple')
         self.listview.adapter.bind(on_selection_change=self.test)
 
