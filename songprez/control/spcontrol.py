@@ -123,7 +123,7 @@ class SPControl(object):
         # error
         sets = (SPSet.read_from_file(f)
                 for f in list_files(self._setPath, sortbytime=True,
-                                    reverse=True, recursive=True))
+                                    reverse=True, recursive=False))
         self._sets = [s for s in sets if s is not None]
         self._get_sets()
 
