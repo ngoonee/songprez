@@ -9,6 +9,7 @@ from kivy.uix.screenmanager import ScreenManager
 from kivy.uix.boxlayout import BoxLayout
 from .mainscreen import MainScreen
 from .presentscreen import PresentScreen
+from .setscreen import SetScreen
 from .songscreen import SongScreen
 from .iconfont import iconfont
 
@@ -24,6 +25,7 @@ Builder.load_string("""
     # to work. Before that we needed to apply font_size separately to label and
     # TextInput.
 <BaseWidget>:
+    sets: sets
     songs: songs
     sm: sm
     title: title
@@ -42,7 +44,8 @@ Builder.load_string("""
             name: 'main'
         PresentScreen:
             name: 'present'
-        Screen:
+        SetScreen:
+            id: sets
             name: 'sets'
         SongScreen:
             id: songs
@@ -138,7 +141,7 @@ class BaseWidget(BoxLayout):
         self.songs.song_list(listofsong)
 
     def _set_list(self, listofset):
-        pass
+        self.sets.set_list(listofset)
 
     def _search_list(self, listofsearch):
         pass

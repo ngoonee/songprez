@@ -39,6 +39,17 @@ icon_map = {'donate': u'\uf5b9',  # square-inc-cash
             'transpose': u'\uf478',  # music-note
             'expand': u'\uf238',  # chevron-right
             'collapse': u'\uf236',  # chevron-down
+            '0': u'\uf491',  # numeric-0-box
+            '1': u'\uf494',  # numeric-1-box
+            '2': u'\uf497',  # numeric-2-box
+            '3': u'\uf49a',  # numeric-3-box
+            '4': u'\uf49d',  # numeric-4-box
+            '5': u'\uf4a0',  # numeric-5-box
+            '6': u'\uf4a3',  # numeric-6-box
+            '7': u'\uf4a6',  # numeric-7-box
+            '8': u'\uf4a9',  # numeric-8-box
+            '9': u'\uf4ac',  # numeric-9-box
+            '9+': u'\uf4af',  # numeric-9-plus-box
             }
 
 def iconfont(name, size=None):

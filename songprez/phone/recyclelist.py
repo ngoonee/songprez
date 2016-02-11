@@ -106,6 +106,7 @@ Builder.load_string("""
     pos_hint: {'top': 0}
     shorten: True
     shorten_from: 'right'
+    markup: True
 """)
 
 
@@ -142,7 +143,8 @@ class ListItem(SelectableView, RecycleViewMixin, BoxLayout):
                     app = App.get_running_app()
                     if self.is_selected:
                         viewclass = 'ListItemWithSummary'
-                        h = (app.ui_fs_main*1.5 + app.ui_fs_detail*4*1.5
+                        h = (app.ui_fs_main*1.5 
+                                + app.ui_fs_detail*len(self.summarytext)*1.5
                                 + self.padding[1] + self.padding[3])
                     elif self.subtitletext:
                         viewclass = 'ListItemWithSubTitle'
