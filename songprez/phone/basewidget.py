@@ -9,8 +9,7 @@ from kivy.uix.screenmanager import ScreenManager
 from kivy.uix.boxlayout import BoxLayout
 from .mainscreen import MainScreen
 from .presentscreen import PresentScreen
-from .setscreen import SetScreen
-from .songscreen import SongScreen
+from .listscreen import SetScreen, SongScreen
 from .iconfont import iconfont
 
 Builder.load_string("""
@@ -137,10 +136,10 @@ class BaseWidget(BoxLayout):
         app._control_loaded()
 
     def _song_list(self, listofsong):
-        self.songs.song_list(listofsong)
+        self.songs.item_list(listofsong)
 
     def _set_list(self, listofset):
-        self.sets.set_list(listofset)
+        self.sets.item_list(listofset)
 
     def _search_list(self, listofsearch):
         pass
