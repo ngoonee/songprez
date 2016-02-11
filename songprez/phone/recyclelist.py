@@ -12,7 +12,7 @@ from kivy.adapters.listadapter import ListAdapter
 from kivy.uix.behaviors import FocusBehavior
 from kivy.graphics import Color, Line
 from kivy.uix.selectableview import SelectableView
-from kivy.properties import StringProperty, ObjectProperty
+from kivy.properties import StringProperty, ObjectProperty, ListProperty
 from .iconfont import iconfont
 from kivy.garden.recycleview import RecycleViewMixin, LayoutChangeException
 
@@ -21,7 +21,7 @@ Builder.load_string("""
     index: 0
     titletext: ''
     subtitletext: ''
-    summarytext: ''
+    summarytext: []
     rv: None
 
     topbar: topbar
@@ -116,7 +116,7 @@ class SummaryLine(Label):
 class ListItem(SelectableView, RecycleViewMixin, BoxLayout):
     titletext = StringProperty('')
     subtitletext = StringProperty('')
-    summarytext = StringProperty('')
+    summarytext = ListProperty([])
     rv = ObjectProperty(None)
 
     def refresh_view_attrs(self, rv, data):
@@ -177,7 +177,7 @@ class ListItemWithSummary(ListItem):
         super(ListItemWithSummary, self).refresh_view_layout(rv, index, pos, size, viewport)
         self.is_selected = True
         app = App.get_running_app()
-        lines = self.summarytext.split('\n')
+        lines = self.summarytext
         self.summary.clear_widgets()
         for l in lines:
             self.summary.add_widget(SummaryLine(text=l))

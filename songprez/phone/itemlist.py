@@ -39,7 +39,7 @@ Builder.load_string("""
     height: topbar.height + bottombar.height + self.padding[1] + self.padding[3]
     titletext: ''
     subtitletext: ''
-    summarytext: ''
+    summarytext: []
     canvas:
         Color:
             rgba: (.25, .25, .25, 1) if self.index % 2 else (.125, .125, .125, 1)
@@ -139,7 +139,7 @@ class SummaryLine(Label):
 class CustomListItemView(SelectableView, BoxLayout):
     titletext = StringProperty('')
     subtitletext = StringProperty('')
-    summarytext = StringProperty('')
+    summarytext = ListProperty([])
     def __init__(self, **kwargs):
         super(CustomListItemView, self).__init__(**kwargs)
         self.register_event_type('on_release')
@@ -204,7 +204,7 @@ def song_args_converter(row_index, an_obj):
     subtitle = " | ".join(subtitle)
     text = an_obj.words.split('\n')
     text = [t for t in text if t != '' and not (t[0] == '[' and t[-1] == ']')]
-    summary = '\n'.join(text[0:4])
+    summary = text[0:4]
     return {'titletext': title,
             'subtitletext': subtitle,
             'summarytext': summary}

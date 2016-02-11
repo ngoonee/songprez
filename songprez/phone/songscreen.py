@@ -52,7 +52,7 @@ class SongScreen(Screen):
             subtitle = " | ".join(subtitle)
             text = s.words.split('\n')
             text = [t for t in text if t != '' and not (t[0] == '[' and t[-1] == ']')]
-            summary = '\n'.join(text[0:4])
+            summary = text[0:4]
             app = App.get_running_app()
             from kivy.metrics import dp
             if subtitle:
