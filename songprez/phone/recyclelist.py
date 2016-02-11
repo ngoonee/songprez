@@ -10,6 +10,7 @@ from kivy.uix.label import Label
 from kivy.uix.boxlayout import BoxLayout
 from kivy.adapters.listadapter import ListAdapter
 from kivy.uix.behaviors import FocusBehavior
+from kivy.uix.widget import Widget
 from kivy.graphics import Color, Line
 from kivy.uix.selectableview import SelectableView
 from kivy.properties import StringProperty, ObjectProperty, ListProperty
@@ -143,8 +144,11 @@ class ListItem(SelectableView, RecycleViewMixin, BoxLayout):
                     app = App.get_running_app()
                     if self.is_selected:
                         viewclass = 'ListItemWithSummary'
+                        summaryheight = app.ui_fs_detail*len(self.summarytext)*1.5
+                        if summaryheight < 2*app.buttonsize:
+                            summaryheight = 2*app.buttonsize
                         h = (app.ui_fs_main*1.5 
-                                + app.ui_fs_detail*len(self.summarytext)*1.5
+                                + summaryheight
                                 + self.padding[1] + self.padding[3])
                     elif self.subtitletext:
                         viewclass = 'ListItemWithSubTitle'
