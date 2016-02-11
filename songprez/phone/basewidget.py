@@ -71,7 +71,6 @@ class BaseWidget(BoxLayout):
         self._keyboard.bind(on_key_down=self._on_keyboard_down)
         self.sm.bind(current=self._change_title)
         self.sm.current = 'main'
-        self.sm.current = 'songs'
 
     def _change_title(self, instance, data):
         title = self.title
