@@ -74,7 +74,11 @@ class SPClientProtocol(amp.AMP):
     def SetList(self, curpage, totalpage, jsonlist):
         if curpage == 0:
             self._partSetList = []
-        self._partSetList.extend([json.loads(d) for d in jsonlist])
+        def to_set(json_dict):
+            se = SPSet()
+            se.__dict__ = json.loads(json_dict)
+            return se
+        self._partSetList.extend([to_set(d) for d in jsonlist])
         if curpage == totalpage-1:
             self.factory.client._set_list(self._partSetList)
         return {}
@@ -96,7 +100,11 @@ class SPClientProtocol(amp.AMP):
     def SearchList(self, curpage, totalpage, jsonlist):
         if curpage == 0:
             self._partSearchList = []
-        self._partSearchList.extend([json.loads(d) for d in jsonlist])
+        def to_song(json_dict):
+            so = SPSong()
+            so.__dict__ = json.loads(json_dict)
+            return so
+        self._partSearchList.extend([to_song(d) for d in jsonlist])
         if curpage == totalpage-1:
             self.factory.client._search_list(self._partSearchList)
         return {}

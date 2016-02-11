@@ -128,8 +128,8 @@ class SPControl(object):
         self._get_sets()
 
     def _get_sets(self):
-        self._setList = [{'filepath': s.filepath, 'name': s.name} for s in self._sets]
-        self.sendAll(SetList, list=self._setList)
+        #self._setList = [{'filepath': s.filepath, 'name': s.name} for s in self._sets]
+        self.sendAll(SetList, itemlist=self._sets)
 
     def _update_scripture(self):
         self._scriptureList = ({'filepath': os.path.split(f)[1],
@@ -155,7 +155,7 @@ class SPControl(object):
     def _threadedsearch(self):
         term = self._searchTerm
         self._searchList = self._searchObj.search(term)
-        self.sendAll(SearchList, list=self._searchList)
+        self.sendAll(SearchList, itemlist=self._searchList)
 
     def _search(self, searchTerm):
         self._searchTerm = searchTerm

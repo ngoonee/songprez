@@ -23,6 +23,7 @@ from kivy.properties import ObjectProperty, DictProperty, \
 from math import ceil, floor
 
 from ..control.spsong import SPSong
+from ..control.spset import SPSet
 
 Builder.load_string("""
 <CustomListItemButton>:
@@ -215,7 +216,15 @@ class ItemList(FocusBehavior, ListView):
                     'itemtype': u'song',
                     'presentation': u'',
                     'index': row_index}
-        else:
+        elif type(an_obj) == type(SPSet()):
+            return {'text': an_obj.name,
+                    'size_hint_y': None,
+                    'height': 15*1.5,
+                    'filepath': an_obj.filepath,
+                    'itemtype': u'',
+                    'presentation': u'',
+                    'index': row_index}
+        else:  # If its not a song or set, its a scripture-related object
             return {'text': an_obj['name'],
                     'size_hint_y': None,
                     'height': 15*1.5,
