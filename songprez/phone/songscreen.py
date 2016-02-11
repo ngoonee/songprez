@@ -17,12 +17,16 @@ from .itemlist import MyListView
 from .itemlist import song_args_converter
 from .itemlist import CustomListItemView
 from ..control.spsong import SPSong
+from kivy.garden.recycleview import RecycleView
+from .recyclelist import ListItem, ListItemWithSummary, ListItemWithSubTitle
 
 Builder.load_string("""
 <SongScreen>:
     listview: listview
-    MyListView:
+    RecycleView:
         id: listview
+        key_viewclass: 'viewclass'
+        key_size: 'height'
 """)
 
 class SongScreen(Screen):
@@ -31,14 +35,33 @@ class SongScreen(Screen):
         Clock.schedule_once(self._finish_init)
 
     def _finish_init(self, dt):
-        pass
+        app = App.get_running_app()
+        self.listview.data = [{'viewclass': 'Label',
+                               'text': 'Please wait, still loading songs!',
+                               'font_size': app.ui_fs_main,
+                               'height': 200}]
 
     def song_list(self, listofsong):
-        self.listview.adapter = ListAdapter(args_converter=song_args_converter,
-                                            cls=CustomListItemView,
-                                            data=listofsong,
-                                            selection_mode='multiple')
-        self.listview.adapter.bind(on_selection_change=self.test)
-
-    def test(self, value):
-        print([s.titletext for s in self.listview.adapter.selection])
+        data = []
+        for i, s in enumerate(listofsong):
+            title = s.title
+            subtitle = [] 
+            for t in (s.author, s.aka, s.key_line):
+                if t:
+                    subtitle.append(t)
+            subtitle = " | ".join(subtitle)
+            text = s.words.split('\n')
+            text = [t for t in text if t != '' and not (t[0] == '[' and t[-1] == ']')]
+            summary = '\n'.join(text[0:4])
+            app = App.get_running_app()
+            from kivy.metrics import dp
+            if subtitle:
+                viewclass = 'ListItemWithSubTitle'
+                h = app.ui_fs_main*1.5 + app.ui_fs_detail*1.5 + dp(10)
+            else:
+                viewclass = 'ListItem'
+                h = app.ui_fs_main*1.5 + dp(10)
+            data.append({'index': i, 'titletext': title,
+                         'subtitletext': subtitle, 'summarytext': summary,
+                         'viewclass': viewclass, 'height': h, 'rv': self.listview})
+        self.listview.data = data
