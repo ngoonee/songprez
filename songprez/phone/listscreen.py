@@ -14,7 +14,7 @@ from kivy.properties import BooleanProperty, NumericProperty
 from kivy.adapters.listadapter import ListAdapter
 from .iconfont import iconfont
 from kivy.garden.recycleview import RecycleView
-from .recyclelist import ListItem, ListItemWithSummary, ListItemWithSubTitle
+from .recyclelist import ListItem
 from kivy.metrics import dp
 
 Builder.load_string("""
@@ -40,13 +40,14 @@ class ListScreen(Screen):
         for i, item in enumerate(listofitem):
             title, subtitle, summary = self.get_vals(item)
             if subtitle:
-                viewclass = 'ListItemWithSubTitle'
+                viewclass = 'ListItem'
                 h = app.ui_fs_main*1.5 + app.ui_fs_detail*1.5 + dp(10)
             else:
                 viewclass = 'ListItem'
                 h = app.ui_fs_main*1.5 + dp(10)
             data.append({'index': i, 'titletext': title,
                          'subtitletext': subtitle, 'summarytext': summary,
+                         'expand_angle': 0, 'button_opacity': 0,
                          'viewclass': viewclass, 'height': h,
                          'rv': self.listview})
         self.listview.data = data
@@ -93,12 +94,13 @@ class SetScreen(ListScreen):
             subtitle = [iconfont('9+', iconsize)]
         else:
             subtitle = [iconfont(str(len(text)), iconsize)]
-        for i in text:
+        for i in text[:4]:
             subtitle.append(' '.join(i.split(' ', 2)[:2]))
-        subtitle = " | ".join(subtitle)
-        if len(text) > 7:
-            summary = text[:7]
+        if len(text) > 4:
+            summary = text[:4]
             summary.append('...')
+            subtitle.append('...')
         else:
             summary = text
+        subtitle = " | ".join(subtitle)
         return title, subtitle, summary
