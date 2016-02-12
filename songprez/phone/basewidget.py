@@ -9,7 +9,7 @@ from kivy.uix.screenmanager import ScreenManager
 from kivy.uix.boxlayout import BoxLayout
 from .mainscreen import MainScreen
 from .presentscreen import PresentScreen
-from .listscreen import SetScreen, SongScreen
+from .listscreen import SetScreen, SongScreen, SearchScreen
 from .iconfont import iconfont
 
 Builder.load_string("""
@@ -26,6 +26,7 @@ Builder.load_string("""
 <BaseWidget>:
     sets: sets
     songs: songs
+    search: search
     sm: sm
     title: title
     orientation: "vertical"
@@ -49,7 +50,8 @@ Builder.load_string("""
         SongScreen:
             id: songs
             name: 'songs'
-        Screen:
+        SearchScreen:
+            id: search
             name: 'search'
         Screen:
             name: 'scripture'
@@ -142,7 +144,7 @@ class BaseWidget(BoxLayout):
         self.sets.item_list(listofset)
 
     def _search_list(self, listofsearch):
-        pass
+        self.search.item_list(listofsearch)
 
     def _scripture_list(self, listofscripture):
         pass

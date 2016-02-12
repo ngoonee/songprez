@@ -15,15 +15,84 @@ from kivy.adapters.listadapter import ListAdapter
 from .iconfont import iconfont
 from kivy.garden.recycleview import RecycleView
 from .recyclelist import ListItem
-from kivy.metrics import dp
+from kivy.metrics import dp, sp
+from ..network.messages import Search
 
 Builder.load_string("""
-<ListScreen>:
+<RecycleView>:
+    canvas.before:
+        Color:
+            rgba: (.125, .125, .125, 1)
+        RoundedRectangle:
+            size: self.size
+            pos: self.pos
+            radius: dp(10),
+    key_viewclass: 'viewclass'
+    key_size: 'height'
+
+<Buttons@BoxLayout>:
+    button1: button1
+    button2: button2
+    button3: button3
+    size_hint_y: None
+    height: app.buttonsize + dp(10)
+    spacing: '5dp'
+    Button:
+        id: button1
+        markup: True
+        font_size: app.ui_fs_button
+        on_press: root.parent.parent.button1()
+    Button:
+        id: button2
+        markup: True
+        font_size: app.ui_fs_button
+        on_press: root.parent.parent.button2()
+    Button:
+        id: button3
+        markup: True
+        font_size: app.ui_fs_button
+        on_press: root.parent.parent.button3()
+
+<SearchScreen>:
     listview: listview
-    RecycleView:
-        id: listview
-        key_viewclass: 'viewclass'
-        key_size: 'height'
+    buttons: buttons
+    BoxLayout:
+        orientation: 'vertical'
+        padding: '5dp'
+        spacing: '5dp'
+        TextInput:
+            size_hint_y: None
+            height: self.minimum_height
+            multiline: False
+            on_text_validate: root.do_search(self.text)
+        RecycleView:
+            id: listview
+        Buttons:
+            id: buttons
+
+<SongScreen>:
+    listview: listview
+    buttons: buttons
+    BoxLayout:
+        orientation: 'vertical'
+        padding: '5dp'
+        spacing: '5dp'
+        RecycleView:
+            id: listview
+        Buttons:
+            id: buttons
+
+<SetScreen>:
+    listview: listview
+    buttons: buttons
+    BoxLayout:
+        orientation: 'vertical'
+        padding: '5dp'
+        spacing: '5dp'
+        RecycleView:
+            id: listview
+        Buttons:
+            id: buttons
 """)
 
 class ListScreen(Screen):
@@ -55,14 +124,26 @@ class ListScreen(Screen):
     def get_vals(self, item):
         return u'', u'', u''
 
+    def button1(self):
+        pass
 
-class SongScreen(ListScreen):
+    def button2(self):
+        pass
+
+    def button3(self):
+        pass
+
+
+class SearchScreen(ListScreen):
     def _finish_init(self, dt):
         app = App.get_running_app()
         self.listview.data = [{'viewclass': 'Label',
-                               'text': 'Please wait, still loading songs!',
+                               'text': 'No search results yet',
                                'font_size': app.ui_fs_main,
-                               'height': 200}]
+                               'height': sp(50)}]
+        self.buttons.button1.text = iconfont('new', app.ui_fs_button) + ' New'
+        self.buttons.button2.text = iconfont('songs', app.ui_fs_button) + ' Songs'
+        self.buttons.button3.text = iconfont('listadd', app.ui_fs_button) + ' Add'
 
     def get_vals(self, item):
         title = item.title
@@ -72,9 +153,48 @@ class SongScreen(ListScreen):
                 subtitle.append(t)
         subtitle = " | ".join(subtitle)
         text = item.words.split('\n')
-        text = [t for t in text if t != '' and not (t[0] == '[' and t[-1] == ']')]
+        text = [t for t in text 
+                if t != '' and not (t[0] == '[' and t[-1] == ']')]
         summary = text[0:4]
         return title, subtitle, summary
+
+    def do_search(self, searchTerm):
+        print('searching for ', searchTerm)
+        app = App.get_running_app()
+        app.sendMessage(Search, term=searchTerm)
+
+    def button2(self):
+        app = App.get_running_app()
+        app.base.sm.current = 'songs'
+
+
+class SongScreen(ListScreen):
+    def _finish_init(self, dt):
+        app = App.get_running_app()
+        self.listview.data = [{'viewclass': 'Label',
+                               'text': 'Please wait, still loading songs!',
+                               'font_size': app.ui_fs_main,
+                               'height': sp(50)}]
+        self.buttons.button1.text = iconfont('new', app.ui_fs_button) + ' New'
+        self.buttons.button2.text = iconfont('search', app.ui_fs_button) + ' Search'
+        self.buttons.button3.text = iconfont('listadd', app.ui_fs_button) + ' Add'
+
+    def get_vals(self, item):
+        title = item.title
+        subtitle = [] 
+        for t in (item.author, item.aka, item.key_line):
+            if t:
+                subtitle.append(t)
+        subtitle = " | ".join(subtitle)
+        text = item.words.split('\n')
+        text = [t for t in text 
+                if t != '' and not (t[0] == '[' and t[-1] == ']')]
+        summary = text[0:4]
+        return title, subtitle, summary
+
+    def button2(self):
+        app = App.get_running_app()
+        app.base.sm.current = 'search'
 
 
 class SetScreen(ListScreen):
@@ -83,7 +203,10 @@ class SetScreen(ListScreen):
         self.listview.data = [{'viewclass': 'Label',
                                'text': 'Please wait, still loading sets!',
                                'font_size': app.ui_fs_main,
-                               'height': 200}]
+                               'height': sp(50)}]
+        self.buttons.button1.text = iconfont('new', app.ui_fs_button) + ' New'
+        self.buttons.button2.text = iconfont('sort', app.ui_fs_button) + ' Sort'
+        self.buttons.button3.text = iconfont('showset', app.ui_fs_button) + ' Show'
 
     def get_vals(self, item):
         app = App.get_running_app()
