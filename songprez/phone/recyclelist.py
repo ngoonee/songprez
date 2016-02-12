@@ -32,13 +32,13 @@ Builder.load_string("""
     subtitle: subtitle
     edit: edit
     delete: delete
-    canvas:
+    canvas.before:
         Color:
             rgba: (.25, .25, .25, 1) if self.index % 2 else (.125, .125, .125, 1)
         RoundedRectangle:
             size: self.size
             pos: self.pos
-            radius: 5,
+            radius: dp(10),
         Color:
             rgba: 0, 0, 0, 1
         Line:
