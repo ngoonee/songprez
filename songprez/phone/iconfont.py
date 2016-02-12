@@ -55,6 +55,11 @@ icon_map = {'donate': u'\uf5b9',  # square-inc-cash
 def iconfont(name, size=None):
     icon = icon_map[name]
     if size:
+        try:
+            float(str(size))
+            size = str(int(size))
+        except ValueError:
+            pass
         return (u'[font=MaterialDesignIcons][size='
                 + size + u']' + icon
                 + u'[/size][/font]')
