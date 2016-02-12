@@ -95,7 +95,7 @@ class BaseWidget(BoxLayout):
         elif data == 'editsong':
             title.text = (iconfont('edit') + ' Edit Song ' + iconfont('songs'))
         # Save screen history
-        if data == 'main':
+        if data == 'main' and self._history == []:
             self._history = ['main',]
         elif data == 'settings':
             pass
@@ -108,10 +108,14 @@ class BaseWidget(BoxLayout):
             diff = scr_prio[data] - scr_prio[self._history[-1]]
             if diff == 0:  # Save level is sets<->present or songs<->search
                 self._history.pop()
+                self.sm.transition.direction = 'down'
             elif diff > 0:  # Normal case, progressing up the chain
-                pass
+                print('normal')
+                self.sm.transition.direction = 'left'
             else:  # 'Backward' jump, need to pare the list down
+                print('back')
                 self._history = self._history[:scr_prio[data]-1]
+                self.sm.transition.direction = 'right'
             self._history.append(data)
             
     def _on_keyboard_down(self, keyboard, keycode, text, modifiers):
