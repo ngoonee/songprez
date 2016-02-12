@@ -28,6 +28,7 @@ icon_map = {'donate': u'\uf5b9',  # square-inc-cash
             'new': u'\uf504',  # plus
             'listadd': u'\uf501',  # playlist-plus
             'listremove': u'\uf502',  # playlist-remove
+            'sort': u'\uf5a8',  # sort
             'copy': u'\uf285',  # content-copy
             'saveas': u'\uf15c',  # at
             'language': u'\uf5a9',  # alphabetical
