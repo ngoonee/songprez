@@ -17,6 +17,7 @@ from kivy.garden.recycleview import RecycleView
 from .recyclelist import ListItem
 from kivy.metrics import dp, sp
 from ..network.messages import Search
+from .buttonrow import Buttons
 
 Builder.load_string("""
 <RecycleView>:
@@ -29,29 +30,6 @@ Builder.load_string("""
             radius: dp(10),
     key_viewclass: 'viewclass'
     key_size: 'height'
-
-<Buttons@BoxLayout>:
-    button1: button1
-    button2: button2
-    button3: button3
-    size_hint_y: None
-    height: app.buttonsize + dp(10)
-    spacing: '5dp'
-    Button:
-        id: button1
-        markup: True
-        font_size: app.ui_fs_button
-        on_press: root.parent.parent.button1()
-    Button:
-        id: button2
-        markup: True
-        font_size: app.ui_fs_button
-        on_press: root.parent.parent.button2()
-    Button:
-        id: button3
-        markup: True
-        font_size: app.ui_fs_button
-        on_press: root.parent.parent.button3()
 
 <SearchScreen>:
     listview: listview
@@ -69,6 +47,9 @@ Builder.load_string("""
             id: listview
         Buttons:
             id: buttons
+            button1_action: root.bt_new
+            button2_action: root.bt_songs
+            button3_action: root.bt_add
 
 <SongScreen>:
     listview: listview
@@ -81,6 +62,9 @@ Builder.load_string("""
             id: listview
         Buttons:
             id: buttons
+            button1_action: root.bt_new
+            button2_action: root.bt_search
+            button3_action: root.bt_add
 
 <SetScreen>:
     listview: listview
@@ -93,6 +77,9 @@ Builder.load_string("""
             id: listview
         Buttons:
             id: buttons
+            button1_action: root.bt_new
+            button2_action: root.bt_sort
+            button3_action: root.bt_show
 """)
 
 class ListScreen(Screen):
@@ -124,15 +111,6 @@ class ListScreen(Screen):
     def get_vals(self, item):
         return u'', u'', u''
 
-    def button1(self):
-        pass
-
-    def button2(self):
-        pass
-
-    def button3(self):
-        pass
-
 
 class SearchScreen(ListScreen):
     def _finish_init(self, dt):
@@ -163,9 +141,15 @@ class SearchScreen(ListScreen):
         app = App.get_running_app()
         app.sendMessage(Search, term=searchTerm)
 
-    def button2(self):
+    def bt_new(self):
+        pass
+
+    def bt_songs(self):
         app = App.get_running_app()
         app.base.sm.current = 'songs'
+
+    def bt_add(self):
+        pass
 
 
 class SongScreen(ListScreen):
@@ -192,9 +176,15 @@ class SongScreen(ListScreen):
         summary = text[0:4]
         return title, subtitle, summary
 
-    def button2(self):
+    def bt_new(self):
+        pass
+
+    def bt_search(self):
         app = App.get_running_app()
         app.base.sm.current = 'search'
+
+    def bt_add(self):
+        pass
 
 
 class SetScreen(ListScreen):
@@ -227,3 +217,12 @@ class SetScreen(ListScreen):
             summary = text
         subtitle = " | ".join(subtitle)
         return title, subtitle, summary
+
+    def bt_new(self):
+        pass
+
+    def bt_sort(self):
+        pass
+
+    def bt_show(self):
+        pass
