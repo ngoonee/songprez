@@ -10,7 +10,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from kivy.uix.button import Button
 from kivy.uix.screenmanager import Screen, ScreenManager
-from kivy.properties import BooleanProperty, NumericProperty
+from kivy.properties import BooleanProperty, NumericProperty, ListProperty
 from kivy.adapters.listadapter import ListAdapter
 from .iconfont import iconfont
 from .recyclelist import SPRecycleView, ListItem
@@ -78,6 +78,8 @@ Builder.load_string("""
 
 
 class ListScreen(Screen):
+    itemlist = ListProperty([])
+
     def __init__(self, **kwargs):
         super(ListScreen, self).__init__(**kwargs)
         Clock.schedule_once(self._finish_init)
@@ -102,6 +104,7 @@ class ListScreen(Screen):
                          'viewclass': viewclass, 'height': h,
                          'rv': self.rv})
         self.rv.data = data
+        self.itemlist = listofitem
 
     def get_vals(self, item):
         return u'', u'', u''
@@ -136,10 +139,10 @@ class SearchScreen(ListScreen):
         app = App.get_running_app()
         app.sendMessage(Search, term=searchTerm)
 
-    def bt_edit(self):
+    def bt_edit(self, index):
         pass
 
-    def bt_delete(self):
+    def bt_delete(self, index):
         pass
 
     def bt_new(self):
@@ -177,12 +180,12 @@ class SongScreen(ListScreen):
         summary = text[0:4]
         return title, subtitle, summary
 
-    def bt_edit(self):
-        print('editing')
-        pass
+    def bt_edit(self, index):
+        app = App.get_running_app()
+        app.base.current_song = self.itemlist[index]
+        app.base.sm.current = 'editsong'
 
-    def bt_delete(self):
-        print('deleting')
+    def bt_delete(self, index):
         pass
 
     def bt_new(self):
@@ -227,10 +230,10 @@ class SetScreen(ListScreen):
         subtitle = " | ".join(subtitle)
         return title, subtitle, summary
 
-    def bt_edit(self):
+    def bt_edit(self, index):
         pass
 
-    def bt_delete(self):
+    def bt_delete(self, index):
         pass
 
     def bt_new(self):

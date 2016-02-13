@@ -136,9 +136,9 @@ class ListItem(SelectableView, RecycleViewMixin, FloatLayout, StencilView):
     def on_touch_down(self, touch):
         if self.collide_point(*touch.pos):
             if self.is_selected and self.edit.collide_point(*touch.pos):
-                self.rv.edit_action()
+                self.rv.edit_action(self.index)
             elif self.is_selected and self.delete.collide_point(*touch.pos):
-                self.rv.delete_action()
+                self.rv.delete_action(self.index)
             else:
                 self.is_selected = not self.is_selected
                 height = dp(5) + self.title_fs*1.5 + dp(5)

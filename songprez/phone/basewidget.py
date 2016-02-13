@@ -4,7 +4,7 @@ import kivy
 from kivy.lang import Builder
 from kivy.core.window import Window
 from kivy.app import App
-from kivy.properties import BooleanProperty
+from kivy.properties import ObjectProperty
 from kivy.uix.screenmanager import ScreenManager
 from kivy.uix.boxlayout import BoxLayout
 from .mainscreen import MainScreen
@@ -68,6 +68,8 @@ Builder.load_string("""
 
 
 class BaseWidget(BoxLayout):
+    current_song = ObjectProperty(None)
+
     def __init__(self, **kwargs):
         super(BaseWidget, self).__init__(**kwargs)
         self._history = []
