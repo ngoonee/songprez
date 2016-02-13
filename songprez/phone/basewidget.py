@@ -115,11 +115,15 @@ class BaseWidget(BoxLayout):
                 self._history.pop()
                 self.sm.transition.direction = 'down'
             elif diff > 0:  # Normal case, progressing up the chain
-                print('normal')
                 self.sm.transition.direction = 'left'
             else:  # 'Backward' jump, need to pare the list down
-                print('back')
-                self._history = self._history[:scr_prio[data]-1]
+                newhistory = []
+                for i, v in enumerate(self._history):
+                    if scr_prio[data] - scr_prio[v] > 0:
+                        newhistory.append(v)
+                    else:
+                        break
+                self._history = newhistory
                 self.sm.transition.direction = 'right'
             self._history.append(data)
             
