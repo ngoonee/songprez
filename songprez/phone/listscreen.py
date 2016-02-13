@@ -13,24 +13,12 @@ from kivy.uix.screenmanager import Screen, ScreenManager
 from kivy.properties import BooleanProperty, NumericProperty
 from kivy.adapters.listadapter import ListAdapter
 from .iconfont import iconfont
-from kivy.garden.recycleview import RecycleView
-from .recyclelist import ListItem
+from .recyclelist import SPRecycleView, ListItem
 from kivy.metrics import dp, sp
 from ..network.messages import Search
 from .buttonrow import Buttons
 
 Builder.load_string("""
-<RecycleView>:
-    canvas.before:
-        Color:
-            rgba: (.125, .125, .125, 1)
-        RoundedRectangle:
-            size: self.size
-            pos: self.pos
-            radius: dp(10),
-    key_viewclass: 'viewclass'
-    key_size: 'height'
-
 <SearchScreen>:
     listview: listview
     buttons: buttons
@@ -43,8 +31,10 @@ Builder.load_string("""
             height: self.minimum_height
             multiline: False
             on_text_validate: root.do_search(self.text)
-        RecycleView:
+        SPRecycleView:
             id: listview
+            edit_action: root.bt_edit
+            delete_action: root.bt_delete
         Buttons:
             id: buttons
             button1_action: root.bt_new
@@ -58,8 +48,10 @@ Builder.load_string("""
         orientation: 'vertical'
         padding: '5dp'
         spacing: '5dp'
-        RecycleView:
+        SPRecycleView:
             id: listview
+            edit_action: root.bt_edit
+            delete_action: root.bt_delete
         Buttons:
             id: buttons
             button1_action: root.bt_new
@@ -73,14 +65,17 @@ Builder.load_string("""
         orientation: 'vertical'
         padding: '5dp'
         spacing: '5dp'
-        RecycleView:
+        SPRecycleView:
             id: listview
+            edit_action: root.bt_edit
+            delete_action: root.bt_delete
         Buttons:
             id: buttons
             button1_action: root.bt_new
             button2_action: root.bt_sort
             button3_action: root.bt_show
 """)
+
 
 class ListScreen(Screen):
     def __init__(self, **kwargs):
@@ -141,6 +136,12 @@ class SearchScreen(ListScreen):
         app = App.get_running_app()
         app.sendMessage(Search, term=searchTerm)
 
+    def bt_edit(self):
+        pass
+
+    def bt_delete(self):
+        pass
+
     def bt_new(self):
         pass
 
@@ -175,6 +176,12 @@ class SongScreen(ListScreen):
                 if t != '' and not (t[0] == '[' and t[-1] == ']')]
         summary = text[0:4]
         return title, subtitle, summary
+
+    def bt_edit(self):
+        pass
+
+    def bt_delete(self):
+        pass
 
     def bt_new(self):
         pass
@@ -217,6 +224,12 @@ class SetScreen(ListScreen):
             summary = text
         subtitle = " | ".join(subtitle)
         return title, subtitle, summary
+
+    def bt_edit(self):
+        pass
+
+    def bt_delete(self):
+        pass
 
     def bt_new(self):
         pass

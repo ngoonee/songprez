@@ -17,10 +17,22 @@ from kivy.graphics import Color, Line
 from kivy.uix.selectableview import SelectableView
 from kivy.properties import StringProperty, ObjectProperty, ListProperty, NumericProperty
 from .iconfont import iconfont
-from kivy.garden.recycleview import RecycleViewMixin
+from kivy.garden.recycleview import RecycleView, RecycleViewMixin
 from kivy.metrics import dp
+from kivy.animation import Animation
 
 Builder.load_string("""
+<SPRecycleView>:
+    canvas.before:
+        Color:
+            rgba: (.125, .125, .125, 1)
+        RoundedRectangle:
+            size: self.size
+            pos: self.pos
+            radius: dp(10),
+    key_viewclass: 'viewclass'
+    key_size: 'height'
+
 <ListItem>
     title_fs: app.ui_fs_main
     detail_fs: app.ui_fs_detail
@@ -89,7 +101,14 @@ Builder.load_string("""
         markup: True
 """)
 
-from kivy.animation import Animation
+
+class SPRecycleView(RecycleView):
+    edit_action = ObjectProperty(None)
+    delete_action = ObjectProperty(None)
+
+    def __init__(self, **kwargs):
+        super(SPRecycleView, self).__init__(**kwargs)
+
 
 class ListItem(SelectableView, RecycleViewMixin, FloatLayout, StencilView):
     titletext = StringProperty('')
@@ -123,9 +142,9 @@ class ListItem(SelectableView, RecycleViewMixin, FloatLayout, StencilView):
     def on_touch_down(self, touch):
         if self.collide_point(*touch.pos):
             if self.is_selected and self.edit.collide_point(*touch.pos):
-                print('trying to edit')
+                self.rv.edit_action()
             elif self.is_selected and self.delete.collide_point(*touch.pos):
-                print('trying to delete')
+                self.rv.delete_action()
             else:
                 self.is_selected = not self.is_selected
                 height = dp(5) + self.title_fs*1.5 + dp(5)
