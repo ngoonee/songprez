@@ -121,32 +121,33 @@ class ListItem(SelectableView, RecycleViewMixin, FloatLayout, StencilView):
             self._summary[i].text = v
 
     def on_touch_down(self, touch):
-        if (self.is_selected and
-                (self.edit.collide_point(*touch.pos)
-                    or self.delete.collide_point(*touch.pos))):
-            print('trying to edit or delete')
-        elif self.collide_point(*touch.pos):
-            self.is_selected = not self.is_selected
-            height = dp(5) + self.title_fs*1.5 + dp(5)
-            if self.subtitletext:
-                height += self.detail_fs*1.5
-            if self.is_selected:
-                count = [1 for w in self._summary if w.text != '']
-                height_diff = len(count)*self.detail_fs*1.5 + dp(5)
-                if height_diff < 2*self.buttonsize:
-                    # Too few summary lines
-                    height_diff = 2*self.buttonsize + dp(5)
-                height = int(height + height_diff)
-                angle = -90
-                opacity = 1
+        if self.collide_point(*touch.pos):
+            if self.is_selected and self.edit.collide_point(*touch.pos):
+                print('trying to edit')
+            elif self.is_selected and self.delete.collide_point(*touch.pos):
+                print('trying to delete')
             else:
-                height = int(height)
-                angle = 0
-                opacity = 0
-            anim = Animation(height=height, d=0.2)
-            anim &= Animation(expand_angle=angle, d=0.2)
-            anim &= Animation(button_opacity=opacity, d=0.2)
-            anim.start(self)
+                self.is_selected = not self.is_selected
+                height = dp(5) + self.title_fs*1.5 + dp(5)
+                if self.subtitletext:
+                    height += self.detail_fs*1.5
+                if self.is_selected:
+                    count = [1 for w in self._summary if w.text != '']
+                    height_diff = len(count)*self.detail_fs*1.5 + dp(5)
+                    if height_diff < 2*self.buttonsize:
+                        # Too few summary lines
+                        height_diff = 2*self.buttonsize + dp(5)
+                    height = int(height + height_diff)
+                    angle = -90
+                    opacity = 1
+                else:
+                    height = int(height)
+                    angle = 0
+                    opacity = 0
+                anim = Animation(height=height, d=0.2)
+                anim &= Animation(expand_angle=angle, d=0.2)
+                anim &= Animation(button_opacity=opacity, d=0.2)
+                anim.start(self)
             return True
         return super(ListItem, self).on_touch_down(touch)
 
