@@ -20,7 +20,7 @@ from .buttonrow import Buttons
 
 Builder.load_string("""
 <SearchScreen>:
-    listview: listview
+    rv: rv
     buttons: buttons
     BoxLayout:
         orientation: 'vertical'
@@ -32,7 +32,7 @@ Builder.load_string("""
             multiline: False
             on_text_validate: root.do_search(self.text)
         SPRecycleView:
-            id: listview
+            id: rv
             edit_action: root.bt_edit
             delete_action: root.bt_delete
         Buttons:
@@ -42,14 +42,14 @@ Builder.load_string("""
             button3_action: root.bt_add
 
 <SongScreen>:
-    listview: listview
+    rv: rv
     buttons: buttons
     BoxLayout:
         orientation: 'vertical'
         padding: '5dp'
         spacing: '5dp'
         SPRecycleView:
-            id: listview
+            id: rv
             edit_action: root.bt_edit
             delete_action: root.bt_delete
         Buttons:
@@ -59,14 +59,14 @@ Builder.load_string("""
             button3_action: root.bt_add
 
 <SetScreen>:
-    listview: listview
+    rv: rv
     buttons: buttons
     BoxLayout:
         orientation: 'vertical'
         padding: '5dp'
         spacing: '5dp'
         SPRecycleView:
-            id: listview
+            id: rv
             edit_action: root.bt_edit
             delete_action: root.bt_delete
         Buttons:
@@ -100,8 +100,8 @@ class ListScreen(Screen):
                          'subtitletext': subtitle, 'summarytext': summary,
                          'expand_angle': 0, 'button_opacity': 0,
                          'viewclass': viewclass, 'height': h,
-                         'rv': self.listview})
-        self.listview.data = data
+                         'rv': self.rv})
+        self.rv.data = data
 
     def get_vals(self, item):
         return u'', u'', u''
@@ -110,10 +110,10 @@ class ListScreen(Screen):
 class SearchScreen(ListScreen):
     def _finish_init(self, dt):
         app = App.get_running_app()
-        self.listview.data = [{'viewclass': 'Label',
-                               'text': 'No search results yet',
-                               'font_size': app.ui_fs_main,
-                               'height': sp(50)}]
+        self.rv.data = [{'viewclass': 'Label',
+                         'text': 'No search results yet',
+                         'font_size': app.ui_fs_main,
+                         'height': sp(50)}]
         self.buttons.button1.text = iconfont('new', app.ui_fs_button) + ' New'
         self.buttons.button2.text = iconfont('songs', app.ui_fs_button) + ' Songs'
         self.buttons.button3.text = iconfont('listadd', app.ui_fs_button) + ' Add'
@@ -156,10 +156,10 @@ class SearchScreen(ListScreen):
 class SongScreen(ListScreen):
     def _finish_init(self, dt):
         app = App.get_running_app()
-        self.listview.data = [{'viewclass': 'Label',
-                               'text': 'Please wait, still loading songs!',
-                               'font_size': app.ui_fs_main,
-                               'height': sp(50)}]
+        self.rv.data = [{'viewclass': 'Label',
+                         'text': 'Please wait, still loading songs!',
+                         'font_size': app.ui_fs_main,
+                         'height': sp(50)}]
         self.buttons.button1.text = iconfont('new', app.ui_fs_button) + ' New'
         self.buttons.button2.text = iconfont('search', app.ui_fs_button) + ' Search'
         self.buttons.button3.text = iconfont('listadd', app.ui_fs_button) + ' Add'
@@ -178,9 +178,11 @@ class SongScreen(ListScreen):
         return title, subtitle, summary
 
     def bt_edit(self):
+        print('editing')
         pass
 
     def bt_delete(self):
+        print('deleting')
         pass
 
     def bt_new(self):
@@ -197,10 +199,10 @@ class SongScreen(ListScreen):
 class SetScreen(ListScreen):
     def _finish_init(self, dt):
         app = App.get_running_app()
-        self.listview.data = [{'viewclass': 'Label',
-                               'text': 'Please wait, still loading sets!',
-                               'font_size': app.ui_fs_main,
-                               'height': sp(50)}]
+        self.rv.data = [{'viewclass': 'Label',
+                         'text': 'Please wait, still loading sets!',
+                         'font_size': app.ui_fs_main,
+                         'height': sp(50)}]
         self.buttons.button1.text = iconfont('new', app.ui_fs_button) + ' New'
         self.buttons.button2.text = iconfont('sort', app.ui_fs_button) + ' Sort'
         self.buttons.button3.text = iconfont('showset', app.ui_fs_button) + ' Show'
