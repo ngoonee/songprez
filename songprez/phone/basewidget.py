@@ -11,6 +11,7 @@ from .mainscreen import MainScreen
 from .presentscreen import PresentScreen
 from .listscreen import SetScreen, SongScreen, SearchScreen
 from .iconfont import iconfont
+from .editsongscreen import EditSongScreen
 
 Builder.load_string("""
 #:import FallOutTransition kivy.uix.screenmanager.FallOutTransition
@@ -27,6 +28,7 @@ Builder.load_string("""
     sets: sets
     songs: songs
     search: search
+    editsong: editsong
     sm: sm
     title: title
     orientation: "vertical"
@@ -57,7 +59,8 @@ Builder.load_string("""
             name: 'scripture'
         Screen:
             name: 'editset'
-        Screen:
+        EditSongScreen:
+            id: editsong
             name: 'editsong'
         Screen:
             name: 'settings'
