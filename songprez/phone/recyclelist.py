@@ -4,16 +4,9 @@ import kivy
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.clock import Clock
-from kivy.uix.scrollview import ScrollView
-from kivy.uix.listview import ListItemButton, ListView
 from kivy.uix.label import Label
-from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.stencilview import StencilView
 from kivy.uix.floatlayout import FloatLayout
-from kivy.adapters.listadapter import ListAdapter
-from kivy.uix.behaviors import FocusBehavior
-from kivy.uix.widget import Widget
-from kivy.graphics import Color, Line
 from kivy.uix.selectableview import SelectableView
 from kivy.properties import StringProperty, ObjectProperty, ListProperty, NumericProperty
 from .iconfont import iconfont
