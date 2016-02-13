@@ -112,7 +112,7 @@ Builder.load_string("""
                         + key.height + theme.height + user1.height + user2.height\
                         + user3.height + 7*app.rowspace
                 RegisteredTextInput:
-                    font_name: 'songprez/fonts/NotoSansMonoCJKsc-Regular.otf'
+                    font_name: 'NotoSansMonoCJK'
                     line_spacing: -lyrics.font_size/2.4
                     size_hint_y: None
                     # Required, otherwise last line is half cut off
