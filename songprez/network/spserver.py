@@ -156,11 +156,11 @@ class SPServerFactory(protocol.Factory):
                                  totalpage=len(splitjson), **kwargs)
 
     def sendAll(self, message, **kwargs):
-        if kwargs.get('list'):
+        if kwargs.get('list', None) != None:
             list = kwargs.pop('list')
             jsonlist = [json.dumps(s) for s in list]
             self._sendPartial(message, jsonlist, **kwargs)
-        elif kwargs.get('itemlist'):
+        elif kwargs.get('itemlist', None) != None:
             itemlist = kwargs.pop('itemlist')
             jsonlist = [json.dumps(s.__dict__) for s in itemlist]
             self._sendPartial(message, jsonlist, **kwargs)
