@@ -196,10 +196,8 @@ class ItemList(FocusBehavior, ListView):
         if item:
             newitem = 0
             for i, data in enumerate(self.adapter.data):
-                if data.get('filepath'):
-                    if item.filepath == data['filepath']:
-                        newitem = self.adapter.get_view(i)
-                        break
+                if item.filepath == data.filepath:
+                    newitem = self.adapter.get_view(i)
             if newitem:
                 self.adapter.handle_selection(newitem, hold_dispatch=True)
                 self._scroll_to_item(self.adapter)
