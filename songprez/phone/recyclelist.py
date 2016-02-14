@@ -8,7 +8,8 @@ from kivy.uix.label import Label
 from kivy.uix.stencilview import StencilView
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.selectableview import SelectableView
-from kivy.properties import StringProperty, ObjectProperty, ListProperty, NumericProperty
+from kivy.properties import StringProperty, ObjectProperty, ListProperty
+from kivy.properties import NumericProperty, BooleanProperty
 from .iconfont import iconfont
 from kivy.garden.recycleview import RecycleView, RecycleViewMixin
 from kivy.metrics import dp
@@ -26,7 +27,7 @@ Builder.load_string("""
     key_viewclass: 'viewclass'
     key_size: 'height'
 
-<ListItem>
+<ListItem>:
     title_fs: app.ui_fs_main
     detail_fs: app.ui_fs_detail
     button_fs: app.ui_fs_button
@@ -37,6 +38,11 @@ Builder.load_string("""
     subtitle: subtitle
     edit: edit
     delete: delete
+    move_up: move_up
+    move_down: move_down
+    scripture: scripture
+    remove_item: remove_item
+    add_item: add_item
     canvas.before:
         Color:
             rgba: (.25, .25, .25, 1) if self.index % 2 else (.125, .125, .125, 1)
@@ -92,6 +98,41 @@ Builder.load_string("""
         shorten: True
         shorten_from: 'right'
         markup: True
+    Label:
+        id: move_up
+        size_hint: None, None
+        size: root.buttonsize*1.5, root.buttonsize*1.5
+        font_size: root.button_fs*1.5
+        markup: True
+        opacity: root.button_opacity
+    Label:
+        id: move_down
+        size_hint: None, None
+        size: root.buttonsize*1.5, root.buttonsize*1.5
+        font_size: root.button_fs*1.5
+        markup: True
+        opacity: root.button_opacity
+    Label:
+        id: scripture
+        size_hint: None, None
+        size: root.buttonsize*1.5, root.buttonsize*1.5
+        font_size: root.button_fs*1.5
+        markup: True
+        opacity: root.button_opacity
+    Label:
+        id: remove_item
+        size_hint: None, None
+        size: root.buttonsize*1.5, root.buttonsize*1.5
+        font_size: root.button_fs*1.5
+        markup: True
+        opacity: root.button_opacity
+    Label:
+        id: add_item
+        size_hint: None, None
+        size: root.buttonsize*1.5, root.buttonsize*1.5
+        font_size: root.button_fs*1.5
+        markup: True
+        opacity: root.button_opacity
 """)
 
 
@@ -111,6 +152,7 @@ class ListItem(SelectableView, RecycleViewMixin, FloatLayout, StencilView):
     rv = ObjectProperty(None)
     expand_angle = NumericProperty(0)
     button_opacity = NumericProperty(0)
+    set_edit = BooleanProperty(False)
     _summary = ListProperty([])
 
     def __init__(self, **kwargs):
@@ -126,6 +168,11 @@ class ListItem(SelectableView, RecycleViewMixin, FloatLayout, StencilView):
                                       shorten_from='right',
                                       markup=True))
             self.add_widget(self._summary[i])
+        self.move_up.text = iconfont('listmoveup')
+        self.move_down.text = iconfont('listmovedown')
+        self.scripture.text = iconfont('scripture')
+        self.remove_item.text = iconfont('listremove')
+        self.add_item.text = iconfont('listadd')
 
     def on_summarytext(self, instance, value):
         for i in range(5):
@@ -135,32 +182,55 @@ class ListItem(SelectableView, RecycleViewMixin, FloatLayout, StencilView):
 
     def on_touch_down(self, touch):
         if self.collide_point(*touch.pos):
-            if self.is_selected and self.edit.collide_point(*touch.pos):
-                self.rv.edit_action(self.index)
-            elif self.is_selected and self.delete.collide_point(*touch.pos):
-                self.rv.delete_action(self.index)
+            if self.is_selected:
+                if self.edit.collide_point(*touch.pos):
+                    self.rv.edit_action(self.index)
+                    return True
+                elif self.delete.collide_point(*touch.pos):
+                    self.rv.delete_action(self.index)
+                    return True
+                elif self.set_edit:
+                    if self.move_up.collide_point(*touch.pos):
+                        self.rv.move_up_action(self.index)
+                        return True
+                    if self.move_down.collide_point(*touch.pos):
+                        self.rv.move_down_action(self.index)
+                        return True
+                    if self.scripture.collide_point(*touch.pos):
+                        self.rv.scripture_action(self.index)
+                        return True
+                    if self.remove_item.collide_point(*touch.pos):
+                        self.rv.remove_item_action(self.index)
+                        return True
+                    if self.add_item.collide_point(*touch.pos):
+                        self.rv.add_item_action(self.index)
+                        return True
+            # The below is if nothing matches above
+            self.is_selected = not self.is_selected
+            height = dp(5) + self.title_fs*1.5 + dp(5)
+            if self.subtitletext:
+                height += self.detail_fs*1.5
+            if self.is_selected:
+                count = [1 for w in self._summary if w.text != '']
+                height_diff = len(count)*self.detail_fs*1.5 + dp(5)
+                if height_diff < 2*self.buttonsize:
+                    # Too few summary lines
+                    height_diff = 2*self.buttonsize + dp(5)
+                    if self.is_selected:
+                        height_diff -= self.detail_fs*1.5
+                if self.set_edit:
+                    height_diff += 1.5*self.buttonsize
+                height = int(height + height_diff)
+                angle = -90
+                opacity = 1
             else:
-                self.is_selected = not self.is_selected
-                height = dp(5) + self.title_fs*1.5 + dp(5)
-                if self.subtitletext:
-                    height += self.detail_fs*1.5
-                if self.is_selected:
-                    count = [1 for w in self._summary if w.text != '']
-                    height_diff = len(count)*self.detail_fs*1.5 + dp(5)
-                    if height_diff < 2*self.buttonsize:
-                        # Too few summary lines
-                        height_diff = 2*self.buttonsize + dp(5)
-                    height = int(height + height_diff)
-                    angle = -90
-                    opacity = 1
-                else:
-                    height = int(height)
-                    angle = 0
-                    opacity = 0
-                anim = Animation(height=height, d=0.2)
-                anim &= Animation(expand_angle=angle, d=0.2)
-                anim &= Animation(button_opacity=opacity, d=0.2)
-                anim.start(self)
+                height = int(height)
+                angle = 0
+                opacity = 0
+            anim = Animation(height=height, d=0.2)
+            anim &= Animation(expand_angle=angle, d=0.2)
+            anim &= Animation(button_opacity=opacity, d=0.2)
+            anim.start(self)
             return True
         return super(ListItem, self).on_touch_down(touch)
 
@@ -240,4 +310,15 @@ class ListItem(SelectableView, RecycleViewMixin, FloatLayout, StencilView):
             for i in range(len(self.summarytext)):
                 self._summary[i].size = subtitle_size
                 self._summary[i].text_size = subtitle_size
+        if len(self._summary):
+            last_y = summary_pos[1]
+        else:
+            last_y = base_y
+        pos_y = last_y - 1.5*self.buttonsize
+        intra_x = (rightbar_x - 5*1.5*self.buttonsize)/6
+        self.move_up.pos = (int(intra_x), int(pos_y))
+        self.move_down.pos = (int(1.5*self.buttonsize + 2*intra_x), int(pos_y))
+        self.scripture.pos = (int(3*self.buttonsize + 3*intra_x), int(pos_y))
+        self.remove_item.pos = (int(4.5*self.buttonsize + 4*intra_x), int(pos_y))
+        self.add_item.pos = (int(6*self.buttonsize + 5*intra_x), int(pos_y))
         super(ListItem, self).refresh_view_layout(rv, index, pos, size, viewport)

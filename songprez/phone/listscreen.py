@@ -233,7 +233,9 @@ class SetScreen(ListScreen):
         return title, subtitle, summary
 
     def bt_edit(self, index):
-        pass
+        app = App.get_running_app()
+        app.base.current_set = self.itemlist[index]
+        app.base.sm.current = 'editset'
 
     def bt_delete(self, index):
         pass

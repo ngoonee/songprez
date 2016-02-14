@@ -11,6 +11,7 @@ from .mainscreen import MainScreen
 from .presentscreen import PresentScreen
 from .listscreen import SetScreen, SongScreen, SearchScreen
 from .iconfont import iconfont
+from .editsetscreen import EditSetScreen
 from .editsongscreen import EditSongScreen
 
 Builder.load_string("""
@@ -57,7 +58,7 @@ Builder.load_string("""
             name: 'search'
         Screen:
             name: 'scripture'
-        Screen:
+        EditSetScreen:
             name: 'editset'
         EditSongScreen:
             id: editsong
@@ -69,6 +70,7 @@ Builder.load_string("""
 
 class BaseWidget(BoxLayout):
     current_song = ObjectProperty(None)
+    current_set = ObjectProperty(None)
 
     def __init__(self, **kwargs):
         super(BaseWidget, self).__init__(**kwargs)
