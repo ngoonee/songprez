@@ -180,19 +180,42 @@ class ListItem(SelectableView, RecycleViewMixin, FloatLayout, StencilView):
             self.rv.refresh_views(data=True)
 
     def refresh_view_layout(self, rv, index, pos, size, viewport):
+        '''
+        Efficiency here is paramount, this gets called a LOT.
+        
+        For now, what is important is the changes in pos and size. pos changes
+        often (and for many items at once) while scrolling, while size only
+        changes with resizing (not an issue on mobile) or animating height
+        changes (and then only one item at a time).
+
+        In ascii art, here's how things look
+        ----------------------------------------------------------------------
+            title                                                  | expand
+                subtitle                                           |
+        --------------------------- base_y -----------------------------------
+                    summary[0]                                     | edit
+                    summary[1]                                     | delete
+                    ...                                            |
+                    summary[n]                                     |
+        ----------------------------------------------------------------------
+                                                                   ^
+                                                                   |
+                                                                rightbar_x
+        '''
         base_y = pos[1] + size[1] - dp(5) - self.title_fs*1.5 - dp(5)
+        rightbar_x = pos[0] + size[0] - dp(10) - self.buttonsize
         if self.subtitletext:
             base_y -= self.detail_fs*1.5
         if self.subtitletext:
-            expand_pos = (int(pos[0] + size[0] - dp(10) - self.buttonsize),
+            expand_pos = (int(rightbar_x),
                           int(base_y + self.detail_fs*1.5))
         else:
             expand_pos = (int(pos[0] + size[0] - dp(10) - self.buttonsize),
                           int(base_y))
         self.expand.pos = expand_pos
-        edit_pos = (expand_pos[0], int(expand_pos[1] - self.buttonsize))
+        edit_pos = (int(rightbar_x), int(expand_pos[1] - self.buttonsize))
         self.edit.pos = edit_pos
-        delete_pos = (edit_pos[0], int(edit_pos[1] - self.buttonsize))
+        delete_pos = (int(rightbar_x), int(edit_pos[1] - self.buttonsize))
         self.delete.pos = delete_pos
         if self.subtitletext:
             title_pos = (int(pos[0] + dp(10)), int(base_y + dp(5) + self.detail_fs*1.5))
