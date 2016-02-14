@@ -140,7 +140,9 @@ class SearchScreen(ListScreen):
         app.sendMessage(Search, term=searchTerm)
 
     def bt_edit(self, index):
-        pass
+        app = App.get_running_app()
+        app.base.current_song = self.itemlist[index]
+        app.base.sm.current = 'editsong'
 
     def bt_delete(self, index):
         pass
