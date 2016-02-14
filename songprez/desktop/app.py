@@ -14,6 +14,7 @@ import os
 from kivy.app import App
 from kivy.uix.settings import SettingsWithSidebar
 from kivy.clock import Clock
+from kivy.core.text import LabelBase
 from kivy.properties import StringProperty, BooleanProperty, ListProperty
 from kivy.properties import NumericProperty, ObjectProperty, DictProperty
 from kivy.uix.behaviors import FocusBehavior
@@ -40,6 +41,12 @@ class SongPrezApp(App):
         self.settings_cls = SPSettings
         self.use_kivy_settings = False
         self.control = None
+        LabelBase.register(name="NotoSansCJK",
+                           fn_regular="songprez/fonts/"
+                           +"NotoSansCJK-Regular.ttc")
+        LabelBase.register(name="NotoSansMonoCJK",
+                           fn_regular="songprez/fonts/"
+                           +"NotoSansMonoCJKsc-Regular.otf")
         self.base = BaseWidget()
         self.base.bind(colwidth=self._colwidth)
         self.base.bind(colspace=self._colspace)
