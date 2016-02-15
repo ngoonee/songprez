@@ -75,8 +75,7 @@ class BaseWidget(BoxLayout):
     def __init__(self, **kwargs):
         super(BaseWidget, self).__init__(**kwargs)
         self._history = []
-        self._keyboard = Window.request_keyboard(None, self, 'text')
-        self._keyboard.bind(on_key_down=self._on_keyboard_down)
+        Window.bind(on_key_down=self._on_keyboard_down)
         self.sm.bind(current=self._change_title)
         self.sm.current = 'main'
 
@@ -129,8 +128,9 @@ class BaseWidget(BoxLayout):
                 self.sm.transition.direction = 'right'
             self._history.append(data)
             
-    def _on_keyboard_down(self, keyboard, keycode, text, modifiers):
-        if keycode[1] == 'escape':
+    def _on_keyboard_down(self, *args):
+        keycode = args[1]
+        if keycode == 27:  # 'esc' on desktop, 'back' key on android
             if len(self._history) > 1:
                 self.sm.current = self._history[-2]
             elif self.sm.current == 'settings':
