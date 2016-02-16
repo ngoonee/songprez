@@ -61,6 +61,12 @@ class SongPrezApp(App):
             print(e)
             self.open_settings()
 
+    def on_pause(self):
+        return True
+
+    def on_resume(self):
+        pass
+
     def on_stop(self):
         self.control.quit()
 
