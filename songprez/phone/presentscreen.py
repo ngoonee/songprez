@@ -18,7 +18,7 @@ Builder.load_string("""
     pbadd: pbadd
     pbtranspose: pbtranspose
     BoxLayout:
-        padding: '24dp'
+        padding: '10dp'
         MyStencil:
             RelativeLayout:
                 Label:
