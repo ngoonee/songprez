@@ -226,7 +226,7 @@ class ChangeShowSet(amp.Command):
     '''
     Change the current ShowSet to the set in relpath
     '''
-    arguments = [('relpath', amp.Unicode())]
+    arguments = [('jsonset', amp.String())]
     response = []
     requiresAnswer = False
 

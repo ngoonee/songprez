@@ -128,7 +128,7 @@ class EditScreen(Screen):
 
     def _present(self):
         self.parent.current = 'ShowScreen'
-        self.sendMessage(ChangeShowSet, relpath=self.currentset.filepath.text)
+        self.sendMessage(ChangeShowSet, set=self.currentset._list_to_set())
 
     def get_scripture(self, version):
         def act(AMPresponse):

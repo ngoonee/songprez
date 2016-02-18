@@ -102,8 +102,10 @@ class SPServerProtocol(amp.AMP):
         return {}
 
     @ChangeShowSet.responder
-    def ChangeShowSet(self, relpath):
-        self.control._change_show_set(relpath)
+    def ChangeShowSet(self, jsonset):
+        set = SPSet()
+        set.__dict__ = json.loads(jsonset)
+        self.control._change_show_set(set)
         return {}
 
     @AddShowItem.responder

@@ -285,10 +285,9 @@ class SPControl(object):
     def _resolution(self, width, height):
         pass
 
-    def _change_show_set(self, relpath):
-        self._showSet = SPSet.read_from_file(os.path.join(self._setPath, relpath))
+    def _change_show_set(self, set):
+        self._showSet = set
         self.sendAll(ShowSet, set=self._showSet)
-        pass
 
     def _add_show_item(self, itemtype, relpath, position):
         pass
