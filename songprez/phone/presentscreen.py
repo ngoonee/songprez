@@ -5,30 +5,28 @@ from kivy.app import App
 from kivy.lang import Builder
 from kivy.core.window import Window
 from kivy.clock import Clock
-from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.screenmanager import Screen, ScreenManager
 from .iconfont import iconfont
+from .chordlabel import ChordLabel
+from ..network.messages import GetItem
 
 Builder.load_string("""
 <MyStencil@BoxLayout+StencilView>
     padding: 0
 
 <PresentScreen>:
-    words: words
+    carousel: carousel
     pbadd: pbadd
     pbtranspose: pbtranspose
+    sendMessage: app.sendMessage
     BoxLayout:
         padding: '10dp'
         MyStencil:
-            RelativeLayout:
-                Label:
-                    canvas.after:
-                        Color:
-                            rgba: 1, 0, 0, 0.1
-                        Rectangle:
-                            pos: self.pos
-                            size: self.size
-                    id: words
+            FloatLayout:
+                Carousel:
+                    id: carousel
+                    size: self.parent.size
+                    pos: self.parent.pos
                 Button:
                     id: pbadd
                     size_hint: None, None
@@ -53,31 +51,17 @@ class PresentScreen(Screen):
     def _finish_init(self, dt):
         self.pbadd.text = iconfont('plus')
         self.pbtranspose.text = iconfont('transpose')
-        self.words.text = """
-[C]
-.F                   Bb      F
- Jesus Christ is the Lord of all
-.C               F
- Lord of all the earth
-.F                   Bb      F
- Jesus Christ is the Lord of all
-.C               F
- Lord of all the earth
+        app = App.get_running_app()
+        app.base.bind(current_set=self.on_set)
 
-[V1]
-.F        Bb  C       F
- Only one God  over the nations
-.F        Bb      C
- Only one Lord of all
-.   F        Bb   C            F
- In no other name  is there salvation
-.F        Bb   C  F
- Jesus is Lord of all
-
-[V2]
- Christ is the Head
- We are His body
- Satan beneath our feet
- We will proclaim
- He is our Vict'ry
- Jesus is Lord of all"""
+    def on_set(self, instance, value):
+        if value:
+            carousel = self.carousel
+            carousel.clear_widgets()
+            def act(song):
+                s = ChordLabel()
+                carousel.add_widget(s)
+                s.text = song.lyrics
+            for item in value.list_songs():
+                self.sendMessage(GetItem, itemtype='song',
+                                 relpath=item['filepath'], callback=act)

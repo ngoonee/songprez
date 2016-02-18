@@ -247,4 +247,7 @@ class SetScreen(ListScreen):
         pass
 
     def bt_show(self):
-        pass
+        app = App.get_running_app()
+        index = self.rv.selection[-1]
+        app.base.current_set = self.itemlist[index]
+        app.base.sm.current = 'present'
