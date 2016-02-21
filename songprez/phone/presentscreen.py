@@ -6,6 +6,7 @@ from kivy.lang import Builder
 from kivy.core.window import Window
 from kivy.clock import Clock
 from kivy.uix.screenmanager import Screen, ScreenManager
+from ..control.spset import SPSet
 from .iconfont import iconfont
 from .chordlabel import ChordLabel
 from ..network.messages import GetItem
@@ -55,7 +56,7 @@ class PresentScreen(Screen):
         app.base.bind(current_set=self.on_set)
 
     def on_set(self, instance, value):
-        if value:
+        if value and type(value) == type(SPSet()):
             carousel = self.carousel
             carousel.clear_widgets()
             def act(song):
