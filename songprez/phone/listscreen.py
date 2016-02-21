@@ -15,13 +15,14 @@ from kivy.adapters.listadapter import ListAdapter
 from .iconfont import iconfont
 from .recyclelist import SPRecycleView, ListItem
 from kivy.metrics import dp, sp
-from ..network.messages import Search
+from ..network.messages import Search, ChangeShowSet
 from .buttonrow import Buttons
 
 Builder.load_string("""
 <SearchScreen>:
     rv: rv
     buttons: buttons
+    sendMessage: app.sendMessage
     BoxLayout:
         orientation: 'vertical'
         padding: '5dp'
@@ -44,6 +45,7 @@ Builder.load_string("""
 <SongScreen>:
     rv: rv
     buttons: buttons
+    sendMessage: app.sendMessage
     BoxLayout:
         orientation: 'vertical'
         padding: '5dp'
@@ -61,6 +63,7 @@ Builder.load_string("""
 <SetScreen>:
     rv: rv
     buttons: buttons
+    sendMessage: app.sendMessage
     BoxLayout:
         orientation: 'vertical'
         padding: '5dp'
@@ -135,9 +138,7 @@ class SearchScreen(ListScreen):
         return title, subtitle, summary
 
     def do_search(self, searchTerm):
-        print('searching for ', searchTerm)
-        app = App.get_running_app()
-        app.sendMessage(Search, term=searchTerm)
+        self.sendMessage(Search, term=searchTerm)
 
     def bt_edit(self, index):
         app = App.get_running_app()
@@ -249,5 +250,5 @@ class SetScreen(ListScreen):
     def bt_show(self):
         app = App.get_running_app()
         index = self.rv.selection[-1]
-        app.base.current_set = self.itemlist[index]
+        self.sendMessage(ChangeShowSet, set=self.itemlist[index])
         app.base.sm.current = 'present'

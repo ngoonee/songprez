@@ -169,3 +169,6 @@ class BaseWidget(BoxLayout):
 
     def _edit_set(self, item):
         pass
+
+    def _show_set(self, set):
+        self.current_set = set
