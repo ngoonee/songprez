@@ -29,6 +29,7 @@ Builder.load_string("""
     sets: sets
     songs: songs
     search: search
+    editset: editset
     editsong: editsong
     sm: sm
     title: title
@@ -59,6 +60,7 @@ Builder.load_string("""
         Screen:
             name: 'scripture'
         EditSetScreen:
+            id: editset
             name: 'editset'
         EditSongScreen:
             id: editsong
@@ -147,6 +149,8 @@ class BaseWidget(BoxLayout):
 
     def to_screen(self, name):
         self.sm.current = name
+    def edit_set(self, setObject):
+        self.editset.update_set(setObject)
 
     def _running(self):
         app = App.get_running_app()

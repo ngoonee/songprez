@@ -87,12 +87,11 @@ class EditSetScreen(Screen):
 
     def _finish_init(self, dt):
         app = App.get_running_app()
-        app.base.bind(current_set=self._update_set)
         self.buttons.button1.text = iconfont('copy', app.ui_fs_button) + ' Copy'
         self.buttons.button2.text = iconfont('saveas', app.ui_fs_button) + ' Save As'
         self.buttons.button3.text = iconfont('save', app.ui_fs_button) + ' Save'
 
-    def _update_set(self, instance, setObject):
+    def update_set(self, setObject):
         self._set_to_UI(setObject)
 
     def _set_to_UI(self, setObject):

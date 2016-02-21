@@ -235,7 +235,7 @@ class SetScreen(ListScreen):
 
     def bt_edit(self, index):
         app = App.get_running_app()
-        app.base.current_set = self.itemlist[index]
+        app.base.edit_set(self.itemlist[index])
         app.base.to_screen('editset')
 
     def bt_delete(self, index):
