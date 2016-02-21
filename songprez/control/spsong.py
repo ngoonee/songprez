@@ -49,10 +49,13 @@ class SPSong(object):
             songobj = obj['song']
         retval = cls()
         for key, val in zip(_xmlkeys, _xmldefaults):
-            if songobj[key]:
-                setattr(retval, key, songobj[key])
-            else:
-                setattr(retval, key, val)
+            try:
+                if songobj[key]:
+                    setattr(retval, key, songobj[key])
+                else:
+                    setattr(retval, key, val)
+            except KeyError:
+                return
         # Find the base OpenSong directory by walking up the path to find the
         # parent of 'Songs'
         basedir, filename = os.path.split(filepath)
