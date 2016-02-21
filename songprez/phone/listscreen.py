@@ -143,7 +143,7 @@ class SearchScreen(ListScreen):
     def bt_edit(self, index):
         app = App.get_running_app()
         app.base.current_song = self.itemlist[index]
-        app.base.sm.current = 'editsong'
+        app.base.to_screen('editsong')
 
     def bt_delete(self, index):
         pass
@@ -153,7 +153,7 @@ class SearchScreen(ListScreen):
 
     def bt_songs(self):
         app = App.get_running_app()
-        app.base.sm.current = 'songs'
+        app.base.to_screen('songs')
 
     def bt_add(self):
         pass
@@ -186,7 +186,7 @@ class SongScreen(ListScreen):
     def bt_edit(self, index):
         app = App.get_running_app()
         app.base.current_song = self.itemlist[index]
-        app.base.sm.current = 'editsong'
+        app.base.to_screen('editsong')
 
     def bt_delete(self, index):
         pass
@@ -196,7 +196,7 @@ class SongScreen(ListScreen):
 
     def bt_search(self):
         app = App.get_running_app()
-        app.base.sm.current = 'search'
+        app.base.to_screen('search')
 
     def bt_add(self):
         pass
@@ -236,7 +236,7 @@ class SetScreen(ListScreen):
     def bt_edit(self, index):
         app = App.get_running_app()
         app.base.current_set = self.itemlist[index]
-        app.base.sm.current = 'editset'
+        app.base.to_screen('editset')
 
     def bt_delete(self, index):
         pass
@@ -251,4 +251,4 @@ class SetScreen(ListScreen):
         app = App.get_running_app()
         index = self.rv.selection[-1]
         self.sendMessage(ChangeShowSet, set=self.itemlist[index])
-        app.base.sm.current = 'present'
+        app.base.to_screen('present')

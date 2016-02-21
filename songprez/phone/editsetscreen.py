@@ -138,7 +138,7 @@ class EditSetScreen(Screen):
     def bt_edit(self, index):
         app = App.get_running_app()
         app.base.current_song = self.itemlist[index]
-        app.base.sm.current = 'editsong'
+        app.base.to_screen('editsong')
 
     def bt_delete(self, index):
         pass
@@ -157,7 +157,7 @@ class EditSetScreen(Screen):
 
     def bt_add_item(self, index):
         app = App.get_running_app()
-        app.base.sm.current = 'search'
+        app.base.to_screen('search')
 
     def bt_copy(self):
         pass
