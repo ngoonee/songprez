@@ -7,6 +7,7 @@ from kivy.app import App
 from kivy.properties import ObjectProperty
 from kivy.uix.screenmanager import ScreenManager
 from kivy.uix.boxlayout import BoxLayout
+from ..control.spset import SPSet
 from .mainscreen import MainScreen
 from .presentscreen import PresentScreen
 from .listscreen import SetScreen, SongScreen, SearchScreen
@@ -26,6 +27,7 @@ Builder.load_string("""
     # to work. Before that we needed to apply font_size separately to label and
     # TextInput.
 <BaseWidget>:
+    present: present
     sets: sets
     songs: songs
     search: search
@@ -47,6 +49,7 @@ Builder.load_string("""
         MainScreen:
             name: 'main'
         PresentScreen:
+            id: present
             name: 'present'
         SetScreen:
             id: sets
@@ -72,7 +75,7 @@ Builder.load_string("""
 
 class BaseWidget(BoxLayout):
     current_song = ObjectProperty(None)
-    current_set = ObjectProperty(None)
+    show_set = ObjectProperty(None)
 
     def __init__(self, **kwargs):
         super(BaseWidget, self).__init__(**kwargs)
@@ -149,6 +152,19 @@ class BaseWidget(BoxLayout):
 
     def to_screen(self, name):
         self.sm.current = name
+
+    def add_song(self, song):
+        if self._history[-2] == 'editset':
+            self.editset.add_song(song)
+            self.to_screen('editset')
+        else:
+            if not self.show_set: # No set yet
+                se = SPSet()
+                se.name = 'Temporary Presentation Set'
+                self.show_set = se
+            self.show_set.add_song(song)
+            self.present.show_set(self.show_set)
+
     def edit_set(self, setObject):
         self.editset.update_set(setObject)
 
@@ -175,4 +191,5 @@ class BaseWidget(BoxLayout):
         pass
 
     def _show_set(self, set):
-        self.current_set = set
+        self.show_set = set
+        self.present.show_set(self.show_set)

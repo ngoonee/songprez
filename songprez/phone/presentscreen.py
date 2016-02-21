@@ -52,10 +52,8 @@ class PresentScreen(Screen):
     def _finish_init(self, dt):
         self.pbadd.text = iconfont('plus')
         self.pbtranspose.text = iconfont('transpose')
-        app = App.get_running_app()
-        app.base.bind(current_set=self.on_set)
 
-    def on_set(self, instance, value):
+    def show_set(self, value):
         if value and type(value) == type(SPSet()):
             carousel = self.carousel
             carousel.clear_widgets()

@@ -6,7 +6,7 @@ from kivy.lang import Builder
 from kivy.clock import Clock
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.screenmanager import Screen
-from kivy.properties import ListProperty
+from kivy.properties import ListProperty, ObjectProperty
 from kivy.metrics import dp
 from .iconfont import iconfont
 from .buttonrow import Buttons
@@ -80,6 +80,7 @@ Builder.load_string("""
 
 class EditSetScreen(Screen):
     itemlist = ListProperty([])
+    current_set = ObjectProperty(None)
 
     def __init__(self, **kwargs):
         super(EditSetScreen, self).__init__(**kwargs)
@@ -92,9 +93,17 @@ class EditSetScreen(Screen):
         self.buttons.button3.text = iconfont('save', app.ui_fs_button) + ' Save'
 
     def update_set(self, setObject):
-        self._set_to_UI(setObject)
+        self.current_set = setObject
+        self._set_to_UI()
 
-    def _set_to_UI(self, setObject):
+    def add_song(self, songObject):
+        self.current_set.add_song(songObject)
+        self._set_to_UI()
+
+    def _set_to_UI(self):
+        self.itemlist = []
+        self.rv.data = {}
+        setObject = self.current_set
         self.setname.text = setObject.name
         self.filepath.text = setObject.filepath
         listofitems = setObject.list_songs()

@@ -156,7 +156,9 @@ class SearchScreen(ListScreen):
         app.base.to_screen('songs')
 
     def bt_add(self):
-        pass
+        app = App.get_running_app()
+        index = self.rv.selection[-1]
+        app.base.add_song(self.itemlist[index])
 
 
 class SongScreen(ListScreen):
@@ -199,7 +201,9 @@ class SongScreen(ListScreen):
         app.base.to_screen('search')
 
     def bt_add(self):
-        pass
+        app = App.get_running_app()
+        index = self.rv.selection[-1]
+        app.base.add_song(self.itemlist[index])
 
 
 class SetScreen(ListScreen):
