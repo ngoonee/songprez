@@ -196,8 +196,12 @@ class ItemList(FocusBehavior, ListView):
         if item:
             newitem = 0
             for i, data in enumerate(self.adapter.data):
-                if item.filepath == data.filepath:
-                    newitem = self.adapter.get_view(i)
+                if type(data) == type(dict()):
+                    if item.filepath == data['filepath']:
+                        newitem = self.adapter.get_view(i)
+                else:  # It's an SPSong or SPSet
+                    if item.filepath == data.filepath:
+                        newitem = self.adapter.get_view(i)
             if newitem:
                 self.adapter.handle_selection(newitem, hold_dispatch=True)
                 self._scroll_to_item(self.adapter)
