@@ -7,7 +7,7 @@ from kivy.core.window import Window
 from kivy.clock import Clock
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.screenmanager import Screen, ScreenManager
-from iconfont import iconfont
+from .fontutil import iconfont
 
 Builder.load_string("""
 <MainScreen>:

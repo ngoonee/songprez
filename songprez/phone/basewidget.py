@@ -11,7 +11,7 @@ from ..control.spset import SPSet
 from .mainscreen import MainScreen
 from .presentscreen import PresentScreen
 from .listscreen import SetScreen, SongScreen, SearchScreen
-from .iconfont import iconfont
+from .fontutil import iconfont
 from .editsetscreen import EditSetScreen
 from .editsongscreen import EditSongScreen
 

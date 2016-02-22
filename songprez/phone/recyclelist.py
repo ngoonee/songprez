@@ -10,7 +10,7 @@ from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.selectableview import SelectableView
 from kivy.properties import StringProperty, ObjectProperty, ListProperty
 from kivy.properties import NumericProperty, BooleanProperty
-from .iconfont import iconfont
+from .fontutil import iconfont
 from kivy.garden.recycleview import RecycleView, RecycleViewMixin
 from kivy.metrics import dp
 from kivy.animation import Animation

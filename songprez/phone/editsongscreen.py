@@ -7,7 +7,7 @@ from kivy.clock import Clock
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.screenmanager import Screen
 from kivy.metrics import dp
-from .iconfont import iconfont
+from .fontutil import iconfont
 from .buttonrow import Buttons
 
 Builder.load_string("""

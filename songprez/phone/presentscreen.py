@@ -7,7 +7,7 @@ from kivy.core.window import Window
 from kivy.clock import Clock
 from kivy.uix.screenmanager import Screen, ScreenManager
 from ..control.spset import SPSet
-from .iconfont import iconfont
+from .fontutil import iconfont
 from .chordlabel import ChordLabel
 from ..network.messages import GetItem
 

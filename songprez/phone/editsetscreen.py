@@ -8,7 +8,7 @@ from kivy.uix.scrollview import ScrollView
 from kivy.uix.screenmanager import Screen
 from kivy.properties import ListProperty, ObjectProperty
 from kivy.metrics import dp
-from .iconfont import iconfont
+from .fontutil import iconfont
 from .buttonrow import Buttons
 from ..network.messages import GetItem
 from .recyclelist import SPRecycleView, ListItem

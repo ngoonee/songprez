@@ -12,7 +12,7 @@ from kivy.uix.button import Button
 from kivy.uix.screenmanager import Screen, ScreenManager
 from kivy.properties import BooleanProperty, NumericProperty, ListProperty
 from kivy.adapters.listadapter import ListAdapter
-from .iconfont import iconfont
+from .fontutil import iconfont
 from .recyclelist import SPRecycleView, ListItem
 from kivy.metrics import dp, sp
 from ..network.messages import Search, ChangeShowSet
@@ -158,7 +158,8 @@ class SearchScreen(ListScreen):
     def bt_add(self):
         app = App.get_running_app()
         index = self.rv.selection
-        app.base.add_song(self.itemlist[index])
+        if index > -1:
+            app.base.add_song(self.itemlist[index])
 
 
 class SongScreen(ListScreen):
@@ -203,7 +204,8 @@ class SongScreen(ListScreen):
     def bt_add(self):
         app = App.get_running_app()
         index = self.rv.selection
-        app.base.add_song(self.itemlist[index])
+        if index > -1:
+            app.base.add_song(self.itemlist[index])
 
 
 class SetScreen(ListScreen):
