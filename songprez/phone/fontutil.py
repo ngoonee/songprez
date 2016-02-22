@@ -1,17 +1,31 @@
 #!/usr/bin/env python
 import kivy
+import os
 # kivy.require('1.9.2')
 from kivy.core.text import LabelBase
 
 """
-Fonts from https://github.com/Templarian/MaterialDesign-Webfont
+Material Icon Fonts from https://github.com/Templarian/MaterialDesign-Webfont
 """
 
 
-def icon_font_register():
-        LabelBase.register(name="MaterialDesignIcons",
-                           fn_regular="songprez/fonts/"
-                           +"materialdesignicons-webfont.ttf")
+def font_register():
+    iconfont = os.path.join('songprez', 'fonts',
+                                'materialdesignicons-webfont.ttf')
+    notosans = os.path.join('songprez', 'fonts',
+                            'NotoSansCJK-Regular.ttc')
+    if not os.path.exists(notosans):
+        notosans = os.path.join('songprez', 'fonts',
+                                'NotoSans-Regular.ttf')
+    notosansmono = os.path.join('songprez', 'fonts',
+                                'NotoSansMonoCJKsc-Regular.otf')
+    if not os.path.exists(notosansmono):
+        notosansmono = os.path.join('songprez', 'fonts',
+                                    'DroidSansMono.ttf')
+    LabelBase.register(name="IconFonts", fn_regular=iconfont)
+    LabelBase.register(name="NotoSans", fn_regular=notosans)
+    LabelBase.register(name="NotoSansMono", fn_regular=notosansmono)
+
 icon_map = {'donate': u'\uf5b9',  # square-inc-cash
             'menu': u'\uf44e',  # menu
             'sets': u'\uf423',  # library
@@ -61,10 +75,10 @@ def iconfont(name, size=None):
             size = str(int(size))
         except ValueError:
             pass
-        return (u'[font=MaterialDesignIcons][size='
+        return (u'[font=IconFonts][size='
                 + size + u']' + icon
                 + u'[/size][/font]')
     else:
-        return (u'[font=MaterialDesignIcons]'
+        return (u'[font=IconFonts]'
                 + icon
                 + u'[/font]')

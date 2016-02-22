@@ -22,7 +22,7 @@ Builder.load_string("""
 <Widget>:
     # Use same font throughout. Needed because SlideElement is a BoxLayout and
     # needs to have a font_name.
-    font_name: 'NotoSansCJK'
+    font_name: 'NotoSans'
     # Sometime between revision 700 (g048821a) and 828 (g132be35) this was made
     # to work. Before that we needed to apply font_size separately to label and
     # TextInput.

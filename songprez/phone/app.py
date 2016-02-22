@@ -13,7 +13,6 @@ from twisted.internet.endpoints import clientFromString
 import os
 from kivy.app import App
 from kivy.clock import Clock
-from kivy.core.text import LabelBase
 from kivy.properties import StringProperty, BooleanProperty, ListProperty
 from kivy.properties import NumericProperty, ObjectProperty, DictProperty
 from kivy.metrics import dp, sp
@@ -22,7 +21,7 @@ from .basewidget import BaseWidget
 from .settings import SPSettings
 from .settingsjson import default_settings, build_settings
 from ..network.spclient import SPClientFactory
-from .iconfont import icon_font_register
+from .fontutil import font_register
 
 
 class SongPrezApp(App):
@@ -39,13 +38,7 @@ class SongPrezApp(App):
     def build(self):
         self.settings_cls = SPSettings
         self.control = None
-        icon_font_register()
-        LabelBase.register(name="NotoSansCJK",
-                           fn_regular="songprez/fonts/"
-                           +"NotoSansCJK-Regular.ttc")
-        LabelBase.register(name="NotoSansMonoCJK",
-                           fn_regular="songprez/fonts/"
-                           +"NotoSansMonoCJKsc-Regular.otf")
+        font_register()
         self.base = BaseWidget()
         Clock.schedule_once(self._verify_spcontrol)
         return self.base

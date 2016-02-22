@@ -162,9 +162,9 @@ class ShowScreen(Screen, StencilView):
                         # If showing chords, need a different font and string
                         halign = 'left' if self._showchords else 'center'
                         if self._showchords:
-                            font = 'songprez/fonts/NotoSansMonoCJKsc-Regular.otf' 
+                            font = 'NotoSansMono' 
                         else:
-                            font = 'songprez/fonts/NotoSansCJK-Regular.ttc' 
+                            font = 'NotoSans' 
                         se = SlideElement(padding=(100, 100, 100, 100),
                                          font_size=180, font_name=font,
                                          halign=halign, valign='middle')
@@ -185,7 +185,7 @@ class ShowScreen(Screen, StencilView):
                                  callbackKeywords={'presentation':
                                                    item['presentation']})
             elif item['itemtype'] == 'scripture':
-                font = 'songprez/fonts/NotoSansCJK-Regular.ttc' 
+                font = 'NotoSans' 
                 halign='left'
                 se = SlideElement(padding=(100, 100, 100, 100),
                                  font_size=180, font_name=font,

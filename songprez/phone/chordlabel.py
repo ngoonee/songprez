@@ -101,26 +101,26 @@ class ChordLabel(Widget):
                 continue
             elif t == 'chord':
                 chordslabel = CoreLabel(font_size=60, bold=False, italic=False,
-                               font_name='NotoSansCJK')
+                               font_name='NotoSans')
                 chordslabel.text = v[0][1:]
                 chordslabel.refresh()
                 texture = chordslabel.texture
             elif t == 'label':
                 labelslabel = CoreLabel(font_size=30, bold=False, italic=False,
-                               font_name='NotoSansCJK')
+                               font_name='NotoSans')
                 labelslabel.text = v[0]
                 labelslabel.refresh()
                 texture = labelslabel.texture
             elif t == 'lyric':
                 lyricslabel = CoreLabel(font_size=45, bold=False, italic=False,
-                               font_name='NotoSansCJK')
+                               font_name='NotoSans')
                 lyricslabel.text = v[0][1:]
                 lyricslabel.refresh()
                 texture = lyricslabel.texture
             # Check for an empty texture
             if texture.height == 1:
                 labelslabel = CoreLabel(font_size=30, bold=False, italic=False,
-                               font_name='NotoSansCJK')
+                               font_name='NotoSans')
                 labelslabel.text = ' '
                 labelslabel.refresh()
                 texture = labelslabel.texture
@@ -209,12 +209,12 @@ class ChordLabel(Widget):
                 chordstextures.append(None)
                 continue
             chordslabel = CoreLabel(font_size=60, bold=False, italic=False,
-                               font_name='NotoSansCJK')
+                               font_name='NotoSans')
             chordslabel.text = c
             chordslabel.refresh()
             chordstextures.append(chordslabel.texture)
         lyricslabel = CoreLabel(font_size=45, bold=False, italic=False,
-                               font_name='NotoSansCJK')
+                               font_name='NotoSans')
         lyricslabel.text = ' '
         lyricslabel.refresh()
         space_width = lyricslabel.texture.width
@@ -227,7 +227,7 @@ class ChordLabel(Widget):
                 lyricstextures.append(None)
                 continue
             lyricslabel = CoreLabel(font_size=45, bold=False, italic=False,
-                               font_name='NotoSansCJK')
+                               font_name='NotoSans')
             lyricslabel.text = l
             lyricslabel.refresh()
             if ctex and lyricslabel.texture.width < ctex.width:

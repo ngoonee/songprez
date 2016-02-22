@@ -41,10 +41,10 @@ class SongPrezApp(App):
         self.settings_cls = SPSettings
         self.use_kivy_settings = False
         self.control = None
-        LabelBase.register(name="NotoSansCJK",
+        LabelBase.register(name="NotoSans",
                            fn_regular="songprez/fonts/"
                            +"NotoSansCJK-Regular.ttc")
-        LabelBase.register(name="NotoSansMonoCJK",
+        LabelBase.register(name="NotoSansMono",
                            fn_regular="songprez/fonts/"
                            +"NotoSansMonoCJKsc-Regular.otf")
         self.base = BaseWidget()

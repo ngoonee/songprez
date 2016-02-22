@@ -98,7 +98,7 @@ Builder.load_string("""
                     size_hint_y: None
                     height: self.minimum_height
                     font_size: app.ui_fs_detail
-                    font_name: 'songprez/fonts/NotoSansMonoCJKsc-Regular.otf'
+                    font_name: 'NotoSansMono'
                 GridLayout:
                     id: bottom
                     cols: 2

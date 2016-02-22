@@ -27,7 +27,7 @@ from ..control.spset import SPSet
 
 Builder.load_string("""
 <CustomListItemButton>:
-    font_name: 'songprez/fonts/NotoSansMonoCJKsc-Regular.otf'
+    font_name: 'NotoSansMono'
 <ListView>:
     scroll: scroll
     container: container
