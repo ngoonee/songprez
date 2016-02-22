@@ -112,10 +112,10 @@ class BaseWidget(BoxLayout):
             pass
         else:
             scr_prio = {'main': 1,
-                        'present': 2, 'sets': 2,
-                        'editset': 3,
-                        'scripture': 4, 'search': 4, 'songs': 4,
-                        'editsong': 5}
+                        'present': 3, 'sets': 2,
+                        'editset': 4,
+                        'scripture': 5, 'search': 5, 'songs': 5,
+                        'editsong': 6}
             diff = scr_prio[data] - scr_prio[self._history[-1]]
             if diff == 0:  # Save level is sets<->present or songs<->search
                 self._history.pop()
