@@ -134,10 +134,20 @@ Builder.load_string("""
 class SPRecycleView(RecycleView):
     edit_action = ObjectProperty(None)
     delete_action = ObjectProperty(None)
-    selection = ListProperty([])
+    selection = NumericProperty(-1)
+    oldselection = NumericProperty(-1)
 
     def __init__(self, **kwargs):
         super(SPRecycleView, self).__init__(**kwargs)
+
+    def on_selection(self, instance, value):
+        if self.oldselection > -1:
+            view = self.adapter.get_view(self.oldselection)
+            view.is_selected = False
+            self.oldselection = -1
+        if value > -1:
+            view = self.adapter.get_view(value)
+            self.oldselection = value
 
 
 class ListItem(SelectableView, RecycleViewMixin, FloatLayout, StencilView):
@@ -232,10 +242,7 @@ class ListItem(SelectableView, RecycleViewMixin, FloatLayout, StencilView):
         anim.start(self)
 
     def on_is_selected(self, instance, value):
-        if self.index in self.rv.selection:
-            self.rv.selection.remove(self.index)
-        if value:
-            self.rv.selection.append(self.index)
+        self.rv.selection = self.index if value else -1
         self.update_height()
 
     def on_expand_angle(self, instance, value):
