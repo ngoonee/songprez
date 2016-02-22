@@ -104,35 +104,30 @@ Builder.load_string("""
         size: root.buttonsize*1.5, root.buttonsize*1.5
         font_size: root.button_fs*1.5
         markup: True
-        opacity: root.button_opacity
     Label:
         id: move_down
         size_hint: None, None
         size: root.buttonsize*1.5, root.buttonsize*1.5
         font_size: root.button_fs*1.5
         markup: True
-        opacity: root.button_opacity
     Label:
         id: scripture
         size_hint: None, None
         size: root.buttonsize*1.5, root.buttonsize*1.5
         font_size: root.button_fs*1.5
         markup: True
-        opacity: root.button_opacity
     Label:
         id: remove_item
         size_hint: None, None
         size: root.buttonsize*1.5, root.buttonsize*1.5
         font_size: root.button_fs*1.5
         markup: True
-        opacity: root.button_opacity
     Label:
         id: add_item
         size_hint: None, None
         size: root.buttonsize*1.5, root.buttonsize*1.5
         font_size: root.button_fs*1.5
         markup: True
-        opacity: root.button_opacity
 """)
 
 
@@ -207,38 +202,41 @@ class ListItem(SelectableView, RecycleViewMixin, FloatLayout, StencilView):
                         return True
             # The below is if nothing matches above
             self.is_selected = not self.is_selected
-            height = dp(5) + self.title_fs*1.5 + dp(5)
-            if self.subtitletext:
-                height += self.detail_fs*1.5
-            if self.is_selected:
-                count = [1 for w in self._summary if w.text != '']
-                height_diff = len(count)*self.detail_fs*1.5 + dp(5)
-                if height_diff < 2*self.buttonsize:
-                    # Too few summary lines
-                    height_diff = 2*self.buttonsize + dp(5)
-                    if self.is_selected:
-                        height_diff -= self.detail_fs*1.5
-                if self.set_edit:
-                    height_diff += 1.5*self.buttonsize
-                height = int(height + height_diff)
-                angle = -90
-                opacity = 1
-            else:
-                height = int(height)
-                angle = 0
-                opacity = 0
-            anim = Animation(height=height, d=0.2)
-            anim &= Animation(expand_angle=angle, d=0.2)
-            anim &= Animation(button_opacity=opacity, d=0.2)
-            anim.start(self)
             return True
         return super(ListItem, self).on_touch_down(touch)
+
+    def update_height(self):
+        height = dp(5) + self.title_fs*1.5 + dp(5)
+        if self.subtitletext:
+            height += self.detail_fs*1.5
+        if self.is_selected:
+            count = [1 for w in self._summary if w.text != '']
+            height_diff = len(count)*self.detail_fs*1.5 + dp(5)
+            if height_diff < 2*self.buttonsize:
+                # Too few summary lines
+                height_diff = 2*self.buttonsize + dp(5)
+                if self.is_selected:
+                    height_diff -= self.detail_fs*1.5
+            if self.set_edit:
+                height_diff += 1.5*self.buttonsize
+            height = int(height + height_diff)
+            angle = -90
+            opacity = 1
+        else:
+            height = int(height)
+            angle = 0
+            opacity = 0
+        anim = Animation(height=height, d=0.2)
+        anim &= Animation(expand_angle=angle, d=0.2)
+        anim &= Animation(button_opacity=opacity, d=0.2)
+        anim.start(self)
 
     def on_is_selected(self, instance, value):
         if self.index in self.rv.selection:
             self.rv.selection.remove(self.index)
         if value:
             self.rv.selection.append(self.index)
+        self.update_height()
 
     def on_expand_angle(self, instance, value):
         if self.rv.data[self.index]['expand_angle'] != value:
