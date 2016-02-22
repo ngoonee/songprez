@@ -47,8 +47,3 @@ plan/*
 
 # Cache for py.test
 .cache/*
-
-# Font files
-*.ttf
-*.ttc
-*.otf

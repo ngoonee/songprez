@@ -10,17 +10,17 @@ Material Icon Fonts from https://github.com/Templarian/MaterialDesign-Webfont
 
 
 def font_register():
-    iconfont = os.path.join('songprez', 'fonts',
+    iconfont = os.path.join('songprez', 'resources', 'fonts',
                                 'materialdesignicons-webfont.ttf')
-    notosans = os.path.join('songprez', 'fonts',
+    notosans = os.path.join('songprez', 'resources', 'fonts',
                             'NotoSansCJK-Regular.ttc')
     if not os.path.exists(notosans):
-        notosans = os.path.join('songprez', 'fonts',
+        notosans = os.path.join('songprez', 'resources', 'fonts',
                                 'NotoSans-Regular.ttf')
-    notosansmono = os.path.join('songprez', 'fonts',
+    notosansmono = os.path.join('songprez', 'resources', 'fonts',
                                 'NotoSansMonoCJKsc-Regular.otf')
     if not os.path.exists(notosansmono):
-        notosansmono = os.path.join('songprez', 'fonts',
+        notosansmono = os.path.join('songprez', 'resources', 'fonts',
                                     'DroidSansMono.ttf')
     LabelBase.register(name="IconFonts", fn_regular=iconfont)
     LabelBase.register(name="NotoSans", fn_regular=notosans)

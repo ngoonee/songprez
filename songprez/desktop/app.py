@@ -42,10 +42,10 @@ class SongPrezApp(App):
         self.use_kivy_settings = False
         self.control = None
         LabelBase.register(name="NotoSans",
-                           fn_regular="songprez/fonts/"
+                           fn_regular="songprez/resources/fonts/"
                            +"NotoSansCJK-Regular.ttc")
         LabelBase.register(name="NotoSansMono",
-                           fn_regular="songprez/fonts/"
+                           fn_regular="songprez/resources/fonts/"
                            +"NotoSansMonoCJKsc-Regular.otf")
         self.base = BaseWidget()
         self.base.bind(colwidth=self._colwidth)
