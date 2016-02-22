@@ -254,5 +254,6 @@ class SetScreen(ListScreen):
     def bt_show(self):
         app = App.get_running_app()
         index = self.rv.selection
-        self.sendMessage(ChangeShowSet, set=self.itemlist[index])
-        app.base.to_screen('present')
+        if index > -1:
+            self.sendMessage(ChangeShowSet, set=self.itemlist[index])
+            app.base.to_screen('present')
