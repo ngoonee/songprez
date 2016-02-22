@@ -151,11 +151,39 @@ class EditSetScreen(Screen):
     def bt_delete(self, index):
         pass
 
-    def bt_move_up(self, index):
-        pass
+    def bt_move_up(self, i):
+        rv = self.rv
+        data = self.rv.data
+        itemlist = self.itemlist
+        if i > 0:
+            # Save the selected state of the 'other' item
+            prevselect = rv.adapter.get_view(i-1).is_selected
+            # Swap the data dict and the actual item
+            data[i-1], data[i] = data[i], data[i-1]
+            itemlist[i-1], itemlist[i] = itemlist[i], itemlist[i-1]
+            # Change the index values
+            data[i-1]['index'] = i-1
+            data[i]['index'] = i
+            # Update the selected states
+            rv.adapter.get_view(i-1).is_selected = True
+            rv.adapter.get_view(i).is_selected = prevselect
 
-    def bt_move_down(self, index):
-        pass
+    def bt_move_down(self, i):
+        rv = self.rv
+        data = self.rv.data
+        itemlist = self.itemlist
+        if i+1 < len(data):
+            # Save the selected state of the 'other' item
+            prevselect = rv.adapter.get_view(i+1).is_selected
+            # Swap the data dict and the actual item
+            data[i+1], data[i] = data[i], data[i+1]
+            itemlist[i+1], itemlist[i] = itemlist[i], itemlist[i+1]
+            # Change the index values
+            data[i+1]['index'] = i+1
+            data[i]['index'] = i
+            # Update the selected states
+            rv.adapter.get_view(i+1).is_selected = True
+            rv.adapter.get_view(i).is_selected = prevselect
 
     def bt_scripture(self, index):
         pass
