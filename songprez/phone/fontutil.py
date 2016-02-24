@@ -39,6 +39,7 @@ icon_map = {'donate': u'\uf5b9',  # square-inc-cash
             'chordoff': u'\uf47b',  # music-note-off
             'delete': u'\uf2b5',  # delete
             'cancel': u'\uf250',  # close-circle
+            'ok': u'\f229',  # checkbox-marked-circle
             'new': u'\uf504',  # plus
             'listadd': u'\uf501',  # playlist-plus
             'listremove': u'\uf502',  # playlist-remove
