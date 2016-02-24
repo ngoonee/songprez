@@ -14,7 +14,9 @@ from kivy.properties import ObjectProperty
 from functools import partial
 from .fontutil import iconfont
 from .buttonrow import Buttons
+from .modalpopup import ModalPopup
 from ..control.spsong import SPSong
+from ..network.messages import SaveEditItem
 
 Builder.load_string("""
 #:set left_width '75sp'
@@ -53,6 +55,7 @@ Builder.load_string("""
     lyrics: lyrics
     buttons: buttons
     transposeicon: transposeicon
+    sendMessage: app.sendMessage
     BoxLayout:
         orientation: 'vertical'
         padding: '5dp'
@@ -224,6 +227,7 @@ class TouchLabel(Label):
         self.root.lyrics.text = so.lyrics
         self.root.key.text = so.key
 
+
 class EditSongScreen(Screen):
     song = ObjectProperty(None)
 
@@ -264,6 +268,28 @@ class EditSongScreen(Screen):
         self.user3.text = songObject.user3
         self.lyrics.text = songObject.lyrics
 
+    def UI_to_song(self):
+        songObject = SPSong()
+        songObject.title = self.title.text 
+        songObject.author = self.author.text 
+        songObject.aka = self.aka.text 
+        songObject.key_line = self.key_line.text 
+        songObject.filepath = self.filepath.text 
+        songObject.presentation = self.presentation.text 
+        songObject.copyright = self.copyright.text 
+        songObject.ccli = self.ccli.text 
+        songObject.key = self.key.text 
+        # How to deal with capo?
+        songObject.tempo = self.tempo.text 
+        songObject.time_sig = self.time_sig.text 
+        songObject.theme = self.theme.text 
+        songObject.hymn_number = self.hymn_number.text 
+        songObject.user1 = self.user1.text 
+        songObject.user2 = self.user2.text 
+        songObject.user3 = self.user3.text 
+        songObject.lyrics = self.lyrics.text 
+        return songObject
+
     def bt_copy(self):
         pass
 
@@ -271,4 +297,28 @@ class EditSongScreen(Screen):
         pass
 
     def bt_save(self):
-        pass
+        songObject = self.UI_to_song()
+        if songObject != self.song:
+            message = ("Save the song '{0}' to file named '{1}'?".
+                       format(songObject.title, songObject.filepath))
+            popup = ModalPopup(message=message,
+                               lefttext=iconfont('save') + ' Save',
+                               leftcolor=(0, 0.6, 0, 1),
+                               righttext=iconfont('cancel') + ' Cancel')
+            popup.bind(on_left_action=self._do_save)
+        else:
+            message = ("Song '{0}' has not changed.".
+                       format(songObject.title))
+            popup = ModalPopup(message=message,
+                               righttext=iconfont('ok') + ' Ok')
+            popup.bind(on_left_action=self._noop)
+        popup.open()
+
+    def _noop(self, instance):
+        return True
+
+    def _do_save(self, instance):
+        songObject = self.UI_to_song()
+        self.sendMessage(SaveEditItem, itemtype='song', item=songObject,
+                         relpath=songObject.filepath)
+        self.song = songObject
