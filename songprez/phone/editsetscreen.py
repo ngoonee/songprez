@@ -8,9 +8,12 @@ from kivy.uix.scrollview import ScrollView
 from kivy.uix.screenmanager import Screen
 from kivy.properties import ListProperty, ObjectProperty
 from kivy.metrics import dp
+from copy import deepcopy
+from ..control.spset import SPSet
 from .fontutil import iconfont
 from .buttonrow import Buttons
-from ..network.messages import GetItem
+from .modalpopup import ModalPopup
+from ..network.messages import GetItem, SaveEditSet
 from .recyclelist import SPRecycleView, ListItem
 
 Builder.load_string("""
@@ -80,6 +83,7 @@ Builder.load_string("""
 
 class EditSetScreen(Screen):
     itemlist = ListProperty([])
+    set = ObjectProperty(None)
     current_set = ObjectProperty(None)
 
     def __init__(self, **kwargs):
@@ -93,21 +97,22 @@ class EditSetScreen(Screen):
         self.buttons.button3.text = iconfont('save', app.ui_fs_button) + ' Save'
 
     def update_set(self, setObject):
-        self.current_set = setObject
-        self._set_to_UI()
+        set = SPSet()
+        self.set = setObject
+        self.current_set = deepcopy(setObject)
+        self.set_to_UI()
 
     def add_song(self, songObject):
         self.current_set.add_song(songObject)
-        self._set_to_UI()
+        self.set_to_UI()
 
-    def _set_to_UI(self):
+    def set_to_UI(self):
         self.itemlist = []
-        self.rv.data = {}
+        self.rv.data = []
         setObject = self.current_set
         self.setname.text = setObject.name
         self.filepath.text = setObject.filepath
-        listofitems = setObject.list_songs()
-        for i, v in enumerate(listofitems):
+        for i, v in enumerate(setObject.list_songs()):
             name = v['name']
             itemtype = v['itemtype']
             if itemtype == 'scripture':
@@ -142,6 +147,14 @@ class EditSetScreen(Screen):
                 self.itemlist.append(item)
             self.sendMessage(GetItem, itemtype=itemtype, relpath=filepath,
                              callback=act, callbackKeywords={'index': i})
+    
+    def UI_to_set(self):
+        setObject = SPSet()
+        setObject.name = self.setname.text
+        setObject.filepath = self.filepath.text
+        for item in self.itemlist:
+            setObject.add_song(item)
+        return setObject
 
     def bt_edit(self, index):
         app = App.get_running_app()
@@ -202,4 +215,28 @@ class EditSetScreen(Screen):
         pass
 
     def bt_save(self):
-        pass
+        setObject = self.UI_to_set()
+        if setObject != self.set or setObject.name != self.set.name:
+            message = ("Save the set '{0}' to file named '{1}'?".
+                       format(setObject.name, setObject.filepath))
+            popup = ModalPopup(message=message,
+                               lefttext=iconfont('save') + ' Save',
+                               leftcolor=(0, 0.6, 0, 1),
+                               righttext=iconfont('cancel') + ' Cancel')
+            popup.bind(on_left_action=self._do_save)
+        else:
+            message = ("Set '{0}' has not changed.".
+                       format(setObject.name))
+            popup = ModalPopup(message=message,
+                               righttext=iconfont('ok') + ' Ok')
+            popup.bind(on_left_action=self._noop)
+        popup.open()
+
+    def _noop(self, instance):
+        return True
+
+    def _do_save(self, instance):
+        setObject = self.UI_to_set()
+        self.sendMessage(SaveEditSet, set=setObject,
+                         relpath=setObject.filepath)
+        self.set = setObject
