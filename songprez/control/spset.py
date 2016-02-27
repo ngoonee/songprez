@@ -33,6 +33,9 @@ class SPSet(object):
         don't compare well. Probably should have more fine-grained, but that's
         just TODO I guess.
         '''
+        if len(self._items) != len(other._items):
+            # Different lengths means different sets, obviously
+            return False
         for (me, you) in zip(self._items, other._items):
             if me != you:
                 return False
