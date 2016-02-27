@@ -16,6 +16,8 @@ Builder.load_string("""
     leftcolor: (0.2, 0.2, 0.2, 1)
     righttext: ''
     rightcolor: (0.2, 0.2, 0.2, 1)
+    inputtext: 'test'
+    input: input
     size_hint_x: 0.7
     size_hint_y: None
     height: mainbox.height
@@ -25,7 +27,7 @@ Builder.load_string("""
         padding: '20dp'
         pos: root.pos
         size_hint_y: None
-        height: messagebox.height + dp(10) + app.buttonsize + 2*dp(20)
+        height: messagebox.height + input.height + dp(10) + app.buttonsize + 2*dp(20)
         Label:
             id: messagebox
             text: root.message
@@ -35,6 +37,13 @@ Builder.load_string("""
             size_hint_y: None
             height: self.texture_size[1]
             markup: True
+        TextInput:
+            id: input
+            text: root.inputtext
+            font_size: app.ui_fs_detail
+            size_hint_y: None
+            height: self.minimum_height if self.text else 0
+            opacity: 1 if self.text else 0
         Widget:
             size_hint_y: None
             height: '10dp'
@@ -78,6 +87,7 @@ class ModalPopup(ModalView):
         self.righttext = kwargs.get('righttext', '')
         self.leftcolor = kwargs.get('leftcolor', (0.2, 0.2, 0.2, 1))
         self.rightcolor = kwargs.get('rightcolor', (0.2, 0.2, 0.2, 1))
+        self.inputtext = kwargs.get('inputtext', '')
         self.auto_dismiss = False
 
     def _on_keyboard_down(self, *args):

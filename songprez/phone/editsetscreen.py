@@ -13,7 +13,7 @@ from ..control.spset import SPSet
 from .fontutil import iconfont
 from .buttonrow import Buttons
 from .modalpopup import ModalPopup
-from ..network.messages import GetItem, SaveEditSet
+from ..network.messages import GetItem, SaveEditSet, DeleteEditSet
 from .recyclelist import SPRecycleView, ListItem
 
 Builder.load_string("""
@@ -212,7 +212,16 @@ class EditSetScreen(Screen):
         pass
 
     def bt_saveas(self):
-        pass
+        setObject = self.UI_to_set()
+        message = ("Save the set '{0}' as".
+                   format(setObject.name))
+        popup = ModalPopup(message=message,
+                           lefttext=iconfont('save') + ' Save',
+                           leftcolor=(0, 0.6, 0, 1),
+                           righttext=iconfont('cancel') + ' Cancel',
+                           inputtext=setObject.filepath)
+        popup.bind(on_left_action=self._do_save)
+        popup.open()
 
     def bt_save(self):
         setObject = self.UI_to_set()
@@ -237,6 +246,10 @@ class EditSetScreen(Screen):
 
     def _do_save(self, instance):
         setObject = self.UI_to_set()
+        if instance.input.text:
+            self.sendMessage(DeleteEditSet,
+                             relpath=setObject.filepath)
+            setObject.filepath = instance.input.text
         self.sendMessage(SaveEditSet, set=setObject,
                          relpath=setObject.filepath)
         self.set = setObject

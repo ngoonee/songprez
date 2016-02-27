@@ -16,7 +16,7 @@ from .fontutil import iconfont
 from .buttonrow import Buttons
 from .modalpopup import ModalPopup
 from ..control.spsong import SPSong
-from ..network.messages import SaveEditItem
+from ..network.messages import SaveEditItem, DeleteEditItem
 
 Builder.load_string("""
 #:set left_width '75sp'
@@ -294,7 +294,16 @@ class EditSongScreen(Screen):
         pass
 
     def bt_saveas(self):
-        pass
+        songObject = self.UI_to_song()
+        message = ("Save the song '{0}' as".
+                   format(songObject.title))
+        popup = ModalPopup(message=message,
+                           lefttext=iconfont('save') + ' Save',
+                           leftcolor=(0, 0.6, 0, 1),
+                           righttext=iconfont('cancel') + ' Cancel',
+                           inputtext=songObject.filepath)
+        popup.bind(on_left_action=self._do_save)
+        popup.open()
 
     def bt_save(self):
         songObject = self.UI_to_song()
@@ -319,6 +328,10 @@ class EditSongScreen(Screen):
 
     def _do_save(self, instance):
         songObject = self.UI_to_song()
+        if instance.input.text:
+            self.sendMessage(DeleteEditItem, itemtype='song',
+                             relpath=songObject.filepath)
+            songObject.filepath = instance.input.text
         self.sendMessage(SaveEditItem, itemtype='song', item=songObject,
                          relpath=songObject.filepath)
         self.song = songObject
