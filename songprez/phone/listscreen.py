@@ -20,6 +20,7 @@ from ..network.messages import Search, ChangeShowSet
 from ..network.messages import DeleteEditSet, DeleteEditItem
 from .buttonrow import Buttons
 from .modalpopup import ModalPopup
+from ..control.spsong import SPSong
 
 Builder.load_string("""
 <SearchScreen>:
@@ -165,7 +166,9 @@ class SearchScreen(ListScreen):
         self.sendMessage(DeleteEditItem, itemtype=itemtype, relpath=filepath)
 
     def bt_new(self):
-        pass
+        app = App.get_running_app()
+        app.base.current_song = SPSong()
+        app.base.to_screen('editsong')
 
     def bt_songs(self):
         app = App.get_running_app()
@@ -224,7 +227,9 @@ class SongScreen(ListScreen):
         self.sendMessage(DeleteEditItem, itemtype=itemtype, relpath=filepath)
 
     def bt_new(self):
-        pass
+        app = App.get_running_app()
+        app.base.current_song = SPSong()
+        app.base.to_screen('editsong')
 
     def bt_search(self):
         app = App.get_running_app()

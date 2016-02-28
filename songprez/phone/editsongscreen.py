@@ -297,17 +297,23 @@ class EditSongScreen(Screen):
         songObject = self.UI_to_song()
         message = ("Save the song '{0}' as".
                    format(songObject.title))
+        if songObject.filepath:
+            suggestpath = songObject.filepath
+        else:
+            suggestpath = songObject.title
         popup = ModalPopup(message=message,
                            lefttext=iconfont('save') + ' Save',
                            leftcolor=(0, 0.6, 0, 1),
                            righttext=iconfont('cancel') + ' Cancel',
-                           inputtext=songObject.filepath)
+                           inputtext=suggestpath)
         popup.bind(on_left_action=self._do_save)
         popup.open()
 
     def bt_save(self):
         songObject = self.UI_to_song()
         if songObject != self.song:
+            if songObject.filepath == '':
+                return self.bt_saveas()
             message = ("Save the song '{0}' to file named '{1}'?".
                        format(songObject.title, songObject.filepath))
             popup = ModalPopup(message=message,
@@ -329,8 +335,9 @@ class EditSongScreen(Screen):
     def _do_save(self, instance):
         songObject = self.UI_to_song()
         if instance.input.text:
-            self.sendMessage(DeleteEditItem, itemtype='song',
-                             relpath=songObject.filepath)
+            if songObject.filepath:
+                self.sendMessage(DeleteEditItem, itemtype='song',
+                                 relpath=songObject.filepath)
             songObject.filepath = instance.input.text
         self.sendMessage(SaveEditItem, itemtype='song', item=songObject,
                          relpath=songObject.filepath)
