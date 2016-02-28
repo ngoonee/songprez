@@ -12,11 +12,14 @@ from kivy.uix.button import Button
 from kivy.uix.screenmanager import Screen, ScreenManager
 from kivy.properties import BooleanProperty, NumericProperty, ListProperty
 from kivy.adapters.listadapter import ListAdapter
+from functools import partial
 from .fontutil import iconfont
 from .recyclelist import SPRecycleView, ListItem
 from kivy.metrics import dp, sp
 from ..network.messages import Search, ChangeShowSet
+from ..network.messages import DeleteEditSet, DeleteEditItem
 from .buttonrow import Buttons
+from .modalpopup import ModalPopup
 
 Builder.load_string("""
 <SearchScreen>:
@@ -146,7 +149,20 @@ class SearchScreen(ListScreen):
         app.base.to_screen('editsong')
 
     def bt_delete(self, index):
-        pass
+        songObject = self.itemlist[index]
+        message = ("Are you sure you want to delete '{0}'?".
+                   format(songObject.filepath))
+        popup = ModalPopup(message=message,
+                           lefttext=iconfont('delete') + ' Delete',
+                           leftcolor=(0.8, 0, 0, 1),
+                           righttext=iconfont('cancel') + ' Cancel')
+        popup.bind(on_left_action=partial(self._do_delete_song,
+                                          'song',
+                                          songObject.filepath))
+        popup.open()
+
+    def _do_delete_song(self, itemtype, filepath, instance):
+        self.sendMessage(DeleteEditItem, itemtype=itemtype, relpath=filepath)
 
     def bt_new(self):
         pass
@@ -192,7 +208,20 @@ class SongScreen(ListScreen):
         app.base.to_screen('editsong')
 
     def bt_delete(self, index):
-        pass
+        songObject = self.itemlist[index]
+        message = ("Are you sure you want to delete '{0}'?".
+                   format(songObject.filepath))
+        popup = ModalPopup(message=message,
+                           lefttext=iconfont('delete') + ' Delete',
+                           leftcolor=(0.8, 0, 0, 1),
+                           righttext=iconfont('cancel') + ' Cancel')
+        popup.bind(on_left_action=partial(self._do_delete_song,
+                                          'song',
+                                          songObject.filepath))
+        popup.open()
+
+    def _do_delete_song(self, itemtype, filepath, instance):
+        self.sendMessage(DeleteEditItem, itemtype=itemtype, relpath=filepath)
 
     def bt_new(self):
         pass
@@ -245,7 +274,18 @@ class SetScreen(ListScreen):
         app.base.to_screen('editset')
 
     def bt_delete(self, index):
-        pass
+        setObject = self.itemlist[index]
+        message = ("Are you sure you want to delete '{0}'?".
+                   format(setObject.filepath))
+        popup = ModalPopup(message=message,
+                           lefttext=iconfont('delete') + ' Delete',
+                           leftcolor=(0.8, 0, 0, 1),
+                           righttext=iconfont('cancel') + ' Cancel')
+        popup.bind(on_left_action=partial(self._do_delete_set, setObject.filepath))
+        popup.open()
+
+    def _do_delete_set(self, filepath, instance):
+        self.sendMessage(DeleteEditSet, relpath=filepath)
 
     def bt_new(self):
         pass
