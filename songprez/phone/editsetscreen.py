@@ -88,6 +88,7 @@ class EditSetScreen(Screen):
 
     def __init__(self, **kwargs):
         super(EditSetScreen, self).__init__(**kwargs)
+        self._index_to_add = -1
         Clock.schedule_once(self._finish_init)
 
     def _finish_init(self, dt):
@@ -103,7 +104,8 @@ class EditSetScreen(Screen):
         self.set_to_UI()
 
     def add_song(self, songObject):
-        self.current_set.add_song(songObject)
+        self.current_set.add_song(songObject, self._index_to_add)
+        self._index_to_add = -1
         self.set_to_UI()
 
     def set_to_UI(self):
@@ -207,6 +209,7 @@ class EditSetScreen(Screen):
     def bt_add_item(self, index):
         app = App.get_running_app()
         app.base.to_screen('search')
+        self._index_to_add = index+1
 
     def bt_copy(self):
         pass
