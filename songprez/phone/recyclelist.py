@@ -299,7 +299,7 @@ class ListItem(SelectableView, RecycleViewMixin, FloatLayout, StencilView):
             if height_diff < 2*self.buttonsize:
                 # Too few summary lines
                 height_diff = 2*self.buttonsize + dp(5)
-                if self.is_selected:
+                if self.subtitletext:
                     height_diff -= self.detail_fs*1.5
             if self.set_edit:
                 height_diff += 1.5*self.buttonsize
@@ -393,6 +393,8 @@ class ListItem(SelectableView, RecycleViewMixin, FloatLayout, StencilView):
             last_y = summary_pos[1]
         else:
             last_y = base_y
+        if last_y > delete_pos[1]:
+            last_y = delete_pos[1]
         pos_y = last_y - 1.5*self.buttonsize
         intra_x = (rightbar_x - 5*1.5*self.buttonsize)/6
         self.move_up.pos = (int(intra_x), int(pos_y))
