@@ -223,17 +223,23 @@ class EditSetScreen(Screen):
         setObject = self.UI_to_set()
         message = ("Save the set '{0}' as".
                    format(setObject.name))
+        if setObject.filepath:
+            suggestpath = setObject.filepath
+        else:
+            suggestpath = setObject.name
         popup = ModalPopup(message=message,
                            lefttext=iconfont('save') + ' Save',
                            leftcolor=(0, 0.6, 0, 1),
                            righttext=iconfont('cancel') + ' Cancel',
-                           inputtext=setObject.filepath)
+                           inputtext=suggestpath)
         popup.bind(on_left_action=self._do_save)
         popup.open()
 
     def bt_save(self):
         setObject = self.UI_to_set()
         if setObject != self.set or setObject.name != self.set.name:
+            if setObject.filepath == '':
+                return self.bt_saveas()
             message = ("Save the set '{0}' to file named '{1}'?".
                        format(setObject.name, setObject.filepath))
             popup = ModalPopup(message=message,
@@ -255,8 +261,9 @@ class EditSetScreen(Screen):
     def _do_save(self, instance):
         setObject = self.UI_to_set()
         if instance.input.text:
-            self.sendMessage(DeleteEditSet,
-                             relpath=setObject.filepath)
+            if setObject.filepath:
+                self.sendMessage(DeleteEditSet,
+                                 relpath=setObject.filepath)
             setObject.filepath = instance.input.text
         self.sendMessage(SaveEditSet, set=setObject,
                          relpath=setObject.filepath)

@@ -21,6 +21,7 @@ from ..network.messages import DeleteEditSet, DeleteEditItem
 from .buttonrow import Buttons
 from .modalpopup import ModalPopup
 from ..control.spsong import SPSong
+from ..control.spset import SPSet
 
 Builder.load_string("""
 <SearchScreen>:
@@ -293,7 +294,9 @@ class SetScreen(ListScreen):
         self.sendMessage(DeleteEditSet, relpath=filepath)
 
     def bt_new(self):
-        pass
+        app = App.get_running_app()
+        app.base.edit_set(SPSet())
+        app.base.to_screen('editset')
 
     def bt_sort(self):
         pass
