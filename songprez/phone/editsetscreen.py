@@ -166,7 +166,7 @@ class EditSetScreen(Screen):
         app.base.to_screen('editsong')
 
     def bt_delete(self, index):
-        pass
+        self.bt_remove_item(index)
 
     def bt_move_up(self, i):
         rv = self.rv
@@ -205,8 +205,11 @@ class EditSetScreen(Screen):
     def bt_scripture(self, index):
         pass
 
-    def bt_remove_item(self, index):
-        pass
+    def bt_remove_item(self, i):
+        if i+1 < len(self.rv.data):  # 'data' includes the additional blank item
+            obj = self.itemlist[i]
+            self.current_set.remove_song(obj)
+            self.set_to_UI()
 
     def bt_add_item(self, index):
         app = App.get_running_app()
