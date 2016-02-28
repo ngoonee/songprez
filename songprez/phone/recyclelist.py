@@ -27,6 +27,49 @@ Builder.load_string("""
     key_viewclass: 'viewclass'
     key_size: 'height'
 
+<BlankListItem>:
+    button_fs: app.ui_fs_button
+    buttonsize: app.buttonsize
+    move_up: move_up
+    move_down: move_down
+    scripture: scripture
+    remove_item: remove_item
+    add_item: add_item
+    Label:
+        id: move_up
+        size_hint: None, None
+        color: 0.6, 0.6, 0.6, 1
+        size: root.buttonsize*1.5, root.buttonsize*1.5
+        font_size: root.button_fs*1.5
+        markup: True
+    Label:
+        id: move_down
+        color: 0.6, 0.6, 0.6, 1
+        size_hint: None, None
+        size: root.buttonsize*1.5, root.buttonsize*1.5
+        font_size: root.button_fs*1.5
+        markup: True
+    Label:
+        id: scripture
+        size_hint: None, None
+        size: root.buttonsize*1.5, root.buttonsize*1.5
+        font_size: root.button_fs*1.5
+        markup: True
+    Label:
+        id: remove_item
+        color: 0.6, 0.6, 0.6, 1
+        size_hint: None, None
+        size: root.buttonsize*1.5, root.buttonsize*1.5
+        font_size: root.button_fs*1.5
+        markup: True
+    Label:
+        id: add_item
+        size_hint: None, None
+        size: root.buttonsize*1.5, root.buttonsize*1.5
+        font_size: root.button_fs*1.5
+        markup: True
+
+
 <ListItem>:
     title_fs: app.ui_fs_main
     detail_fs: app.ui_fs_detail
@@ -149,6 +192,37 @@ class SPRecycleView(RecycleView):
             view = self.adapter.get_view(value)
             self.oldselection = value
 
+
+class BlankListItem(SelectableView, RecycleViewMixin, FloatLayout, StencilView):
+    def __init__(self, **kwargs):
+        super(BlankListItem, self).__init__(**kwargs)
+        self.move_up.text = iconfont('listmoveup')
+        self.move_down.text = iconfont('listmovedown')
+        self.scripture.text = iconfont('scripture')
+        self.remove_item.text = iconfont('listremove')
+        self.add_item.text = iconfont('listadd')
+
+    def on_touch_down(self, touch):
+        if self.collide_point(*touch.pos):
+            if self.scripture.collide_point(*touch.pos):
+                self.rv.scripture_action(self.index)
+                return True
+            if self.add_item.collide_point(*touch.pos):
+                self.rv.add_item_action(self.index)
+                return True
+        return super(BlankListItem, self).on_touch_down(touch)
+
+    def refresh_view_layout(self, rv, index, pos, size, viewport):
+        last_y = pos[1] + size[1] - dp(5)
+        pos_y = last_y - 1.5*self.buttonsize
+        rightbar_x = pos[0] + size[0] - dp(10) - self.buttonsize
+        intra_x = (rightbar_x - 5*1.5*self.buttonsize)/6
+        self.move_up.pos = (int(intra_x), int(pos_y))
+        self.move_down.pos = (int(1.5*self.buttonsize + 2*intra_x), int(pos_y))
+        self.scripture.pos = (int(3*self.buttonsize + 3*intra_x), int(pos_y))
+        self.remove_item.pos = (int(4.5*self.buttonsize + 4*intra_x), int(pos_y))
+        self.add_item.pos = (int(6*self.buttonsize + 5*intra_x), int(pos_y))
+        super(BlankListItem, self).refresh_view_layout(rv, index, pos, size, viewport)
 
 class ListItem(SelectableView, RecycleViewMixin, FloatLayout, StencilView):
     titletext = StringProperty('')

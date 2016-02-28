@@ -14,7 +14,7 @@ from .fontutil import iconfont
 from .buttonrow import Buttons
 from .modalpopup import ModalPopup
 from ..network.messages import GetItem, SaveEditSet, DeleteEditSet
-from .recyclelist import SPRecycleView, ListItem
+from .recyclelist import SPRecycleView, ListItem, BlankListItem
 
 Builder.load_string("""
 #:set left_width '75sp'
@@ -114,13 +114,11 @@ class EditSetScreen(Screen):
         setObject = self.current_set
         self.setname.text = setObject.name
         self.filepath.text = setObject.filepath
-        for i, v in enumerate(setObject.list_songs()):
-            name = v['name']
-            itemtype = v['itemtype']
-            if itemtype == 'scripture':
-                continue
-            filepath = v['filepath']
-            app = App.get_running_app()
+        app = App.get_running_app()
+        h = dp(10) + 1.5*app.buttonsize
+        self.rv.data.append({'index': -1, 'viewclass': 'BlankListItem',
+                             'height': h, 'rv': self.rv})
+        if len(setObject.list_songs()):
             def act(item, index):
                 # First get the requisite title, subtitle, and text values
                 title = item.title
@@ -135,20 +133,24 @@ class EditSetScreen(Screen):
                 summary = text[0:4]
                 # Then create the dict
                 if subtitle:
-                    viewclass = 'ListItem'
                     h = app.ui_fs_main*1.5 + app.ui_fs_detail*1.5 + dp(10)
                 else:
-                    viewclass = 'ListItem'
                     h = app.ui_fs_main*1.5 + dp(10)
-                self.rv.data.append({'index': index, 'titletext': title,
+                self.rv.data.insert(index, {'index': index, 'titletext': title,
                                      'subtitletext': subtitle,
                                      'summarytext': summary,
                                      'expand_angle': 0, 'button_opacity': 0,
-                                     'viewclass': viewclass, 'height': h,
+                                     'viewclass': 'ListItem', 'height': h,
                                      'set_edit': True, 'rv': self.rv})
                 self.itemlist.append(item)
-            self.sendMessage(GetItem, itemtype=itemtype, relpath=filepath,
-                             callback=act, callbackKeywords={'index': i})
+            for i, v in enumerate(setObject.list_songs()):
+                name = v['name']
+                itemtype = v['itemtype']
+                if itemtype == 'scripture':
+                    continue
+                filepath = v['filepath']
+                self.sendMessage(GetItem, itemtype=itemtype, relpath=filepath,
+                                 callback=act, callbackKeywords={'index': i})
     
     def UI_to_set(self):
         setObject = SPSet()
@@ -187,7 +189,7 @@ class EditSetScreen(Screen):
         rv = self.rv
         data = self.rv.data
         itemlist = self.itemlist
-        if i+1 < len(data):
+        if i+2 < len(data):  # 'data' includes the additional blank item
             # Save the selected state of the 'other' item
             prevselect = rv.adapter.get_view(i+1).is_selected
             # Swap the data dict and the actual item
