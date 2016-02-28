@@ -110,7 +110,7 @@ Builder.load_string("""
                     TextInput:
                         id: lyrics
                         size_hint_y: None
-                        height: self.minimum_height
+                        height: self.minimum_height if self.minimum_height > transposeicon.height else transposeicon.height
                         font_size: app.ui_fs_detail
                         font_name: 'NotoSansMono'
                     GridLayout:
