@@ -95,4 +95,10 @@ class SPSearch(object):
             self._ix = self._obtain_index()
             self.update_index()
         ix = self._ix
-        return ix.searcher().document(filepath=path)['song']
+        obj = ix.searcher().document(filepath=path)
+        if obj:
+            song = obj['song']
+        else:
+            filepath = os.path.join(self._dirpath, path)
+            song = SPSong.read_from_file(filepath)
+        return song
