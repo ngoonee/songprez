@@ -186,7 +186,7 @@ class SPRecycleView(RecycleView):
     def on_selection(self, instance, value):
         if self.oldselection > -1:
             view = self.adapter.get_view(self.oldselection)
-            view.is_selected = False
+            view.deselect(manual=False)
             self.oldselection = -1
         if value > -1:
             view = self.adapter.get_view(value)
@@ -284,8 +284,9 @@ class ListItem(SelectableView, RecycleViewMixin, FloatLayout, StencilView):
                     if self.add_item.collide_point(*touch.pos):
                         self.rv.add_item_action(self.index)
                         return True
-            # The below is if nothing matches above
-            self.is_selected = not self.is_selected
+                self.deselect()  # Fall-through, didn't hit anything
+            else:
+                self.select()  # Not currently selected, select it
             return True
         return super(ListItem, self).on_touch_down(touch)
 
@@ -315,8 +316,16 @@ class ListItem(SelectableView, RecycleViewMixin, FloatLayout, StencilView):
         anim &= Animation(button_opacity=opacity, d=0.2)
         anim.start(self)
 
+    def select(self, *args):
+        self.rv.selection = self.index
+        self.is_selected = True
+
+    def deselect(self, manual=True):
+        if manual:  # Actually from a click
+            self.rv.selection = -1
+        self.is_selected = False
+
     def on_is_selected(self, instance, value):
-        self.rv.selection = self.index if value else -1
         self.update_height()
 
     def on_expand_angle(self, instance, value):
