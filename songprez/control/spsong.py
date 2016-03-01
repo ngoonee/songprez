@@ -298,6 +298,8 @@ class SPSong(object):
         modified or underscore characters added such that chords are properly
         placed above the matching lyrical lines.
         '''
+        # Enforce 'int' for interval
+        interval = int(interval)
         # Use the _transpose helper function as multiple runs are needed to
         # guarantee identical tone-gap across the song
         lyrics, toneGaps = self._transpose(self._lyrics, interval)
