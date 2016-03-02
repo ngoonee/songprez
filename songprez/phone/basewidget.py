@@ -75,7 +75,6 @@ Builder.load_string("""
 
 class BaseWidget(BoxLayout):
     current_song = ObjectProperty(None)
-    show_set = ObjectProperty(None)
 
     def __init__(self, **kwargs):
         super(BaseWidget, self).__init__(**kwargs)
@@ -158,12 +157,7 @@ class BaseWidget(BoxLayout):
             self.editset.add_song(song)
             self.to_screen('editset')
         else:
-            if not self.show_set: # No set yet
-                se = SPSet()
-                se.name = 'Temporary Presentation Set'
-                self.show_set = se
-            self.show_set.add_song(song)
-            self.present.show_set(self.show_set)
+            self.present.add_song(song)
 
     def edit_set(self, setObject):
         self.editset.update_set(setObject)
@@ -191,5 +185,4 @@ class BaseWidget(BoxLayout):
         pass
 
     def _show_set(self, set):
-        self.show_set = set
-        self.present.show_set(self.show_set)
+        self.present.show_set(set)
