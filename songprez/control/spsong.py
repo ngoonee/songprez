@@ -307,16 +307,21 @@ class SPSong(object):
             # Nothing to transpose
             return
         if toneGaps.count(toneGaps[0]) != len(toneGaps):
+            # First, try the more common gap
             toneGaps.sort()
             gap = toneGaps[(len(toneGaps)-1)//2]
             gapstore = toneGaps[0] if toneGaps[0] != gap else toneGaps[-1]
             lyrics, toneGaps = self._transpose(self._lyrics, interval, gap)
         if toneGaps.count(toneGaps[0]) != len(toneGaps):
-            gap = gapstore
-            lyrics, toneGaps = self._transpose(self._lyrics, interval, gap)
+            # Next, try the alternative gap
+            lyrics, toneGaps = self._transpose(self._lyrics, interval,
+                                               gapstore)
         if toneGaps.count(toneGaps[0]) != len(toneGaps):
-            warn("Transposition was unable to maintain a suitable tone gap " +
-                 "for " + self.__repr__)
+            # If all else fails, print a warning and use the original gap
+            print("Transposition was unable to maintain a suitable tone " +
+                  "gap for " + str(self.__repr__) + " with interval " +
+                  str(interval))
+            lyrics, _ = self._transpose(self._lyrics, interval, gap)
         t = SPTranspose()
         self.key = t.transpose_unit(self.key, interval, toneGaps[0])
         self._lyrics = lyrics
