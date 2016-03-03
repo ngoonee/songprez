@@ -27,7 +27,8 @@ _xmldefaults = {'title': u'New Song',
                 'theme': u'',
                 'tempo': u'',
                 'time_sig': u'',
-                'capo': OrderedDict({'@print': u'false', '#text': u''}),
+                'capo_print': False,
+                'capo': u'',
                 'lyrics': u'',}
 
 
@@ -59,13 +60,18 @@ class SPSong(object):
             songobj = obj['song']
         retval = cls()
         for key, val in _xmldefaults.iteritems():
-            try:
-                if songobj[key]:
-                    setattr(retval, key, songobj[key])
-                else:
-                    setattr(retval, key, val)
-            except KeyError:
-                return
+            if key == 'capo_print':
+                continue
+            if key == 'capo':
+                capoval = songobj.get(key)
+                if capoval:
+                    if capoval.get('@print') == 'true':
+                        setattr(retval, 'capo_print', True)
+                    if capoval.get('#text'):
+                        setattr(retval, 'capo', capoval.get('#text'))
+                continue
+            if songobj.get(key):
+                setattr(retval, key, songobj[key])
         # Find the base OpenSong directory by walking up the path to find the
         # parent of 'Songs'
         basedir, filename = os.path.split(filepath)
@@ -89,6 +95,14 @@ class SPSong(object):
         '''
         songobj = OrderedDict()
         for key in _xmldefaults.iterkeys():
+            if key == 'capo_print':
+                continue
+            if key == 'capo':
+                val = OrderedDict()
+                val['@print'] = u'true' if self.capo_print else u'false'
+                val['#text'] = self.capo
+                songobj['capo'] = val
+                continue
             songobj[key] = getattr(self, key)
         obj = OrderedDict()
         obj['song'] = songobj
@@ -249,6 +263,15 @@ class SPSong(object):
     @time_sig.setter
     def time_sig(self, val):
         self._time_sig = val
+
+    @property
+    def capo_print(self):
+        return (self._capo_print if hasattr(self, '_capo_print')
+                          else _xmldefaults['capo_print'])
+
+    @capo_print.setter
+    def capo_print(self, val):
+        self._capo_print = val
 
     @property
     def capo(self):

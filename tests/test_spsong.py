@@ -18,6 +18,7 @@ def test_song_read_write(tmpdir):
     s = spsong.SPSong()
     for key in spsong._xmldefaults.iterkeys():
         setattr(s, key, "test")
+    setattr(s, 'capo_print', True)
     s.write_to_file(p.join('test').__str__())
     s2 = spsong.SPSong.read_from_file(p.join('test').__str__())
     assert s == s2

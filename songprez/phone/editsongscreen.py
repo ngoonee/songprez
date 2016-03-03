@@ -46,6 +46,7 @@ Builder.load_string("""
     key: key
     tempo: tempo
     capo: capo
+    capo_print: capo_print
     time_sig: time_sig
     theme: theme
     hymn_number: hymn_number
@@ -141,8 +142,24 @@ Builder.load_string("""
                             id: key
                         LeftLabel:
                             text: 'Capo'
-                        RightTextInput:
-                            id: capo
+                        BoxLayout:
+                            orientation: 'horizontal'
+                            size_hint_y: None
+                            height: capo.height
+                            RightTextInput:
+                                id: capo
+                            Widget:
+                                size_hint_x: None
+                                width: dp(20)
+                            Label:
+                                text: 'Print'
+                                size_hint_x: None
+                                width: self.texture_size[0]
+                                font_size: app.ui_fs_detail
+                            CheckBox:
+                                id: capo_print
+                                size_hint_x: None
+                                width: sp(32)
                         LeftLabel:
                             text: 'Tempo'
                         RightTextInput:
@@ -258,7 +275,8 @@ class EditSongScreen(Screen):
         self.copyright.text = songObject.copyright
         self.ccli.text = songObject.ccli
         self.key.text = songObject.key
-        # How to deal with capo?
+        self.capo.text = songObject.capo
+        self.capo_print.active = songObject.capo_print
         self.tempo.text = songObject.tempo
         self.time_sig.text = songObject.time_sig
         self.theme.text = songObject.theme
@@ -279,7 +297,8 @@ class EditSongScreen(Screen):
         songObject.copyright = self.copyright.text 
         songObject.ccli = self.ccli.text 
         songObject.key = self.key.text 
-        # How to deal with capo?
+        songObject.capo = self.capo.text
+        songObject.capo_print = self.capo_print.active
         songObject.tempo = self.tempo.text 
         songObject.time_sig = self.time_sig.text 
         songObject.theme = self.theme.text 

@@ -28,6 +28,7 @@ Builder.load_string("""
     key: key
     tempo: tempo
     capo: capo
+    capo_print: capo_print
     time_sig: time_sig
     theme: theme
     hymn_number: hymn_number
@@ -160,6 +161,10 @@ Builder.load_string("""
                     SingleLineTextInput:
                         id: capo
                     MinimalLabel:
+                        text: ' Print:'
+                    CheckBox:
+                        id: capo_print
+                    MinimalLabel:
                         text: ' Tempo:'
                     SingleLineTextInput:
                         id: tempo
@@ -239,7 +244,8 @@ class SongEdit(Screen):
         self.copyright.text = songObject.copyright
         self.ccli.text = songObject.ccli
         self.key.text = songObject.key
-        # How to deal with capo?
+        self.capo.text = songObject.capo
+        self.capo_print.active = songObject.capo_print
         self.tempo.text = songObject.tempo
         self.time_sig.text = songObject.time_sig
         self.theme.text = songObject.theme
@@ -264,7 +270,8 @@ class SongEdit(Screen):
         songObject.copyright = self.copyright.text
         songObject.ccli = self.ccli.text
         songObject.key = self.key.text
-        # How to deal with capo?
+        songObject.capo = self.capo.text
+        songObject.capo_print = self.capo_print.active
         songObject.tempo = self.tempo.text
         songObject.time_sig = self.time_sig.text
         songObject.theme = self.theme.text
