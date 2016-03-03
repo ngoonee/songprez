@@ -33,8 +33,7 @@ _xmldefaults = {'title': u'New Song',
 
 class SPSong(object):
     def __init__(self, **kwargs):
-        for key, val in _xmldefaults.iteritems():
-            setattr(self, key, val)
+        self.lyrics = u''
         self.filepath = u''
         self.mtime = None
 
@@ -115,6 +114,150 @@ class SPSong(object):
 
     def __ne__(self, other):
         return not(self.__eq__(other))
+
+    @property
+    def title(self):
+        return (self._title if hasattr(self, '_title')
+                          else _xmldefaults['title'])
+
+    @title.setter
+    def title(self, val):
+        self._title = val
+
+    @property
+    def author(self):
+        return (self._author if hasattr(self, '_author')
+                          else _xmldefaults['author'])
+
+    @author.setter
+    def author(self, val):
+        self._author = val
+
+    @property
+    def copyright(self):
+        return (self._copyright if hasattr(self, '_copyright')
+                          else _xmldefaults['copyright'])
+
+    @copyright.setter
+    def copyright(self, val):
+        self._copyright = val
+
+    @property
+    def hymn_number(self):
+        return (self._hymn_number if hasattr(self, '_hymn_number')
+                          else _xmldefaults['hymn_number'])
+
+    @hymn_number.setter
+    def hymn_number(self, val):
+        self._hymn_number = val
+
+    @property
+    def presentation(self):
+        return (self._presentation if hasattr(self, '_presentation')
+                          else _xmldefaults['presentation'])
+
+    @presentation.setter
+    def presentation(self, val):
+        self._presentation = val
+
+    @property
+    def ccli(self):
+        return (self._ccli if hasattr(self, '_ccli')
+                          else _xmldefaults['ccli'])
+
+    @ccli.setter
+    def ccli(self, val):
+        self._ccli = val
+
+    @property
+    def key(self):
+        return (self._key if hasattr(self, '_key')
+                          else _xmldefaults['key'])
+
+    @key.setter
+    def key(self, val):
+        self._key = val
+
+    @property
+    def aka(self):
+        return (self._aka if hasattr(self, '_aka')
+                          else _xmldefaults['aka'])
+
+    @aka.setter
+    def aka(self, val):
+        self._aka = val
+
+    @property
+    def key_line(self):
+        return (self._key_line if hasattr(self, '_key_line')
+                          else _xmldefaults['key_line'])
+
+    @key_line.setter
+    def key_line(self, val):
+        self._key_line = val
+
+    @property
+    def user1(self):
+        return (self._user1 if hasattr(self, '_user1')
+                          else _xmldefaults['user1'])
+
+    @user1.setter
+    def user1(self, val):
+        self._user1 = val
+
+    @property
+    def user2(self):
+        return (self._user2 if hasattr(self, '_user2')
+                          else _xmldefaults['user2'])
+
+    @user2.setter
+    def user2(self, val):
+        self._user2 = val
+
+    @property
+    def user3(self):
+        return (self._user3 if hasattr(self, '_user3')
+                          else _xmldefaults['user3'])
+
+    @user3.setter
+    def user3(self, val):
+        self._user3 = val
+
+    @property
+    def theme(self):
+        return (self._theme if hasattr(self, '_theme')
+                          else _xmldefaults['theme'])
+
+    @theme.setter
+    def theme(self, val):
+        self._theme = val
+
+    @property
+    def tempo(self):
+        return (self._tempo if hasattr(self, '_tempo')
+                          else _xmldefaults['tempo'])
+
+    @tempo.setter
+    def tempo(self, val):
+        self._tempo = val
+
+    @property
+    def time_sig(self):
+        return (self._time_sig if hasattr(self, '_time_sig')
+                          else _xmldefaults['time_sig'])
+
+    @time_sig.setter
+    def time_sig(self, val):
+        self._time_sig = val
+
+    @property
+    def capo(self):
+        return (self._capo if hasattr(self, '_capo')
+                          else _xmldefaults['capo'])
+
+    @capo.setter
+    def capo(self, val):
+        self._capo = val
 
     @property
     def lyrics(self):
