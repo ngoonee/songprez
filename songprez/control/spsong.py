@@ -12,17 +12,28 @@ from collections import OrderedDict
 from copy import deepcopy
 from .spchords import SPTranspose
 
-_xmlkeys = ('title', 'author', 'copyright', 'hymn_number', 'presentation',
-            'ccli', 'key', 'aka', 'key_line', 'user1', 'user2', 'user3',
-            'theme', 'tempo', 'time_sig', 'capo', 'lyrics')
-_xmldefaults = (u'New Song', u'', u'', u'', u'',
-                u'', u'', u'', u'', u'', u'', u'',
-                u'', u'', u'', OrderedDict({'@print': 'false'}), u'')
+_xmldefaults = {'title': u'New Song',
+                'author': u'',
+                'copyright': u'',
+                'hymn_number': u'',
+                'presentation': u'',
+                'ccli': u'',
+                'key': u'',
+                'aka': u'',
+                'key_line': u'',
+                'user1': u'',
+                'user2': u'',
+                'user3': u'',
+                'theme': u'',
+                'tempo': u'',
+                'time_sig': u'',
+                'capo': OrderedDict({'@print': u'false', '#text': u''}),
+                'lyrics': u'',}
 
 
 class SPSong(object):
     def __init__(self, **kwargs):
-        for key, val in zip(_xmlkeys, _xmldefaults):
+        for key, val in _xmldefaults.iteritems():
             setattr(self, key, val)
         self.filepath = u''
         self.mtime = None
@@ -48,7 +59,7 @@ class SPSong(object):
                 return
             songobj = obj['song']
         retval = cls()
-        for key, val in zip(_xmlkeys, _xmldefaults):
+        for key, val in _xmldefaults.iteritems():
             try:
                 if songobj[key]:
                     setattr(retval, key, songobj[key])
@@ -78,8 +89,8 @@ class SPSong(object):
         Write this Song object to an XML file at filepath.
         '''
         songobj = OrderedDict()
-        for val in _xmlkeys:
-            songobj[val] = getattr(self, val)
+        for key in _xmldefaults.iterkeys():
+            songobj[key] = getattr(self, key)
         obj = OrderedDict()
         obj['song'] = songobj
         with open(filepath, 'w', encoding='UTF-8') as f:
@@ -97,7 +108,7 @@ class SPSong(object):
         Compares all relevant properties. filepath and mtime do not matter in
         comparing songs for equivalence.
         '''
-        for key in _xmlkeys:
+        for key in _xmldefaults.iterkeys():
             if getattr(self, key) != getattr(other, key):
                 return False
         return True

@@ -16,15 +16,15 @@ from songprez.control import spsong
 def test_song_read_write(tmpdir):
     p = tmpdir.mkdir('Songs')
     s = spsong.SPSong()
-    for item in spsong._xmlkeys:
-        setattr(s, item, "test")
+    for key in spsong._xmldefaults.iterkeys():
+        setattr(s, key, "test")
     s.write_to_file(p.join('test').__str__())
     s2 = spsong.SPSong.read_from_file(p.join('test').__str__())
     assert s == s2
     s3 = spsong.SPSong()
     assert s != s3
-    for item in spsong._xmlkeys:
-        assert getattr(s, item) == getattr(s2, item)
+    for key in spsong._xmldefaults.iterkeys():
+        assert getattr(s, key) == getattr(s2, key)
 
 def test_read_non_song(tmpdir):
     p = tmpdir.mkdir('songtest')
