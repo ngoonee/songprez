@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-import xmltodict
-from xml.parsers.expat import ExpatError
 import os
 from warnings import warn
 import re
@@ -10,29 +8,36 @@ if sys.version_info[0] < 3:
     from codecs import open  # 'UTF-8 aware open'
 from collections import OrderedDict
 from copy import deepcopy
+import time
 from .spchords import SPTranspose
+from .sputil import etree
 
-_xmldefaults = {'title': u'New Song',
-                'author': u'',
-                'copyright': u'',
-                'hymn_number': u'',
-                'presentation': u'',
-                'ccli': u'',
-                'key': u'',
-                'aka': u'',
-                'key_line': u'',
-                'user1': u'',
-                'user2': u'',
-                'user3': u'',
-                'theme': u'',
-                'tempo': u'',
-                'time_sig': u'',
-                'capo_print': False,
-                'capo': u'',
-                'lyrics': u'',}
+_xmldefaults = OrderedDict((('title', u'New Song'),
+                            ('author', u''),
+                            ('copyright', u''),
+                            ('hymn_number', u''),
+                            ('presentation', u''),
+                            ('ccli', u''),
+                            ('key', u''),
+                            ('aka', u''),
+                            ('key_line', u''),
+                            ('user1', u''),
+                            ('user2', u''),
+                            ('user3', u''),
+                            ('theme', u''),
+                            ('tempo', u''),
+                            ('time_sig', u''),
+                            ('capo_print', False),
+                            ('capo', u''),
+                            ('lyrics', u''),
+                          ))
 
 
 class SPSong(object):
+    xmlparse = 0  # Time taken to parse the XML (including file read)
+    relpathfind = 0  # Time taken to find the base directory
+    mtimefind = 0  # Time taken to find mtime of the current file
+
     def __init__(self, **kwargs):
         self.lyrics = u''
         self.filepath = u''
@@ -44,34 +49,28 @@ class SPSong(object):
         Loads an XML file at filepath to create a Song object. Returns None if
         filepath is not a valid Unicode XML.
         '''
+        starttime = time.time()
         try:
             filepath = unicode(filepath)
         except NameError:
             pass
-        with open(filepath, 'r', encoding='UTF-8') as f:
-            try:
-                data = f.read()
-            except UnicodeDecodeError:
-                return
-            try:
-                obj = xmltodict.parse(data)
-            except ExpatError:
-                return
-            songobj = obj['song']
         retval = cls()
-        for key, val in _xmldefaults.iteritems():
-            if key == 'capo_print':
-                continue
-            if key == 'capo':
-                capoval = songobj.get(key)
-                if capoval:
-                    if capoval.get('@print') == 'true':
-                        setattr(retval, 'capo_print', True)
-                    if capoval.get('#text'):
-                        setattr(retval, 'capo', capoval.get('#text'))
-                continue
-            if songobj.get(key):
-                setattr(retval, key, songobj[key])
+        try:
+            root = etree.parse(filepath).getroot()
+        except etree.ParseError:
+            return
+        for elem in root:
+            if elem.text is not None:
+                if elem.tag in _xmldefaults.keys():
+                    if elem.tag == 'capo_print':
+                        continue
+                    if elem.tag == 'capo':
+                        if elem.attrib.get('print') == 'true':
+                            setattr(retval, 'capo_print', True)
+                        setattr(retval, 'capo', unicode(elem.text))
+                        continue
+                    setattr(retval, elem.tag, unicode(elem.text))
+        cls.xmlparse += time.time() - starttime
         # Find the base OpenSong directory by walking up the path to find the
         # parent of 'Songs'
         basedir, filename = os.path.split(filepath)
@@ -86,28 +85,33 @@ class SPSong(object):
                 raise IOError("%s is not in a proper directory structure"
                               % filepath)
         retval.filepath = relpath
+        cls.relpathfind += time.time() - starttime
         retval.mtime = os.path.getmtime(filepath)
+        cls.mtimefind += time.time() - starttime
         return retval
 
     def write_to_file(self, filepath):
         '''
         Write this Song object to an XML file at filepath.
         '''
-        songobj = OrderedDict()
+
+        root = etree.Element('song')
         for key in _xmldefaults.iterkeys():
             if key == 'capo_print':
                 continue
             if key == 'capo':
-                val = OrderedDict()
-                val['@print'] = u'true' if self.capo_print else u'false'
-                val['#text'] = self.capo
-                songobj['capo'] = val
+                elem = etree.SubElement(root, 'capo')
+                elem.text = self.capo
+                elem.attrib['print'] = u'true' if self.capo_print else u'false'
                 continue
-            songobj[key] = getattr(self, key)
-        obj = OrderedDict()
-        obj['song'] = songobj
-        with open(filepath, 'w', encoding='UTF-8') as f:
-            f.write(xmltodict.unparse(obj, pretty=True))
+            etree.SubElement(root, key).text = getattr(self, key)
+        tree = etree.ElementTree(root)
+        try:
+            tree.write(filepath, pretty_print=True,
+                       encoding='utf-8', xml_declaration=True)
+        except TypeError:
+            tree.write(filepath,
+                       encoding='utf-8', xml_declaration=True)
 
     def __repr__(self):
         strrep = "<Song Object - Title: %s" % (self.title)
