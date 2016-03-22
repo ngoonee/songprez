@@ -3,6 +3,8 @@ from twisted.internet import reactor, protocol
 from twisted.internet import defer
 from twisted.protocols import amp
 import json
+import logging
+logger = logging.getLogger(__name__)
 from .messages import *
 from ..control.spsong import SPSong
 from ..control.spset import SPSet
@@ -34,12 +36,13 @@ class SPClientProtocol(amp.AMP):
         self.factory.client.on_connection(self)
 
     def printerr(self, error):
-        from pprint import pprint
-        pprint(self.factory.client)
-        pprint(error)
+        logger.error('SPClient: Client %s generated error %s',
+                     self.factory.client, error)
         return
 
     def sendMessage(self, message, **kwargs):
+        logger.debug(u'SPClient: sending message %s with arguments %s',
+                     message, kwargs)
         if kwargs.get('item'):
             jsonitem = json.dumps(kwargs.pop('item').__dict__)
             kwargs['jsonitem'] = jsonitem
@@ -66,7 +69,7 @@ class SPClientProtocol(amp.AMP):
 
     @Running.responder
     def Running(self):
-        print('received running')
+        logger.info("SPClient: Received 'running' signal")
         self.factory.client._running()
         return {}
 
@@ -174,4 +177,4 @@ class SPClientFactory(protocol.ReconnectingClientFactory):
         protocol.ReconnectingClientFactory.clientConnectionLost(self, connector, reason)
 
     def clientConnectionFailed(self, conn, reason):
-        print("connection failed")
+        logger.info('SPClient: Connection %s failed because %s', conn, reason)

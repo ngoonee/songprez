@@ -2,6 +2,8 @@
 from twisted.internet import protocol
 from twisted.protocols import amp
 import json
+import logging
+logger = logging.getLogger(__name__)
 from .messages import *
 from ..control.spset import SPSet
 from ..control.spsong import SPSong
@@ -13,10 +15,16 @@ class SPServerProtocol(amp.AMP):
         self.control = factory.control
 
     def connectionMade(self):
+        logger.info('SPServer: Host: "%s" %s --- Client: %s connected',
+                    self.transport.hostname, self.transport.repstr,
+                    self.transport.client)
         self.factory.peers.add(self)
         self.control._connection_made()
 
     def connectionLost(self, reason):
+        logger.info('SPServer: Host: "%s" %s --- Client: %s lost connection',
+                    self.transport.hostname, self.transport.repstr,
+                    self.transport.client)
         self.factory.peers.remove(self)
 
     @GetItem.responder
@@ -137,7 +145,6 @@ class SPServerFactory(protocol.Factory):
         self.peers = set()
 
     def buildProtocol(self, addr):
-        print(addr, 'connected')
         return self.protocol(self)
 
     def _sendPartial(self, message, jsonlist, **kwargs):
@@ -158,6 +165,7 @@ class SPServerFactory(protocol.Factory):
                                  totalpage=len(splitjson), **kwargs)
 
     def sendAll(self, message, **kwargs):
+        logger.debug(u'SPServer: sending message %s to all', message)
         if kwargs.get('list', None) != None:
             list = kwargs.pop('list')
             jsonlist = [json.dumps(s) for s in list]
