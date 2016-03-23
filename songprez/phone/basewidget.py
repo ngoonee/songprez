@@ -33,6 +33,7 @@ Builder.load_string("""
     search: search
     editset: editset
     editsong: editsong
+    settings: settings
     sm: sm
     title: title
     orientation: "vertical"
@@ -69,6 +70,7 @@ Builder.load_string("""
             id: editsong
             name: 'editsong'
         Screen:
+            id: settings
             name: 'settings'
 """)
 
@@ -108,7 +110,8 @@ class BaseWidget(BoxLayout):
         if data == 'main' and self._history == []:
             self._history = ['main',]
         elif data == 'settings':
-            pass
+            app = App.get_running_app()
+            app.open_settings()
         else:
             scr_prio = {'main': 1,
                         'present': 3, 'sets': 2,
@@ -135,14 +138,17 @@ class BaseWidget(BoxLayout):
     def _on_keyboard_down(self, *args):
         keycode = args[1]
         if keycode == 27:  # 'esc' on desktop, 'back' key on android
-            if len(self._history) > 1:
-                self.sm.current = self._history[-2]
-            elif self.sm.current == 'settings':
-                self.sm.current = self._history[-1]
-            else:
-                App.get_running_app().stop()  # Quit the app
+            self.back()
             return True
         return False
+
+    def back(self):
+        if len(self._history) > 1:
+            self.sm.current = self._history[-2]
+        elif self.sm.current == 'settings':
+            self.sm.current = self._history[-1]
+        else:
+            App.get_running_app().stop()  # Quit the app
 
     def on_connection(self, connection):
         print('connected successfully')

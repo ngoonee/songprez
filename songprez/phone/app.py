@@ -80,9 +80,15 @@ class SongPrezApp(App):
         print(config, section, key, value)
 
     def display_settings(self, settings):
-        super(SongPrezApp, self).display_settings(settings)
+        screen = self.base.sm.get_screen('settings')
+        if settings not in screen.children:
+            screen.add_widget(settings)
 
     def close_settings(self, *largs):
         super(SongPrezApp, self).close_settings(*largs)
         if not self.control:
             Clock.schedule_once(self._verify_spcontrol)
+        if len(largs) and largs[0] is self._app_settings:
+            # Called using close button
+            self.base.back()
+            return True
