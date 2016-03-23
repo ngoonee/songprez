@@ -9,6 +9,8 @@ if sys.version_info[0] < 3:
 from collections import OrderedDict
 from copy import deepcopy
 import time
+import logging
+logger = logging.getLogger(__name__)
 from .spchords import SPTranspose
 from .sputil import etree
 
@@ -499,9 +501,8 @@ class SPSong(object):
                                                gapstore)
         if toneGaps.count(toneGaps[0]) != len(toneGaps):
             # If all else fails, print a warning and use the original gap
-            print("Transposition was unable to maintain a suitable tone " +
-                  "gap for " + str(self.__repr__) + " with interval " +
-                  str(interval))
+            logger.error('SPSong: Transposing %s with interval %d, could not' +
+                         ' maintain suitable tone gap', str(self), interval)
             lyrics, _ = self._transpose(self._lyrics, interval, gap)
         t = SPTranspose()
         self.key = t.transpose_unit(self.key, interval, toneGaps[0])

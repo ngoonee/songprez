@@ -1,33 +1,35 @@
 #!/usr/bin/env python
 
 import os
+import logging
+logger = logging.getLogger(__name__)
 
 # Attempt using lxml with fallbacks to cElementTree and ElementTree
 try:
   from lxml import etree
-  print("running with lxml.etree")
+  logger.info("SPUtil: Using lxml.etree")
 except ImportError:
   try:
     # Python 2.5
     import xml.etree.cElementTree as etree
-    print("running with cElementTree on Python 2.5+")
+    logger.info("SPUtil: Using cElementTree on Python 2.5+")
   except ImportError:
     try:
       # Python 2.5
       import xml.etree.ElementTree as etree
-      print("running with ElementTree on Python 2.5+")
+      logger.info("SPUtil: Using ElementTree on Python 2.5+")
     except ImportError:
       try:
         # normal cElementTree install
         import cElementTree as etree
-        print("running with cElementTree")
+        logger.info("SPUtil: Using cElementTree")
       except ImportError:
         try:
           # normal ElementTree install
           import elementtree.ElementTree as etree
-          print("running with ElementTree")
+          logger.info("SPUtil: Using ElementTree")
         except ImportError:
-          print("Failed to import ElementTree from any known place")
+          logger.error("SPUtil: Failed to import ElementTree from any known place")
 
 def is_hidden(filepath):
     name = os.path.basename(os.path.abspath(filepath))

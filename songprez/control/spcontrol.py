@@ -4,7 +4,10 @@ import os
 from twisted.internet import reactor, threads
 from twisted.internet.endpoints import serverFromString
 from threading import Thread
+import time
 from time import sleep
+import logging
+logger = logging.getLogger(__name__)
 from .spsearch import SPSearch
 from .spset import SPSet
 from .spsong import SPSong
@@ -57,6 +60,8 @@ class SPControl(object):
                           self._scripturePath)
         if not os.path.exists(indexPath):
             raise IOError('indexPath does not exist at ' + indexPath)
+        logger.info('SPControl: Using %s as directory path and %s as index path',
+                    dirPath, indexPath)
         self._searchObj = SPSearch(indexPath, self._songPath)
         self._sets = None
         self._songs = None
@@ -88,6 +93,7 @@ class SPControl(object):
 
     def _connection_made(self):
         if self._running:
+            logger.info('SPControl: A new connection was made, sending signals')
             self._get_songs()
             self._get_sets()
             self._get_scripture()
@@ -106,6 +112,7 @@ class SPControl(object):
         '''
         # Use a generator first, then check for None return-type (xml parsing
         # error
+        logger.info('SPControl: Reading songs from %s', self._songPath)
         songs = (SPSong.read_from_file(f) for f in list_files(self._songPath))
         self._songs = [s for s in songs if s is not None]
         self._get_songs()
@@ -121,6 +128,7 @@ class SPControl(object):
     def _update_sets(self):
         # Use a generator first, then check for None return-type (xml parsing
         # error
+        logger.info('SPControl: Reading sets from %s', self._setPath)
         sets = (SPSet.read_from_file(f)
                 for f in list_files(self._setPath, sortbytime=True,
                                     reverse=True, recursive=False))
@@ -132,6 +140,7 @@ class SPControl(object):
         self.sendAll(SetList, itemlist=self._sets)
 
     def _update_scripture(self):
+        logger.info('SPControl: Reading scripture from %s', self._scripturePath)
         self._scriptureList = ({'filepath': os.path.split(f)[1],
                                 'name': os.path.split(f)[1]}
                                for f in list_files(self._scripturePath))
@@ -154,7 +163,10 @@ class SPControl(object):
 
     def _threadedsearch(self):
         term = self._searchTerm
+        starttime = time.time()
+        logger.debug('SPControl: Searching for %s', term)
         self._searchList = self._searchObj.search(term)
+        logger.debug('SPControl: Search for %s took %f', term, time.time()-starttime)
         self.sendAll(SearchList, itemlist=self._searchList)
 
     def _search(self, searchTerm):
@@ -194,19 +206,14 @@ class SPControl(object):
             self._editSong = SPSong.read_from_file(relpath)
             self.sendAll(EditItem, itemtype='song', item=self._editSong)
         elif itemtype == 'scripture':
-            import time
-            print(time.time())
             if not os.path.isabs(relpath):
                 relpath = os.path.join(self._scripturePath, relpath)
             if self._scripture and self._scripture.name == os.path.split(relpath)[-1]:
                 pass  # Already been loaded
             else:
                 self._scripture = SPBible.read_from_file(relpath)
-            import time
-            print(time.time())
             sendval = self._scripture.skeleton()
             self.sendAll(EditItem, itemtype='scripture', item=sendval)
-            print('selecting scripture at %s' % relpath)
 
     def _save_edit_item(self, itemtype, item, relpath):
         if itemtype == 'song':
