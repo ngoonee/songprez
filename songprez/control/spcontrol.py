@@ -142,6 +142,8 @@ class SPControl(object):
         self._sets = [s for s in sets if s is not None]
         self._get_sets()
         logger.info('SPControl: Done reading sets from %s', self._setPath)
+        logger.debug('SPControl: Took %f seconds total to read sets',
+                     SPSet.totaltime)
 
     def _get_sets(self):
         #self._setList = [{'filepath': s.filepath, 'name': s.name} for s in self._sets]

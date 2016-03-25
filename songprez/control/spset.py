@@ -1,18 +1,21 @@
 #!/usr/bin/env python
 
 import os
-import xmltodict
 import sys
 if sys.version_info[0] < 3:
     from codecs import open  # 'UTF-8 aware open'
 from xml.parsers.expat import ExpatError
 from collections import OrderedDict
 from copy import deepcopy
+import time
 from .spsong import SPSong
+from .sputil import etree
 
 FileNotFoundError = getattr(__builtins__,'FileNotFoundError', IOError)
 
 class SPSet(object):
+    totaltime = 0  # Time taken for entire reading process
+
     def __init__(self, **kwargs):
         self.filepath = ''
         self.name = "Unnamed Set"
@@ -21,7 +24,7 @@ class SPSet(object):
     def __repr__(self):
         printout = ["<Set Object - Name: " + self.name + ". Contents are:-"]
         for i in self._items:
-            printout.append(i['@type'].title() + ': ' + i['@name'])
+            printout.append(i['type'].title() + ': ' + i['name'])
         printout[-1] += ">"
         return "\n".join(printout)
 
@@ -50,16 +53,36 @@ class SPSet(object):
         Loads an XML file at filepath to create a Set object. Returns None if
         filepath is not a valid Unicode XML.
         '''
-        with open(filepath, 'r', encoding='UTF-8') as f:
-            try:
-                data = f.read()
-            except UnicodeDecodeError:
-                return
-            try:
-                obj = xmltodict.parse(data)
-            except ExpatError:
-                return
-            setobj = obj['set']
+        starttime = time.time()
+        try:
+            filepath = unicode(filepath)
+        except NameError:
+            pass
+        retval = cls()
+        try:
+            root = etree.parse(filepath).getroot()
+        except etree.ParseError:
+            return
+        retval.name = root.attrib.get('name')
+        items = root.getchildren()[0]
+        for item in items:
+            if item.attrib['type'] == 'song':
+                retval._items.append(dict(item.attrib))
+            elif item.attrib['type'] == 'scripture':
+                elem = dict(item.attrib)
+                for child in item:
+                    if child.tag == 'slides':
+                        slides = []
+                        for s in child:
+                            slides.append(s[0].text)
+                        elem['slides'] = slides
+                    else:
+                        elem[child.tag] = child.text
+                retval._items.append(elem)
+            elif item.attrib['type'] == 'image':
+                pass
+            elif item.attrib['type'] == 'custom':
+                pass
         # Find the base OpenSong directory by walking up the path to find the
         # parent of 'Sets'
         basedir, filename = os.path.split(filepath)
@@ -73,43 +96,57 @@ class SPSet(object):
             if filename == '':
                 raise IOError("%s is not in a proper directory structure"
                               % filepath)
-        retval = cls()
         retval.filepath = relpath
-        retval.name = setobj['@name']
-        try:
-            items = setobj['slide_groups']['slide_group']
-        except TypeError:
-            return retval
-        items = items if type(items) is list else [items]
-        # Workaround for the fact that single-entry Sets get parsed
-        # differently by xmltodict
-        for item in items:
-            if item['@type'] == 'song':
-                retval._items.append(item)
-            elif item['@type'] == 'scripture':
-                retval._items.append(item)
-            elif item['@type'] == 'image':
-                retval._items.append(item)
-            elif item['@type'] == 'custom':
-                retval._items.append(item)
+        cls.totaltime += time.time() - starttime
         return retval
 
     def write_to_file(self, filepath):
         '''
         Write this Set object to an XML file at filepath.
         '''
-        _items = []
+        root = etree.Element('set', attrib={'name': self.name})
+        tree = etree.ElementTree(root)
+        slide_groups = etree.SubElement(root, 'slide_groups')
         for item in self._items:
-            it = deepcopy(item)
-            _items.append(it)
-        setobj = OrderedDict()
-        setobj['@name'] = self.name
-        setobj['slide_groups'] = OrderedDict()
-        setobj['slide_groups']['slide_group'] = _items
-        obj = OrderedDict()
-        obj['set'] = setobj
-        with open(filepath, 'w', encoding='UTF-8') as f:
-            f.write(xmltodict.unparse(obj, pretty=True))
+            if item['type'] == 'song':
+                attrib = {a: item[a] for a in ['name', 'path',
+                                               'presentation', 'type']}
+                slide_group = etree.Element('slide_group', attrib=attrib)
+                slide_groups.append(slide_group)
+            elif item['type'] == 'scripture':
+                slide_group = etree.Element('slide_group')
+                # Handle the title of the set
+                title = etree.Element('title')
+                title.text = item['title']
+                slide_group.append(title)
+                # Handle the slides element of the set
+                slides = etree.Element('slides')
+                for s in item['slides']:
+                    slide = etree.Element('slide')
+                    body = etree.Element('body')
+                    body.text = s
+                    slide.append(body)
+                    slides.append(slide)
+                slide_group.append(slides)
+                # Handle the subtitle of the set
+                subtitle = etree.Element('subtitle')
+                subtitle.text = item['subtitle']
+                slide_group.append(subtitle)
+                # Handle the notes of the set
+                notes = etree.Element('notes')
+                notes.text = item['notes']
+                slide_group.append(notes)
+                # Handle the remaining (all assumed to be attributes)
+                keys = [k for k in item.keys() if k not in
+                            ['title', 'slides', 'subtitle', 'notes']]
+                for s in keys:
+                    slide_group.attrib[s] = item[s]
+                slide_groups.append(slide_group)
+            elif item.attrib['type'] == 'image':
+                pass
+            elif item.attrib['type'] == 'custom':
+                pass
+        tree.write(filepath, encoding='UTF-8', pretty_print=True, xml_declaration=True)
 
     def add_song(self, songObj, index=-1):
         '''
@@ -117,9 +154,9 @@ class SPSet(object):
         '''
         filepath = songObj.filepath
         basedir, name = os.path.split(filepath)
-        item = OrderedDict([('@name', name), ('@type', 'song'),
-                           ('@presentation', ''), ('@path', basedir),])
-                           #('song', songObj)])
+        item = {'name': name, 'type': 'song',
+                'presentation': songObj.presentation,
+                'path': basedir}
         if index == -1:
             self._items.append(item)
         else:
@@ -131,9 +168,8 @@ class SPSet(object):
         '''
         i = None
         for index, item in enumerate(self._items):
-            itempath = os.path.join(item['@path'], item['@name'])
-            if (item['@type'] == 'song' and itempath == obj.filepath):
-                    #item['song'].filepath == obj.filepath):
+            itempath = os.path.join(item['path'], item['name'])
+            if (item['type'] == 'song' and itempath == obj.filepath):
                 i = index
         if i != None:
             self._items.pop(i)
@@ -141,6 +177,13 @@ class SPSet(object):
     def list_songs(self):
         retval = []
         for s in self._items:
+            if s['type'] == 'song':
+                retval.append({'name': s['name'],
+                               'itemtype': s['type'],
+                               'presentation': s['presentation'],
+                               'filepath': os.path.join(s['path'],
+                                                        s['name'])})
+            '''
             if s['@type'] == 'song':
                 retval.append({'name': s['@name'],
                                'itemtype': s['@type'],
@@ -157,11 +200,18 @@ class SPSet(object):
             else:
                 retval.append({'name': s['@name'],
                                'itemtype': s['@type']})
+            '''
         return retval
 
     def from_song_list(self, songList):
         self._items = []
         for s in songList:
+            if s['itemtype'] == 'song':
+                self._items.append({'name': s['name'],
+                                    'type': s['itemtype'],
+                                    'presentation': s['presentation'],
+                                    'path': os.path.dirname(s['filepath'])})
+            '''
             if s['itemtype'] == 'song':
                 self._items.append({'@name': s['name'],
                                     '@type': s['itemtype'],
@@ -177,3 +227,4 @@ class SPSet(object):
             else:
                 self._items.append({'@name': s['name'],
                                     '@type': s['itemtype']})
+                                    '''

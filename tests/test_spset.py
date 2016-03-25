@@ -60,6 +60,7 @@ class TestSPSet(unittest.TestCase):
             orisong = self.set2.list_songs()[index]
             copysong = set2copy.list_songs()[index]
             assert orisong == copysong
+        os.remove(set2out)
 
     def tearDown(self):
         pass
