@@ -11,6 +11,8 @@ install_twisted_reactor()
 from twisted.internet import reactor
 from twisted.internet.endpoints import clientFromString
 import os
+import logging
+logger = logging.getLogger(__name__)
 from kivy.app import App
 from kivy.clock import Clock
 from kivy.properties import StringProperty, BooleanProperty, ListProperty
@@ -22,6 +24,7 @@ from .settings import SPSettings
 from .settingsjson import default_settings, build_settings
 from ..network.spclient import SPClientFactory
 from .fontutil import font_register
+from .modalpopup import ModalPopup
 
 
 class SongPrezApp(App):
@@ -51,8 +54,16 @@ class SongPrezApp(App):
             client = clientFromString(reactor, 'tcp:localhost:1916')
             client.connect(SPClientFactory(self.base))
         except Exception as e:
-            print(e)
+            logger.exception(e.message)
             self.open_settings()
+            def quit(*args):
+                self.stop()
+            popup = ModalPopup(message='Please set up the SongPrez media folder',
+                               lefttext='Quit',
+                               leftcolor=(0.6, 0, 0, 1),
+                               righttext='OK')
+            popup.bind(on_left_action=quit)
+            popup.open()
 
     def on_pause(self):
         return True
@@ -61,7 +72,8 @@ class SongPrezApp(App):
         pass
 
     def on_stop(self):
-        self.control.quit()
+        if self.control:
+            self.control.quit()
 
     def _control_loaded(self):
         pass
@@ -75,9 +87,14 @@ class SongPrezApp(App):
     def build_settings(self, settings):
         build_settings(settings, self.config)
 
+    def open_settings(self, *largs):
+        super(SongPrezApp, self).open_settings(*largs)
+        self.base.to_screen('settings')
+
     def on_config_change(self, config, section,
                          key, value):
-        print(config, section, key, value)
+        logger.debug('App: key %s in section %s is now %s',
+                     key, section, value)
 
     def display_settings(self, settings):
         screen = self.base.sm.get_screen('settings')

@@ -5,7 +5,7 @@ from twisted.internet import reactor, threads
 from twisted.internet.endpoints import serverFromString
 from threading import Thread
 import time
-from time import sleep
+import time
 import logging
 logger = logging.getLogger(__name__)
 from .spsearch import SPSearch
@@ -46,20 +46,21 @@ class SPControl(object):
     '''
     def __init__(self, indexPath, dirPath, **kwargs):
         super(SPControl, self).__init__(**kwargs)
+        if not os.path.exists(dirPath):
+            errmsg = ("SPControl: SongPrez media folder '%s' doesn't exist".
+                      format(dirPath))
+            raise IOError(errmsg)
         self._songPath = os.path.normpath(os.path.join(dirPath, 'Songs'))
         self._setPath = os.path.normpath(os.path.join(dirPath, 'Sets'))
         self._scripturePath = os.path.normpath(os.path.join(dirPath, 'Scripture'))
         if not os.path.exists(self._songPath):
-            raise IOError('dirPath does not contain a Songs folder at ' +
-                          self._songPath)
+            os.mkdir(self._songPath)
         if not os.path.exists(self._setPath):
-            raise IOError('dirPath does not contain a Sets folder at ' +
-                          self._setPath)
+            os.mkdir(self._setPath)
         if not os.path.exists(self._scripturePath):
-            raise IOError('dirPath does not contain a Scripture folder at ' +
-                          self._scripturePath)
+            os.mkdir(self._scripturePath)
         if not os.path.exists(indexPath):
-            raise IOError('indexPath does not exist at ' + indexPath)
+            os.mkdir(indexPath)
         logger.info('SPControl: Using %s as directory path and %s as index path',
                     dirPath, indexPath)
         self._searchObj = SPSearch(indexPath, self._songPath)
@@ -79,9 +80,15 @@ class SPControl(object):
         self._scripture = None
         server = serverFromString(reactor, 'tcp:1916')
         d = server.listen(SPServerFactory(self))
+        self.sendAll = None
         def save_factory(response):
             self.sendAll = response.factory.sendAll
         d.addCallback(save_factory)
+        starttime = time.time()
+        while not self.sendAll:
+            time.sleep(0.01)
+            if time.time() - starttime > 5:
+                raise RuntimeError('SPControl: sendAll function never assigned')
         reactor.callInThread(self._start)
 
     def _start(self):

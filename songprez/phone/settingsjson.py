@@ -5,21 +5,28 @@ from kivy import platform
 
 settings_object = OrderedDict()
 
-defaultdatadir = os.path.join(os.path.expanduser('~'), 'SongPrez')
-defaultindexdir = os.path.join(os.path.expanduser('~'), '.songprez')
-if platform == 'linux':
-    pass
-elif platform == 'win':
-    defaultdatadir = os.path.join(os.path.expanduser('~'), 'SongPrez')
-    defaultindexdir = os.path.join(os.path.expanduser('~'), 'AppData',
-                                   'Local', 'SongPrez')
-    pass
+# based on kivy/app.py
+appname = 'songprez'
+if platform == 'ios':
+    data_dir = os.path.join('~/Documents', appname)
+    defaultdatadir = os.path.join(data_dir, 'SongPrez')
 elif platform == 'android':
-    pass
+    data_dir = os.path.join('/sdcard', appname)
+    defaultdatadir = os.path.join('/sdcard', 'documents', 'SongPrez')
+elif platform == 'win':
+    data_dir = os.path.join(os.environ['APPDATA'], appname)
+    defaultdatadir = os.path.join('~', 'Documents', 'SongPrez')
 elif platform == 'macosx':
-    pass
-elif platform == 'ios':
-    pass
+    data_dir = '~/Library/Application Support/{}'.format(appname)
+    defaultdatadir = os.path.join('~', 'Documents', 'SongPrez')
+else:  # _platform == 'linux' or anything else...:
+    data_dir = os.environ.get('XDG_CONFIG_HOME', '~/.config')
+    data_dir = os.path.join(data_dir, appname)
+    defaultdatadir = os.path.join('~', 'SongPrez')
+data_dir = os.path.expanduser(data_dir)
+defaultdatadir = os.path.expanduser(defaultdatadir)
+# Index directory should be in data_dir
+defaultindexdir = os.path.join(data_dir, 'index')
 
 settings_object['Files & Folders'] = [
         {'type': 'pathex',
