@@ -116,6 +116,13 @@ class SPControl(object):
         songs = (SPSong.read_from_file(f) for f in list_files(self._songPath))
         self._songs = [s for s in songs if s is not None]
         self._get_songs()
+        logger.info('SPControl: Done reading songs from %s', self._songPath)
+        logger.debug('SPControl: Took %f seconds total to parse xml',
+                     SPSong.xmlparse)
+        logger.debug('SPControl: Took %f seconds total to find relative path',
+                     SPSong.relpathfind - SPSong.xmlparse)
+        logger.debug('SPControl: Took %f seconds total to find relative mtime',
+                     SPSong.mtimefind - SPSong.relpathfind)
         self._searchObj.update_index()
         if self._searchTerm:
             reactor.callInThread(self._threadedsearch)
@@ -134,6 +141,7 @@ class SPControl(object):
                                     reverse=True, recursive=False))
         self._sets = [s for s in sets if s is not None]
         self._get_sets()
+        logger.info('SPControl: Done reading sets from %s', self._setPath)
 
     def _get_sets(self):
         #self._setList = [{'filepath': s.filepath, 'name': s.name} for s in self._sets]
@@ -145,6 +153,7 @@ class SPControl(object):
                                 'name': os.path.split(f)[1]}
                                for f in list_files(self._scripturePath))
         self._get_scripture()
+        logger.info('SPControl: Done reading scripture from %s', self._scripturePath)
 
     def _get_scripture(self):
         self.sendAll(ScriptureList, list=self._scriptureList)
