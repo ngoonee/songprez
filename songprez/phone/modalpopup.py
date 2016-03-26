@@ -13,9 +13,9 @@ Builder.load_string("""
 <ModalPopUp>:
     message: ''
     lefttext: ''
-    leftcolor: (0.2, 0.2, 0.2, 1)
+    leftcolor: (0.2, 0.2, 0.2, 0)
     righttext: ''
-    rightcolor: (0.2, 0.2, 0.2, 1)
+    rightcolor: (0.2, 0.2, 0.2, 0)
     inputtext: 'test'
     input: input
     size_hint_x: 0.7
@@ -85,8 +85,10 @@ class ModalPopup(ModalView):
         self.message = kwargs.get('message', '')
         self.lefttext = kwargs.get('lefttext', '')
         self.righttext = kwargs.get('righttext', '')
-        self.leftcolor = kwargs.get('leftcolor', (0.2, 0.2, 0.2, 1))
-        self.rightcolor = kwargs.get('rightcolor', (0.2, 0.2, 0.2, 1))
+        if self.lefttext:
+            self.leftcolor = kwargs.get('leftcolor', (0.2, 0.2, 0.2, 1))
+        if self.righttext:
+            self.rightcolor = kwargs.get('rightcolor', (0.2, 0.2, 0.2, 1))
         self.inputtext = kwargs.get('inputtext', '')
         self.auto_dismiss = False
 
@@ -103,7 +105,9 @@ class ModalPopup(ModalView):
         Window.unbind(on_key_down=self._on_keyboard_down)
 
     def on_left_action(self):
-        self.dismiss()
+        if self.lefttext:
+            self.dismiss()
 
     def on_right_action(self):
-        self.dismiss()
+        if self.righttext:
+            self.dismiss()
