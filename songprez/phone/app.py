@@ -72,8 +72,7 @@ class SongPrezApp(App):
         pass
 
     def on_stop(self):
-        if self.control:
-            self.control.quit()
+        pass
 
     def _control_loaded(self):
         pass

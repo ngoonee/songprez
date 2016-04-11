@@ -68,7 +68,7 @@ class SongPrezApp(App):
             self.open_settings()
 
     def on_stop(self):
-        self.control.quit()
+        pass
 
     def _control_loaded(self):
         self.base.current = 'EditScreen'

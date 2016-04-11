@@ -106,12 +106,6 @@ class SPControl(object):
             self._get_scripture()
             self.sendAll(Running)
 
-    def quit(self):
-        try:
-            reactor.stop()
-        except:
-            pass  # Does it really matter if there's an error here?
-
     def _update_songs(self):
         '''
         Update the stored list of songs from file. Also updates the search
