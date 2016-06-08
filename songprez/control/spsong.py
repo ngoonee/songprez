@@ -6,6 +6,9 @@ import re
 import sys
 if sys.version_info[0] < 3:
     from codecs import open  # 'UTF-8 aware open'
+else:
+    def unicode(input):  # Hack to allow use of 'unicode' function
+        return str(input)  # in python 3
 from collections import OrderedDict
 from copy import deepcopy
 import time
@@ -115,12 +118,18 @@ class SPSong(object):
             tree.write(filepath,
                        encoding='utf-8', xml_declaration=True)
 
-    def __repr__(self):
+    def __unicode__(self):
         strrep = "<Song Object - Title: %s" % (self.title)
         if self.author not in (None, ''):
             strrep += ", Author: " + self.author
         strrep += ">"
         return strrep
+
+    def __repr__(self):
+        try:  # Python3 path
+            return str(self.__unicode__())
+        except UnicodeError:
+            return unicode(self).encode('utf-8')
 
     def __eq__(self, other):
         '''

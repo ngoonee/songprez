@@ -5,6 +5,9 @@ import os
 import sys
 if sys.version_info[0] < 3:
     from codecs import open  # 'UTF-8 aware open'
+else:
+    def unicode(input):  # Hack to allow use of 'unicode' function
+        return str(input)  # in python 3
 from collections import OrderedDict
 
 class SPBible(object):

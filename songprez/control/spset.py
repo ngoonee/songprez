@@ -4,6 +4,9 @@ import os
 import sys
 if sys.version_info[0] < 3:
     from codecs import open  # 'UTF-8 aware open'
+else:
+    def unicode(input):  # Hack to allow use of 'unicode' function
+        return str(input)  # in python 3
 from xml.parsers.expat import ExpatError
 from collections import OrderedDict
 from copy import deepcopy
@@ -21,12 +24,18 @@ class SPSet(object):
         self.name = "Unnamed Set"
         self._items = []
 
-    def __repr__(self):
+    def __unicode__(self):
         printout = ["<Set Object - Name: " + self.name + ". Contents are:-"]
         for i in self._items:
             printout.append(i['type'].title() + ': ' + i['name'])
         printout[-1] += ">"
         return "\n".join(printout)
+
+    def __repr__(self):
+        try:  # Python3 path
+            return str(self.__unicode__())
+        except UnicodeError:
+            return unicode(self).encode('utf-8')
 
     def __eq__(self, other):
         '''
