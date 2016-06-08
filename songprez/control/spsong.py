@@ -402,7 +402,8 @@ class SPSong(object):
                         t = SPTranspose()
                         newNote = t.transpose_unit(note, interval, gap)
                         curgap = t.get_tone_gap(note, newNote)
-                        toneGaps.append(curgap)
+                        if curgap is not None:  # Non-notes would return None
+                            toneGaps.append(curgap)
                         splitLine[n] = newNote
                         delta = len(newNote) - len(note)
                         if splitLyric is None:
