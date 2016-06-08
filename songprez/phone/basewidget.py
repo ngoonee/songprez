@@ -83,7 +83,7 @@ class BaseWidget(BoxLayout):
         self._history = []
         Window.bind(on_key_down=self._on_keyboard_down)
         self.sm.bind(current=self._change_title)
-        self.sm.current = 'main'
+        self.to_screen('main')
 
     def _change_title(self, instance, data):
         title = self.title
@@ -146,7 +146,8 @@ class BaseWidget(BoxLayout):
         if len(self._history) > 1:
             self.sm.current = self._history[-2]
         elif self.sm.current == 'settings':
-            self.sm.current = self._history[-1]
+            self.to_screen(self._history[-1])
+            App.get_running_app().close_settings()
         else:
             App.get_running_app().stop()  # Quit the app
 

@@ -78,18 +78,16 @@ class SPControl(object):
         self._showSlides = None
         self._scriptureList = None
         self._scripture = None
-        server = serverFromString(reactor, 'tcp:1916')
-        d = server.listen(SPServerFactory(self))
         self.sendAll = None
         def save_factory(response):
             self.sendAll = response.factory.sendAll
+            reactor.callInThread(self._start)
+        def raise_error(failure):
+            raise RuntimeError('SPControl: Failed to start server')
+        server = serverFromString(reactor, 'tcp:1916')
+        d = server.listen(SPServerFactory(self))
         d.addCallback(save_factory)
-        starttime = time.time()
-        while not self.sendAll:
-            time.sleep(0.01)
-            if time.time() - starttime > 5:
-                raise RuntimeError('SPControl: sendAll function never assigned')
-        reactor.callInThread(self._start)
+        d.addErrback(raise_error)
 
     def _start(self):
         self._update_songs()

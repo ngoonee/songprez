@@ -86,10 +86,6 @@ class SongPrezApp(App):
     def build_settings(self, settings):
         build_settings(settings, self.config)
 
-    def open_settings(self, *largs):
-        super(SongPrezApp, self).open_settings(*largs)
-        self.base.to_screen('settings')
-
     def on_config_change(self, config, section,
                          key, value):
         logger.debug('App: key %s in section %s is now %s',
