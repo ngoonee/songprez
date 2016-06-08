@@ -82,7 +82,7 @@ def test_transpose():
     l.append(" Lord, there is none like You")
     l.append(".        Esus4 E   D#o G#7(#5) C#m7")
     l.append(" You are ho____ly, ho__________ly")
-    l.append(".F#m7     A/B  E    A/B")
+    l.append(".F#m7     A/B  E    A/B  (2nd)")
     l.append(" Glory to You alone")
     s.lyrics = "\n".join(l)
     s.transpose(4)
@@ -93,7 +93,7 @@ def test_transpose():
     l.append(" Lord, there is none like You")
     l.append(".        Absus4 Ab  Go C7(#5) Fm7")
     l.append(" You are ho_____ly, ho________ly")
-    l.append(".Bbm7     Db/Eb Ab    Db/Eb")
+    l.append(".Bbm7     Db/Eb Ab    Db/Eb  (2nd)")
     l.append(" Glory to You a_lone")
     assert s.lyrics == "\n".join(l)
 
