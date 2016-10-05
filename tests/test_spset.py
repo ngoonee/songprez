@@ -36,19 +36,22 @@ class TestSPSet(unittest.TestCase):
 
     def test_adding_song(self):
         so = spsong.SPSong()
-        self.set1.add_song(so)
-        self.set2.add_song(so)
-        self.set2.add_song(so)
+        so.filepath = 'testsong'
+        self.set1.add_item(so, 'song')
+        self.set2.add_item(so, 'song', 0)
+        self.set2.add_item(so, 'song')
         assert len(self.set1.list_songs()) == 2
+        assert self.set1.list_songs()[-1]['name'] == 'testsong'
         assert len(self.set2.list_songs()) == 5
+        assert self.set2.list_songs()[0]['name'] == 'testsong'
 
     def test_removing_song(self):
         so = self.set2.list_songs()[1]['filepath']
         so = os.path.join(self.baseDir, 'Songs', so)
         so = spsong.SPSong.read_from_file(so)
-        self.set2.remove_song(so)
+        self.set2.remove_item(so.filepath, 1)
         assert len(self.set2.list_songs()) == 2
-        self.set2.remove_song(so)
+        self.set2.remove_item('wrongpath', 1)
         assert len(self.set2.list_songs()) == 2
 
     def test_writing(self):

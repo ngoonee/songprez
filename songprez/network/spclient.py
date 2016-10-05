@@ -41,6 +41,7 @@ class SPClientProtocol(amp.AMP):
         return
 
     def sendMessage(self, message, **kwargs):
+        # deprecated
         logger.debug(u'SPClient: sending message %s with arguments %s',
                      message, kwargs)
         if kwargs.get('item'):
@@ -70,46 +71,25 @@ class SPClientProtocol(amp.AMP):
     @Running.responder
     def Running(self):
         logger.info("SPClient: Received 'running' signal")
-        self.factory.client._running()
+        self.factory.client.running()
         return {}
 
     @SetList.responder
     def SetList(self, curpage, totalpage, jsonlist):
         if curpage == 0:
             self._partSetList = []
-        def to_set(json_dict):
-            se = SPSet()
-            se.__dict__ = json.loads(json_dict)
-            return se
-        self._partSetList.extend([to_set(d) for d in jsonlist])
+        self._partSetList.extend([json.loads(d) for d in jsonlist])
         if curpage == totalpage-1:
-            self.factory.client._set_list(self._partSetList)
+            self.factory.client.set_list(self._partSetList)
         return {}
 
     @SongList.responder
     def SongList(self, curpage, totalpage, jsonlist):
         if curpage == 0:
             self._partSongList = []
-        def to_song(json_dict):
-            so = SPSong()
-            so.__dict__ = json.loads(json_dict)
-            return so
-        self._partSongList.extend([to_song(d) for d in jsonlist])
+        self._partSongList.extend([json.loads(d) for d in jsonlist])
         if curpage == totalpage-1:
-            self.factory.client._song_list(self._partSongList)
-        return {}
-
-    @SearchList.responder
-    def SearchList(self, curpage, totalpage, jsonlist):
-        if curpage == 0:
-            self._partSearchList = []
-        def to_song(json_dict):
-            so = SPSong()
-            so.__dict__ = json.loads(json_dict)
-            return so
-        self._partSearchList.extend([to_song(d) for d in jsonlist])
-        if curpage == totalpage-1:
-            self.factory.client._search_list(self._partSearchList)
+            self.factory.client.song_list(self._partSongList)
         return {}
 
     @ScriptureList.responder
@@ -118,51 +98,40 @@ class SPClientProtocol(amp.AMP):
             self._partScriptureList = []
         self._partScriptureList.extend([json.loads(d) for d in jsonlist])
         if curpage == totalpage-1:
-            self.factory.client._scripture_list(self._partScriptureList)
+            self.factory.client.scripture_list(self._partScriptureList)
         return {}
 
-    @EditItem.responder
-    def EditItem(self, itemtype, jsonitem):
-        if '_edit_item' not in dir(self.factory.client):
-            return {}  # Optional method, return if not found
-        if itemtype == 'song':
-            item = SPSong()
-        else:  # Unimplemented itemtype
-            return {}
-        item.__dict__ = json.loads(jsonitem)
-        self.factory.client._edit_item(itemtype, item)
-        return {}
-
-    @EditSet.responder
-    def EditSet(self, jsonset):
-        if '_edit_set' not in dir(self.factory.client):
-            return {}  # Optional method, return if not found
-        item = SPSet()
-        item.__dict__ = json.loads(jsonset)
-        self.factory.client._edit_set(item)
-        return {}
-
-    @ShowSet.responder
-    def ShowSet(self, jsonset):
-        if '_show_set' not in dir(self.factory.client):
+    @CurrentSet.responder
+    def CurrentSet(self, jsonset):
+        if 'current_set' not in dir(self.factory.client):
             return {}  # Optional method, return if not found
         s = SPSet()
         s.__dict__ = json.loads(jsonset)
-        self.factory.client._show_set(s)
+        self.factory.client.current_set(s)
         return {}
 
-    @ShowPosition.responder
-    def ShowPosition(self, item, slide):
-        if '_show_position' not in dir(self.factory.client):
+    @CurrentItem.responder
+    def CurrentItem(self, itemtype, jsonitem):
+        if 'current_item' not in dir(self.factory.client):
             return {}  # Optional method, return if not found
-        self.factory.client._show_position(item, slide)
+        if itemtype == 'song':
+            s = SPSong()
+            s.__dict__ = json.loads(jsonitem)
+            self.factory.client.current_item(s)
         return {}
 
-    @ShowToggles.responder
-    def ShowToggles(self, toggle):
-        if '_show_toggles' not in dir(self.factory.client):
+    @CurrentPosition.responder
+    def CurrentPosition(self, item, slide):
+        if 'current_position' not in dir(self.factory.client):
             return {}  # Optional method, return if not found
-        self.factory.client._show_toggles(toggles)
+        self.factory.client.current_position(item, slide)
+        return {}
+
+    @CurrentToggles.responder
+    def CurrentToggles(self, toggle):
+        if 'current_toggles' not in dir(self.factory.client):
+            return {}  # Optional method, return if not found
+        self.factory.client.current_toggles(toggles)
         return {}
 
 

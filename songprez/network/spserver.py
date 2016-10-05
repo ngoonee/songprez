@@ -15,6 +15,7 @@ class SPServerProtocol(amp.AMP):
         self.control = factory.control
 
     def connectionMade(self):
+        print(self.transport.client)
         logger.info('SPServer: Host: "%s" %s --- Client: %s connected',
                     self.transport.hostname, self.transport.repstr,
                     self.transport.client)
@@ -29,111 +30,94 @@ class SPServerProtocol(amp.AMP):
 
     @GetItem.responder
     def GetItem(self, itemtype, relpath):
-        retval = self.control._get_item(itemtype, relpath)
+        retval = self.control.get_item(itemtype, relpath)
         return {'jsonitem': json.dumps(retval.__dict__)}
 
     @GetSet.responder
     def GetSet(self, relpath):
-        retval = self.control._get_set(relpath)
+        retval = self.control.get_set(relpath)
         return {'jsonset': json.dumps(retval.__dict__)}
 
     @Search.responder
     def Search(self, term):
-        self.control._search(term)
-        return {}
+        retval = self.control.search(term)
+        jsonlist = [json.dumps({'name': s.title, 'filepath': s.filepath}) for s in retval]
+        return {'jsonlist': jsonlist}
 
     @GetBooks.responder
     def GetBooks(self, version):
-        retval = self.control._get_books(version)
+        retval = self.control.get_books(version)
         return {'booklist': retval}
 
     @GetChapters.responder
     def GetChapters(self, version, book):
-        retval = self.control._get_chapters(version, book)
+        retval = self.control.get_chapters(version, book)
         return {'chapterlist': retval}
 
     @GetVerses.responder
     def GetVerses(self, version, book, chapter):
-        verselist, verses = self.control._get_verses(version, book, chapter)
+        verselist, verses = self.control.get_verses(version, book, chapter)
         return {'verselist': verselist, 'verses': verses }
 
-    @ChangeEditItem.responder
-    def ChangeEditItem(self, itemtype, relpath):
-        self.control._change_edit_item(itemtype, relpath)
+    @ChangeCurrentSet.responder
+    def ChangeCurrentSet(self, jsonset):
+        set = SPSet()
+        set.__dict__ = json.loads(jsonset)
+        self.control.change_current_set(set)
         return {}
 
-    @SaveEditItem.responder
-    def SaveEditItem(self, itemtype, jsonitem, relpath):
+    @SaveSet.responder
+    def SaveSet(self, jsonset, relpath):
+        item = SPSet()
+        item.__dict__ = json.loads(jsonset)
+        self.control.save_set(item, relpath)
+        return {}
+
+    @DeleteSet.responder
+    def DeleteSet(self, relpath):
+        self.control.delete_set(relpath)
+        return {}
+
+    @AddItemToSet.responder
+    def AddItemToSet(self, itemtype, relpath, position):
+        self.control.add_item_to_set(itemtype, relpath, position)
+        return {}
+
+    @RemoveItemFromSet.responder
+    def RemoveItemFromSet(self, relpath, position):
+        self.control.remove_item_from_set(relpath, position)
+        return {}
+
+    @ChangeCurrentItem.responder
+    def ChangeCurrentItem(self, itemtype, jsonsong):
+        song = SPSong()
+        song.__dict__ = json.loads(jsonsong)
+        self.control.change_current_item(itemtype, song)
+        return {}
+
+    @SaveItem.responder
+    def SaveItem(self, itemtype, jsonitem, relpath):
         if itemtype == 'song':
             item = SPSong()
         else:  # Not implemented yet
             return {}
         item.__dict__ = json.loads(jsonitem)
-        self.control._save_edit_item(itemtype, item, relpath)
+        self.control.save_item(itemtype, item, relpath)
         return {}
 
-    @NewEditItem.responder
-    def NewEditItem(self, itemtype, relpath):
-        self.control._new_edit_item(itemtype, relpath)
+    @DeleteItem.responder
+    def DeleteItem(self, itemtype, relpath):
+        self.control.delete_item(itemtype, relpath)
         return {}
 
-    @DeleteEditItem.responder
-    def DeleteEditItem(self, itemtype, relpath):
-        self.control._delete_edit_item(itemtype, relpath)
+    @ChangeCurrentPosition.responder
+    def ChangeCurrentPosition(self, item, slide):
+        self.control.change_current_position(item, slide)
         return {}
 
-    @ChangeEditSet.responder
-    def ChangeEditSet(self, relpath):
-        self.control._change_edit_set(relpath)
-        return {}
-
-    @SaveEditSet.responder
-    def SaveEditSet(self, jsonset, relpath):
-        item = SPSet()
-        item.__dict__ = json.loads(jsonset)
-        self.control._save_edit_set(item, relpath)
-        return {}
-
-    @NewEditSet.responder
-    def NewEditSet(self, relpath):
-        self.control._new_edit_set(relpath)
-        return {}
-
-    @DeleteEditSet.responder
-    def DeleteEditSet(self, relpath):
-        self.control._delete_edit_set(relpath)
-        return {}
-
-    @Resolution.responder
-    def Resolution(self, width, height):
-        self.control._resolution(width, height)
-        return {}
-
-    @ChangeShowSet.responder
-    def ChangeShowSet(self, jsonset):
-        set = SPSet()
-        set.__dict__ = json.loads(jsonset)
-        self.control._change_show_set(set)
-        return {}
-
-    @AddShowItem.responder
-    def AddShowItem(self, itemtype, relpath, position):
-        self.control._add_show_item(itemtype, relpath, position)
-        return {}
-
-    @RemoveShowItem.responder
-    def RemoveShowItem(self, position):
-        self.control._remove_show_item(position)
-        return {}
-
-    @UpdateShowPosition.responder
-    def UpdateShowPosition(self, item, slide):
-        self.control._update_show_position(item, slide)
-        return {}
-
-    @UpdateShowToggles.responder
-    def UpdateShowToggles(self, toggle):
-        self.control._update_show_toggles(toggle)
+    @ChangeCurrentToggles.responder
+    def ChangeCurrentToggles(self, toggle):
+        self.control.change_current_toggles(toggle)
         return {}
 
 
@@ -147,8 +131,12 @@ class SPServerFactory(protocol.Factory):
     def buildProtocol(self, addr):
         return self.protocol(self)
 
+    def _printerr(self, error):
+        logger.error('SPClientControl: error %s', error)
+        return
+
     def _sendPartial(self, message, jsonlist, **kwargs):
-        maxlength = 64000
+        maxlength = 63000
         splitjson = [[]]
         length = 0
         for i, elem in enumerate(jsonlist):
@@ -163,6 +151,7 @@ class SPServerFactory(protocol.Factory):
                 kwargs['jsonlist'] = lis
                 d = p.callRemote(message, curpage=i,
                                  totalpage=len(splitjson), **kwargs)
+                d.addErrback(self._printerr)
 
     def sendAll(self, message, **kwargs):
         logger.debug(u'SPServer: sending message %s to all', message)
@@ -183,3 +172,4 @@ class SPServerFactory(protocol.Factory):
                 kwargs['jsonset'] = json.dumps(set.__dict__)
             for p in self.peers:
                 d = p.callRemote(message, **kwargs)
+                d.addErrback(self._printerr)

@@ -24,14 +24,13 @@ The list of supported values for itemtype (when sending/receiving Item objects)
     custom (not yet implemented)
 '''
 
-''' Utility methods (server-to-client) '''
+''' Announcements (server-to-client) '''
 
 
 class Running(amp.Command):
     '''Emitted when server is fully started'''
     arguments = []
     response = []
-    requiresAnswer = False
 
 
 class SetList(amp.Command):
@@ -42,7 +41,6 @@ class SetList(amp.Command):
     arguments = [('curpage', amp.Integer()), ('totalpage', amp.Integer()),
                  ('jsonlist', amp.ListOf(amp.String()))]
     response = []
-    requiresAnswer = False
 
 
 class SongList(amp.Command):
@@ -53,28 +51,42 @@ class SongList(amp.Command):
     arguments = [('curpage', amp.Integer()), ('totalpage', amp.Integer()),
                  ('jsonlist', amp.ListOf(amp.String()))]
     response = []
-    requiresAnswer = False
-
-
-class SearchList(amp.Command):
-    '''
-    Paginated list of search results. Each result is represented as dictionary
-    with 'filepath' and 'name' keys (itemtype is assumed to be song).
-    '''
-    arguments = [('curpage', amp.Integer()), ('totalpage', amp.Integer()),
-                 ('jsonlist', amp.ListOf(amp.String()))]
-    response = []
-    requiresAnswer = False
 
 
 class ScriptureList(amp.Command):
     arguments = [('curpage', amp.Integer()), ('totalpage', amp.Integer()),
                  ('jsonlist', amp.ListOf(amp.String()))]
     response = []
-    requiresAnswer = False
 
 
-''' Utility methods (client-to-server) '''
+class CurrentSet(amp.Command):
+    '''
+    JSON-encoded __dict__ of an SPSet()
+    '''
+    arguments = [('jsonset', amp.String())]
+    response = []
+
+
+class CurrentItem(amp.Command):
+    arguments = [('itemtype', amp.String()), ('jsonitem', amp.String())]
+    response = []
+
+
+class CurrentPosition(amp.Command):
+    arguments = [('item', amp.Integer()), ('slide', amp.Integer())]
+    response = []
+
+
+class CurrentToggles(amp.Command):
+    '''
+    The currently active toggle. One of the following values:-
+        'hidden', 'black', 'white', 'freeze', 'normal'
+    '''
+    argument = [('toggle', amp.String())]
+    response = []
+
+
+''' Request methods (client-to-server, with response) '''
 
 
 class GetItem(amp.Command):
@@ -89,8 +101,7 @@ class GetSet(amp.Command):
 
 class Search(amp.Command):
     arguments = [('term', amp.Unicode())]
-    response = []
-    requiresAnswer = False
+    response = [('jsonlist', amp.ListOf(amp.String()))]
 
 
 class GetBooks(amp.Command):
@@ -110,162 +121,75 @@ class GetVerses(amp.Command):
                 ('verses', amp.ListOf(amp.ListOf(amp.Unicode())))]
 
 
-''' Edit messages (server-to-client) '''
+''' Control methods (client-to-server, no response) '''
 
 
-class EditItem(amp.Command):
-    arguments = [('itemtype', amp.Unicode()), ('jsonitem', amp.String())]
-    response = []
-    requiresAnswer = False
-
-
-class EditSet(amp.Command):
-    arguments = [('jsonset', amp.String())]
-    response = []
-    requiresAnswer = False
-
-
-''' Edit messages (client-to-server) '''
-
-
-class ChangeEditItem(amp.Command):
-    arguments = [('itemtype', amp.Unicode()), ('relpath', amp.Unicode())]
-    response = []
-    requiresAnswer = False
-
-
-class SaveEditItem(amp.Command):
-    arguments = [('itemtype', amp.Unicode()), ('jsonitem', amp.String()),
-                 ('relpath', amp.Unicode())]
-    response = []
-    requiresAnswer = False
-
-
-class NewEditItem(amp.Command):
-    arguments = [('itemtype', amp.Unicode()), ('relpath', amp.Unicode())]
-    response = []
-    requiresAnswer = False
-
-
-class DeleteEditItem(amp.Command):
-    arguments = [('itemtype', amp.Unicode()), ('relpath', amp.Unicode())]
-    response = []
-    requiresAnswer = False
-
-
-class ChangeEditSet(amp.Command):
-    arguments = [('relpath', amp.Unicode())]
-    response = []
-    requiresAnswer = False
-
-
-class SaveEditSet(amp.Command):
-    arguments = [('jsonset', amp.String()), ('relpath', amp.Unicode())]
-    response = []
-    requiresAnswer = False
-
-
-class NewEditSet(amp.Command):
-    arguments = [('relpath', amp.Unicode())]
-    response = []
-    requiresAnswer = False
-
-
-class DeleteEditSet(amp.Command):
-    arguments = [('relpath', amp.Unicode())]
-    response = []
-    requiresAnswer = False
-
-
-''' Show messages (server-to-client) '''
-
-
-class ShowSet(amp.Command):
-    '''
-    JSON-encoded __dict__ of an SPSet()
-    '''
-    arguments = [('jsonset', amp.String())]
-    response = []
-    requiresAnswer = False
-
-
-class ShowPosition(amp.Command):
-    '''
-    The currently shown item (corresponds with index in current ShowItems and
-    ShowSlides lists) and the currently shown slide (corresponds with index in
-    inner list of current ShowSlides item).
-    '''
-    arguments = [('item', amp.Integer()), ('slide', amp.Integer())]
-    response = []
-    requiresAnswer = False
-
-
-class ShowToggles(amp.Command):
-    '''
-    The currently active toggle. One of the following values:-
-        'hidden', 'black', 'white', 'freeze', 'normal'
-    '''
-    argument = [('toggle', amp.String())]
-    response = []
-    requiresAnswer = False
-
-
-''' Show messages (client-to-server) '''
-
-
-class Resolution(amp.Command):
-    '''
-    Update the server on current display resolution, for fontsize selection.
-    '''
-    arguments = [('width', amp.Integer()), ('height', amp.Integer())]
-    response = []
-    requiresAnswer = False
-
-
-class ChangeShowSet(amp.Command):
+class ChangeCurrentSet(amp.Command):
     '''
     Change the current ShowSet to the set in relpath
     '''
     arguments = [('jsonset', amp.String())]
     response = []
-    requiresAnswer = False
 
 
-class AddShowItem(amp.Command):
+class SaveSet(amp.Command):
+    arguments = [('jsonset', amp.String()), ('relpath', amp.Unicode())]
+    response = []
+
+
+class DeleteSet(amp.Command):
+    arguments = [('relpath', amp.Unicode())]
+    response = []
+
+
+class AddItemToSet(amp.Command):
     '''
     Add the item at relpath to the current ShowSet
     '''
     arguments = [('itemtype', amp.String()), ('relpath', amp.Unicode()),
                  ('position', amp.Integer())]
     response = []
-    requiresAnswer = False
 
 
-class RemoveShowItem(amp.Command):
+class RemoveItemFromSet(amp.Command):
     '''
     Remove the item at the given position
     '''
-    arguments = [('position', amp.Integer())]
+    arguments = [('relpath', amp.Unicode()), ('position', amp.Integer())]
     response = []
-    requiresAnswer = False
 
 
-class UpdateShowPosition(amp.Command):
+class ChangeCurrentItem(amp.Command):
+    arguments = [('itemtype', amp.Unicode()), ('jsonsong', amp.String())]
+    response = []
+
+
+class SaveItem(amp.Command):
+    arguments = [('itemtype', amp.Unicode()), ('jsonitem', amp.String()),
+                 ('relpath', amp.Unicode())]
+    response = []
+
+
+class DeleteItem(amp.Command):
+    arguments = [('itemtype', amp.Unicode()), ('relpath', amp.Unicode())]
+    response = []
+
+
+class ChangeCurrentPosition(amp.Command):
     '''
     Update the currently shown item (corresponds with index in current
     ShowItems and ShowSlides lists) and the currently shown slide (corresponds
     with index in inner list of current ShowSlides item).
     '''
-    arguments = [('item', amp.Integer()), ('slide', amp.Integer())]
+    arguments = [('index', amp.Integer()), ('linestart', amp.Integer()),
+                 ('lineend', amp.Integer())]
     response = []
-    requiresAnswer = False
 
 
-class UpdateShowToggles(amp.Command):
+class ChangeCurrentToggles(amp.Command):
     '''
     Change the currently active toggle. One of the following values:-
         'hidden', 'black', 'white', 'freeze', 'normal'
     '''
-    argument = [('toggle', amp.String())]
+    argument = [('toggle', amp.Unicode())]
     response = []
-    requiresAnswer = False

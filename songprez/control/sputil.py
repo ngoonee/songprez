@@ -35,7 +35,12 @@ def is_hidden(filepath):
     name = os.path.basename(os.path.abspath(filepath))
     return name.startswith('.')  # or has_hidden_attribute(filepath)
 
-def list_files(dirpath, sortbytime=False, reverse=False, recursive=False, hidden=False):
+def make_rel(basepath, filepath):
+    if filepath.startswith(basepath):
+        return filepath[len(basepath)+1:]
+    return filepath
+
+def list_files(dirpath, sortbytime=False, reverse=False, recursive=False, hidden=False, recursed=False):
     '''
     Returns a list of absolute paths to files in dirpath.
 
@@ -49,23 +54,31 @@ def list_files(dirpath, sortbytime=False, reverse=False, recursive=False, hidden
     Setting recursive=True will add all subdirectories.
     Subdirectories in subdirectories will also be included.
     '''
-    retval = []
-    dirs = []
-    for e in os.listdir(dirpath):
-        abspath = os.path.abspath(os.sep.join((dirpath, e)))
-        showhidden = hidden or not is_hidden(abspath)
-        if os.path.isfile(abspath) and showhidden:
-            retval.append(abspath)
-        if recursive and os.path.isdir(abspath) and showhidden:
-            dirs.append(abspath)
+    contents = [os.path.abspath(os.sep.join((dirpath, e)))
+                for e in os.listdir(dirpath)]
+    if not hidden:
+        contents = [e for e in contents if not is_hidden(e)]
+    files = [{'relpath': f, 'mtime': os.path.getmtime(f)} for f in contents
+             if not os.path.isdir(f) and not is_hidden(f)]
     if sortbytime:
-        retval.sort(key=lambda f: os.path.getmtime(os.path.abspath(f)))
+        files.sort(key=lambda x: x['mtime'])
     else:
-        retval.sort()
-    dirs.sort()
+        files.sort(key=lambda x: x['relpath'])
     if reverse:
-        retval.reverse()
-        dirs.reverse()
-    for d in dirs:
-        retval.extend(list_files(d, sortbytime, reverse, recursive, hidden))
-    return retval
+        files.reverse()
+    if recursive:
+        dirs = [e for e in contents if os.path.isdir(e) and not is_hidden(e)]
+        dirs.sort()
+        if reverse:
+            dirs.reverse()
+        for d in dirs:
+            files.extend(list_files(d, sortbytime, reverse, recursive, hidden,
+                                    recursed=True))
+    if not recursed:
+        files = [{'relpath': make_rel(dirpath, f['relpath']),
+                  'mtime': f['mtime']} for f in files]
+    return files
+
+def mkdir_if_not_exist(dirpath):
+    if not os.path.exists(dirpath):
+        os.mkdir(dirpath)

@@ -157,31 +157,35 @@ class SPSet(object):
                 pass
         tree.write(filepath, encoding='UTF-8', pretty_print=True, xml_declaration=True)
 
-    def add_song(self, songObj, index=-1):
+    def add_item(self, item, itemtype, index=-1):
         '''
-        Add a Song to this set. Default adds to end.
+        Add an item of itemtype to this list. Defaults to adding to end.
         '''
-        filepath = songObj.filepath
-        basedir, name = os.path.split(filepath)
-        item = {'name': name, 'type': 'song',
-                'presentation': songObj.presentation,
-                'path': basedir}
-        if index == -1:
-            self._items.append(item)
+        if itemtype == 'song':
+            filepath = item.filepath
+            basedir, name = os.path.split(filepath)
+            list_item = {'name': name, 'type': 'song',
+                         'presentation': item.presentation,
+                         'path': basedir}
         else:
-            self._items.insert(index, item)
+            return
+        if index == -1:
+            self._items.append(list_item)
+        else:
+            self._items.insert(index, list_item)
 
-    def remove_song(self, obj):
+    def remove_item(self, relpath, index):
         '''
-        Remove this Song (if it exists) from this set.
+        Remove the item at this index.
         '''
-        i = None
-        for index, item in enumerate(self._items):
-            itempath = os.path.join(item['path'], item['name'])
-            if (item['type'] == 'song' and itempath == obj.filepath):
-                i = index
-        if i != None:
-            self._items.pop(i)
+        item = self._items[index]
+        if item['type'] == 'song':
+            if item['path']:
+                path = os.path.join(item['path'], item['name'])
+            else:
+                path = item['name']
+            if relpath == path:
+                self._items.pop(index)
 
     def list_songs(self):
         retval = []

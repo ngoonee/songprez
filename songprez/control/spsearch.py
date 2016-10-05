@@ -31,6 +31,9 @@ class SPSearch(object):
 
     def update_index(self):
         listed_files = list_files(self._dirpath)
+        listed_files = [e['relpath'] if os.path.isabs(e['relpath'])
+                                    else os.path.join(self._dirpath, e['relpath'])
+                        for e in listed_files]
         if not self._ix.storage.index_exists():
             self._ix = self._obtain_index()
         ix = self._ix
