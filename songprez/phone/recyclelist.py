@@ -9,7 +9,7 @@ from kivy.uix.stencilview import StencilView
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.selectableview import SelectableView
 from kivy.properties import StringProperty, ObjectProperty, ListProperty
-from kivy.properties import NumericProperty, BooleanProperty
+from kivy.properties import NumericProperty, BooleanProperty, DictProperty
 from .fontutil import iconfont
 from kivy.garden.recycleview import RecycleView, RecycleViewMixin
 from kivy.metrics import dp
@@ -88,7 +88,7 @@ Builder.load_string("""
     add_item: add_item
     canvas.before:
         Color:
-            rgba: (.25, .25, .25, 1) if self.index % 2 else (.125, .125, .125, 1)
+            rgba: self.backcolor
         RoundedRectangle:
             size: self.size
             pos: self.pos
@@ -177,19 +177,26 @@ Builder.load_string("""
 class SPRecycleView(RecycleView):
     edit_action = ObjectProperty(None)
     delete_action = ObjectProperty(None)
-    selection = NumericProperty(-1)
-    oldselection = NumericProperty(-1)
+    selection = StringProperty('')
+    oldselection = StringProperty('')
 
     def __init__(self, **kwargs):
         super(SPRecycleView, self).__init__(**kwargs)
 
+    def _find_index_from_relpath(self, p):
+        index = next((i for (i, d) in enumerate(self.data)
+                      if d['relpath'] == p), None)
+        return index
+
     def on_selection(self, instance, value):
-        if self.oldselection > -1:
-            view = self.adapter.get_view(self.oldselection)
+        if self.oldselection:
+            i = self._find_index_from_relpath(self.oldselection)
+            view = self.adapter.get_view(i)
             view.deselect(manual=False)
-            self.oldselection = -1
-        if value > -1:
-            view = self.adapter.get_view(value)
+            self.oldselection = ''
+        if value:
+            #i = self._find_index_from_relpath(value))
+            #view = self.adapter.get_view(i)
             self.oldselection = value
 
 
@@ -205,10 +212,10 @@ class BlankListItem(SelectableView, RecycleViewMixin, FloatLayout, StencilView):
     def on_touch_down(self, touch):
         if self.collide_point(*touch.pos):
             if self.scripture.collide_point(*touch.pos):
-                self.rv.scripture_action(self.index)
+                self.rv.scripture_action(self.relpath)
                 return True
             if self.add_item.collide_point(*touch.pos):
-                self.rv.add_item_action(self.index)
+                self.rv.add_item_action(self.relpath)
                 return True
         return super(BlankListItem, self).on_touch_down(touch)
 
@@ -232,6 +239,8 @@ class ListItem(SelectableView, RecycleViewMixin, FloatLayout, StencilView):
     expand_angle = NumericProperty(0)
     button_opacity = NumericProperty(0)
     set_edit = BooleanProperty(False)
+    relpath = StringProperty('')
+    backcolor = ListProperty([0, 0, 0, 0])
     _summary = ListProperty([])
 
     def __init__(self, **kwargs):
@@ -263,26 +272,26 @@ class ListItem(SelectableView, RecycleViewMixin, FloatLayout, StencilView):
         if self.collide_point(*touch.pos):
             if self.is_selected:
                 if self.edit.collide_point(*touch.pos):
-                    self.rv.edit_action(self.index)
+                    self.rv.edit_action(self.relpath)
                     return True
                 elif self.delete.collide_point(*touch.pos):
-                    self.rv.delete_action(self.index)
+                    self.rv.delete_action(self.relpath)
                     return True
                 elif self.set_edit:
                     if self.move_up.collide_point(*touch.pos):
-                        self.rv.move_up_action(self.index)
+                        self.rv.move_up_action(self.relpath)
                         return True
                     if self.move_down.collide_point(*touch.pos):
-                        self.rv.move_down_action(self.index)
+                        self.rv.move_down_action(self.relpath)
                         return True
                     if self.scripture.collide_point(*touch.pos):
-                        self.rv.scripture_action(self.index)
+                        self.rv.scripture_action(self.relpath)
                         return True
                     if self.remove_item.collide_point(*touch.pos):
-                        self.rv.remove_item_action(self.index)
+                        self.rv.remove_item_action(self.relpath)
                         return True
                     if self.add_item.collide_point(*touch.pos):
-                        self.rv.add_item_action(self.index)
+                        self.rv.add_item_action(self.relpath)
                         return True
                 self.deselect()  # Fall-through, didn't hit anything
             else:
@@ -317,25 +326,39 @@ class ListItem(SelectableView, RecycleViewMixin, FloatLayout, StencilView):
         anim.start(self)
 
     def select(self, *args):
-        self.rv.selection = self.index
+        self.rv.selection = self.relpath
         self.is_selected = True
 
     def deselect(self, manual=True):
         if manual:  # Actually from a click
-            self.rv.selection = -1
+            self.rv.selection = ''
         self.is_selected = False
 
     def on_is_selected(self, instance, value):
         self.update_height()
 
     def on_expand_angle(self, instance, value):
-        if self.rv.data[self.index]['expand_angle'] != value:
-            self.rv.data[self.index]['expand_angle'] = value
+        if not self.rv:
+            return
+        i = self.rv._find_index_from_relpath(self.relpath)
+        if i and self.rv.data[i]['expand_angle'] != value:
+            self.rv.data[i]['expand_angle'] = value
 
     def on_height(self, instance, value):
-        if self.rv.data[self.index]['height'] != value:
-            self.rv.data[self.index]['height'] = value
+        if not self.rv:
+            return
+        i = self.rv._find_index_from_relpath(self.relpath)
+        if self.rv and i and self.rv.data[i]['height'] != value:
+            self.rv.data[i]['height'] = value
             self.rv.refresh_views(data=True)
+
+    def on_relpath(self, instance, value):
+        if not self.rv:
+            return
+        i = self.rv._find_index_from_relpath(self.relpath)
+        if i:
+            self.backcolor = [.25, .25, .25, 1] if i % 2 else [.125, .125, .125, 1]
+
 
     def refresh_view_layout(self, rv, index, pos, size, viewport):
         '''

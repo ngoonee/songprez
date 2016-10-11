@@ -3,6 +3,7 @@
 import os
 import logging
 logger = logging.getLogger(__name__)
+from sys import platform
 
 # Attempt using lxml with fallbacks to cElementTree and ElementTree
 try:
@@ -31,9 +32,20 @@ except ImportError:
         except ImportError:
           logger.error("SPUtil: Failed to import ElementTree from any known place")
 
-def is_hidden(filepath):
-    name = os.path.basename(os.path.abspath(filepath))
-    return name.startswith('.')  # or has_hidden_attribute(filepath)
+if platform.startswith('linux') or platform == 'darwin':
+    def is_hidden(filepath):
+        name = os.path.basename(os.path.abspath(filepath))
+        return name.startswith('.')  # or has_hidden_attribute(filepath)
+elif platform == 'win32':
+    import ctypes
+    def is_hidden(filepath):
+        try:
+            attrs = ctypes.windll.kernel32.GetFileAttributesW(unicode(filepath))
+            assert attrs != -1
+            result = bool(attrs & 2)
+        except (AttributeError, AssertionError):
+            result = False
+        return result
 
 def make_rel(basepath, filepath):
     if filepath.startswith(basepath):
@@ -82,3 +94,47 @@ def list_files(dirpath, sortbytime=False, reverse=False, recursive=False, hidden
 def mkdir_if_not_exist(dirpath):
     if not os.path.exists(dirpath):
         os.mkdir(dirpath)
+
+def priority_merge(A, b, keys=['name', 'relpath'], mkey='mtime'):
+    '''
+    Merges b to A, preserving order. A is the priority list. Matching-ness
+    of elements depends on dict keys existing in b (instances in A typically
+    have more keys than in b).
+
+    If an element in b already exists in A, the A instance is used.
+
+    If an element in b does not exist in A, it is inserted at the same
+    relative position to other elements in A as exists in b (preserve order).
+
+    If an element in b already exists in A, but its mkey is higher than that
+    of the instance in A, use the b instance.
+    '''
+    retval = []
+    b_index = 0
+    for elemA in A:
+        if b_index >= len(b):
+            break  # No more items in b
+        elemb = b[b_index]
+        minA = { k: elemA[k] for k in keys }
+        minb = { k: elemb[k] for k in keys }
+        if minA == minb:  # Found a match
+            if elemA[mkey] >= elemb[mkey]:
+                retval.append(elemA)
+            else:  # Check mkey to see if take b instead
+                retval.append(elemb)
+            b_index = b_index + 1
+        else:  # No match, check forward by one
+            if b_index+1 >= len(b):
+                continue
+            elembplus = b[b_index+1]
+            minb = { k: elembplus[k] for k in keys}
+            if minA == minb:
+                retval.append(elemb)  # This is a new element
+                if elemA[mkey] >= elembplus[mkey]:
+                    retval.append(elemA)
+                else:
+                    retval.append(elembplus)
+                b_index = b_index + 2
+    if b_index <= len(b):
+        retval.extend(b[b_index:])
+    return retval

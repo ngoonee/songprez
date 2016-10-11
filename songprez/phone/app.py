@@ -18,7 +18,8 @@ from kivy.clock import Clock
 from kivy.properties import StringProperty, BooleanProperty, ListProperty
 from kivy.properties import NumericProperty, ObjectProperty, DictProperty
 from kivy.metrics import dp, sp
-from ..control import spcontrol
+from ..control.spservercontrol import SPServerControl
+from ..control.spclientcontrol import SPClientControl
 from .basewidget import BaseWidget
 from .settings import SPSettings
 from .settingsjson import default_settings, build_settings
@@ -40,19 +41,19 @@ class SongPrezApp(App):
 
     def build(self):
         self.settings_cls = SPSettings
-        self.control = None
+        self.server = None
+        self.client = None
         font_register()
         self.base = BaseWidget()
-        Clock.schedule_once(self._verify_spcontrol)
+        Clock.schedule_once(self._verify_server)
         return self.base
 
-    def _verify_spcontrol(self, dt):
+    def _verify_server(self, dt):
         try:
             indexDir = self.config.get("filesfolders", "indexdir")
             dataDir = self.config.get("filesfolders", "datadir")
-            self.control = spcontrol.SPControl(indexDir, dataDir)
-            client = clientFromString(reactor, 'tcp:localhost:1916')
-            client.connect(SPClientFactory(self.base))
+            self.server = SPServerControl(indexDir, dataDir)
+            self.client = SPClientControl()
         except Exception as e:
             logger.exception(e.message)
             self.open_settings()
@@ -99,7 +100,7 @@ class SongPrezApp(App):
     def close_settings(self, *largs):
         super(SongPrezApp, self).close_settings(*largs)
         if not self.control:
-            Clock.schedule_once(self._verify_spcontrol)
+            Clock.schedule_once(self._verify_server)
         if len(largs) and largs[0] is self._app_settings:
             # Called using close button
             self.base.back()

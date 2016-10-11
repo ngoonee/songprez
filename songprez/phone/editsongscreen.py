@@ -12,11 +12,11 @@ from kivy.uix.button import Button
 from kivy.animation import Animation
 from kivy.properties import ObjectProperty
 from functools import partial
+from blinker import signal
 from .fontutil import iconfont
 from .buttonrow import Buttons
 from .modalpopup import ModalPopup
 from ..control.spsong import SPSong
-from ..network.messages import SaveEditItem, DeleteEditItem
 
 Builder.load_string("""
 #:set left_width '75sp'
@@ -254,15 +254,17 @@ class EditSongScreen(Screen):
 
     def _finish_init(self, dt):
         app = App.get_running_app()
-        app.base.bind(current_song=self._update_song)
+        signal('ownItem').connect(self._update_song)
         self.buttons.button1.text = iconfont('copy', app.ui_fs_button) + ' Copy'
         self.buttons.button2.text = iconfont('saveas', app.ui_fs_button) + ' Save As'
         self.buttons.button3.text = iconfont('save', app.ui_fs_button) + ' Save'
         self.transposeicon.text = iconfont('transpose', 2*app.ui_fs_button)
 
-    def _update_song(self, instance, song):
-        self.song = song
-        self.song_to_UI()
+    def _update_song(self, sender=None):
+        app = App.get_running_app()
+        if isinstance(app.client.ownItem, SPSong):
+            self.song = app.client.ownItem
+            self.song_to_UI()
 
     def song_to_UI(self):
         songObject = self.song

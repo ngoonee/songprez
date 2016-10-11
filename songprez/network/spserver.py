@@ -41,7 +41,7 @@ class SPServerProtocol(amp.AMP):
     @Search.responder
     def Search(self, term):
         retval = self.control.search(term)
-        jsonlist = [json.dumps({'name': s.title, 'filepath': s.filepath}) for s in retval]
+        jsonlist = [json.dumps({'name': s.title, 'relpath': s.filepath}) for s in retval]
         return {'jsonlist': jsonlist}
 
     @GetBooks.responder

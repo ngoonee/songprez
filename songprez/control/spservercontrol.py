@@ -105,8 +105,8 @@ class SPServerControl(object):
         logger.info('SPServerControl: Reading songs from %s', self._songPath)
         songPath = self._songPath
         listresult = list_files(songPath, recursive=True)
-        songs = [{'name': os.path.basename(e['relpath']), 'relpath': e['relpath']}
-                 for e in listresult]
+        songs = [{'name': os.path.basename(e['relpath']), 'relpath': e['relpath'],
+                  'mtime': e['mtime']} for e in listresult]
         self._songs = songs
         self.send_songs()
         logger.info('SPServerControl: Done reading songs from %s', self._songPath)
@@ -123,8 +123,8 @@ class SPServerControl(object):
         logger.info('SPServerControl: Reading sets from %s', self._setPath)
         setPath = self._setPath
         listresult = list_files(setPath, sortbytime=True, reverse=True)
-        sets = [{'name': os.path.basename(e['relpath']), 'relpath': e['relpath']}
-                for e in listresult]
+        sets = [{'name': os.path.basename(e['relpath']), 'relpath': e['relpath'],
+                 'mtime': e['mtime']} for e in listresult]
         self._sets = sets
         self.send_sets()
         logger.info('SPServerControl: Done reading sets from %s', self._setPath)

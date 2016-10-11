@@ -7,13 +7,14 @@ from kivy.clock import Clock
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.screenmanager import Screen
 from kivy.properties import ListProperty, ObjectProperty
-from kivy.metrics import dp
+from kivy.metrics import dp, sp
 from copy import deepcopy
+from blinker import signal
+from twisted.internet import defer
 from ..control.spset import SPSet
 from .fontutil import iconfont
 from .buttonrow import Buttons
 from .modalpopup import ModalPopup
-from ..network.messages import GetItem, SaveEditSet, DeleteEditSet
 from .recyclelist import SPRecycleView, ListItem, BlankListItem
 
 Builder.load_string("""
@@ -83,8 +84,8 @@ Builder.load_string("""
 
 class EditSetScreen(Screen):
     itemlist = ListProperty([])
-    set = ObjectProperty(None)
-    current_set = ObjectProperty(None)
+    set = ObjectProperty(SPSet())
+    current_set = ObjectProperty(SPSet())
 
     def __init__(self, **kwargs):
         super(EditSetScreen, self).__init__(**kwargs)
@@ -93,22 +94,30 @@ class EditSetScreen(Screen):
 
     def _finish_init(self, dt):
         app = App.get_running_app()
+        self.rv.data = [{'viewclass': 'Label',
+                         'text': 'Please wait, still loading songs!',
+                         'font_size': app.ui_fs_main,
+                         'height': sp(50)}]
+        signal('ownSet').connect(self._update_set)
         self.buttons.button1.text = iconfont('copy', app.ui_fs_button) + ' Copy'
         self.buttons.button2.text = iconfont('saveas', app.ui_fs_button) + ' Save As'
         self.buttons.button3.text = iconfont('save', app.ui_fs_button) + ' Save'
 
-    def update_set(self, setObject):
-        set = SPSet()
-        self.set = setObject
-        self.current_set = deepcopy(setObject)
-        self.set_to_UI()
+    def _update_set(self, sender=None):
+        app = App.get_running_app()
+        if isinstance(app.client.ownSet, SPSet):
+            self.set = app.client.ownSet
+            self.current_set = deepcopy(self.set)
+            Clock.schedule_once(self.set_to_UI)
+            #self.set_to_UI()
 
     def add_song(self, songObject):
         self.current_set.add_song(songObject, self._index_to_add)
         self._index_to_add = -1
         self.set_to_UI()
 
-    def set_to_UI(self):
+    @defer.inlineCallbacks
+    def set_to_UI(self, dt=None):
         self.itemlist = []
         self.rv.data = []
         setObject = self.current_set
@@ -116,10 +125,16 @@ class EditSetScreen(Screen):
         self.filepath.text = setObject.filepath
         app = App.get_running_app()
         h = dp(10) + 1.5*app.buttonsize
-        self.rv.data.append({'index': -1, 'viewclass': 'BlankListItem',
-                             'height': h, 'rv': self.rv})
+        data = []
         if len(setObject.list_songs()):
-            def act(item, index):
+            for i, v in enumerate(setObject.list_songs()):
+                name = v['name']
+                itemtype = v['itemtype']
+                if itemtype == 'scripture':
+                    continue
+                filepath = v['filepath']
+                item = yield app.client.get_item(itemtype, filepath)
+                item = yield item
                 # First get the requisite title, subtitle, and text values
                 title = item.title
                 subtitle = [] 
@@ -136,21 +151,17 @@ class EditSetScreen(Screen):
                     h = app.ui_fs_main*1.5 + app.ui_fs_detail*1.5 + dp(10)
                 else:
                     h = app.ui_fs_main*1.5 + dp(10)
-                self.rv.data.insert(index, {'index': index, 'titletext': title,
+                data.append({'index': i, 'titletext': title,
                                      'subtitletext': subtitle,
                                      'summarytext': summary,
                                      'expand_angle': 0, 'button_opacity': 0,
                                      'viewclass': 'ListItem', 'height': h,
-                                     'set_edit': True, 'rv': self.rv})
+                                     'set_edit': True, 'rv': self.rv,
+                                     'relpath': item.filepath})
                 self.itemlist.append(item)
-            for i, v in enumerate(setObject.list_songs()):
-                name = v['name']
-                itemtype = v['itemtype']
-                if itemtype == 'scripture':
-                    continue
-                filepath = v['filepath']
-                self.sendMessage(GetItem, itemtype=itemtype, relpath=filepath,
-                                 callback=act, callbackKeywords={'index': i})
+        data.append({'index': len(data), 'viewclass': 'BlankListItem',
+                             'height': h, 'rv': self.rv, 'relpath': u''})
+        self.rv.data = data
     
     def UI_to_set(self):
         setObject = SPSet()

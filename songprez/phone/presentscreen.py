@@ -9,7 +9,9 @@ from kivy.clock import Clock
 from kivy.uix.screenmanager import Screen, ScreenManager
 from kivy.animation import Animation
 from kivy.properties import ListProperty, ObjectProperty
+from twisted.internet import defer
 from copy import deepcopy
+from blinker import signal
 from ..control.spset import SPSet
 from .fontutil import iconfont
 from .chordlabel import ChordLabel
@@ -244,28 +246,41 @@ class TransposeBar(Widget):
 
 class PresentScreen(Screen):
     itemlist = ListProperty([])
-    set = ObjectProperty(None)
+    
+    def __init__(self, **kwargs):
+        super(PresentScreen, self).__init__(**kwargs)
+        Clock.schedule_once(self._finish_init)
 
-    def show_set(self, value):
-        if value and type(value) == type(SPSet()):
-            self.itemlist = []
-            def act(song):
-                self.itemlist.append(song)
-            for item in value.list_songs():
-                self.sendMessage(GetItem, itemtype='song',
-                                 relpath=item['filepath'], callback=act)
+    def _finish_init(self, dt):
+        signal('curSet').connect(self.change_set)
 
-    def on_itemlist(self, instance, value):
+    @defer.inlineCallbacks
+    def change_set(self, sender=None):
+        app = App.get_running_app()
+        curSet = app.client.curSet
         carousel = self.carousel
-        carousel.clear_widgets()
-        for item in self.itemlist:
-            s = ChordLabel()
-            carousel.add_widget(s)
-            s.text = item.lyrics
+        if curSet and isinstance(curSet, SPSet):
+            itemlist = []
+            carousel.clear_widgets()
+            for item in curSet.list_songs():
+                e = yield app.client.get_item('song', relpath=item['filepath'])
+                itemlist.append(e)
+                s = ChordLabel()
+                carousel.add_widget(s)
+                s.text = e.lyrics
+            self.itemlist = itemlist
 
-    def add_song(self, song):
-        index = self.carousel.index if self.carousel.index else 0
-        self.itemlist.insert(index+1, song)
+    @defer.inlineCallbacks
+    def add_item(self, itemtype, relpath):
+        app = App.get_running_app()
+        carousel = self.carousel
+        index = carousel.index + 1 if carousel.index else 0
+        e = yield app.client.get_item('song', relpath=relpath)
+        self.itemlist.insert(index, e)
+        s = ChordLabel()
+        carousel.add_widget(s, index)
+        s.text = e.lyrics
+        carousel.index = index
 
     def transpose(self, interval):
         # A temporary transposition of this item
@@ -276,7 +291,7 @@ class PresentScreen(Screen):
             song.transpose(interval)
             carousel.remove_widget(carousel.current_slide)
             s = ChordLabel()
-            carousel.add_widget(s, index + len(carousel.slides))
+            carousel.add_widget(s, index)
             s.text = song.lyrics
     
     def apply(self, interval):
@@ -288,7 +303,7 @@ class PresentScreen(Screen):
             song.transpose(interval)
             carousel.remove_widget(carousel.current_slide)
             s = ChordLabel()
-            carousel.add_widget(s, index + len(carousel.slides))
+            carousel.add_widget(s, index)
             s.text = song.lyrics
 
     def search(self):

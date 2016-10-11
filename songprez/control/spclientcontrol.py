@@ -3,6 +3,7 @@ from twisted.internet import reactor, defer
 from twisted.internet.endpoints import clientFromString
 import json
 import logging
+from blinker import signal
 logger = logging.getLogger(__name__)
 from ..network.spclient import SPClientFactory
 from ..network.messages import *
@@ -45,18 +46,24 @@ class SPClientControl(object):
 
     def set_list(self, listofset):
         self.setList = listofset
+        signal('setList').send()
 
     def song_list(self, listofsong):
         self.songList = listofsong
+        signal('songList').send()
 
     def scripture_list(self, listofscripture):
         self.scriptureList = listofscripture
+        signal('scriptureList').send()
 
     def current_set(self, set):
+        print('called with', set)
         self.curSet = set
+        signal('curSet').send()
 
     def current_item(self, item):
         self.curItem = item
+        signal('curItem').send()
 
     def current_position(self, item, slide):
         pass
@@ -182,8 +189,12 @@ class SPClientControl(object):
 
     @defer.inlineCallbacks
     def change_own_set(self, relpath):
-        d = self.get_set(relpath)
-        self.ownSet = yield d
+        if relpath:
+            d = self.get_set(relpath)
+            self.ownSet = yield d
+        else:
+            self.ownSet = SPSet()
+        signal('ownSet').send()
 
     @defer.inlineCallbacks
     def add_item_to_own_set(self, itemtype, relpath, position=-1):
@@ -193,17 +204,23 @@ class SPClientControl(object):
             d = self.get_item(itemtype, relpath)
             song = yield d
             self.ownSet.add_item(item=song, itemtype='song', index=position)
+            signal('ownSet').send()
 
     def remove_item_from_own_set(self, relpath, position):
         if not self.ownSet:
             return
         self.ownSet.remove_item(relpath=relpath, index=position)
+        signal('ownSet').send()
 
     @defer.inlineCallbacks
     def change_own_item(self, itemtype, relpath):
         if itemtype == 'song':
-            d = self.get_item(itemtype, relpath)
-            self.ownItem = yield d
+            if relpath:
+                d = self.get_item(itemtype, relpath)
+                self.ownItem = yield d
+            else:
+                self.ownItem = SPSong()
+            signal('ownItem').send()
 
 
 if __name__ == "__main__":

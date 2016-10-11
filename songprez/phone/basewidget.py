@@ -76,10 +76,9 @@ Builder.load_string("""
 
 
 class BaseWidget(BoxLayout):
-    current_song = ObjectProperty(None)
-
     def __init__(self, **kwargs):
         super(BaseWidget, self).__init__(**kwargs)
+        self.presenting = True
         self._history = []
         Window.bind(on_key_down=self._on_keyboard_down)
         self.sm.bind(current=self._change_title)
@@ -95,6 +94,7 @@ class BaseWidget(BoxLayout):
         elif data == 'songs':
             title.text = 'Songs ' + iconfont('songs')
         elif data == 'present':
+            self.presenting = True
             title.text = 'Present ' + iconfont('present')
         elif data == 'search':
             title.text = 'Search ' + iconfont('search')
@@ -103,6 +103,7 @@ class BaseWidget(BoxLayout):
         elif data == 'settings':
             title.text = 'Settings ' + iconfont('settings')
         elif data == 'editset':
+            self.presenting = False
             title.text = (iconfont('edit') + ' Edit Set ' + iconfont('sets'))
         elif data == 'editsong':
             title.text = (iconfont('edit') + ' Edit Song ' + iconfont('songs'))
@@ -151,45 +152,5 @@ class BaseWidget(BoxLayout):
         else:
             App.get_running_app().stop()  # Quit the app
 
-    def on_connection(self, connection):
-        print('connected successfully')
-        app = App.get_running_app()
-        app.sendMessage = connection.sendMessage
-
     def to_screen(self, name):
         self.sm.current = name
-
-    def add_song(self, song):
-        if self._history[-2] == 'editset':
-            self.editset.add_song(song)
-            self.to_screen('editset')
-        else:
-            self.present.add_song(song)
-
-    def edit_set(self, setObject):
-        self.editset.update_set(setObject)
-
-    def _running(self):
-        app = App.get_running_app()
-        app._control_loaded()
-
-    def _song_list(self, listofsong):
-        self.songs.item_list(listofsong)
-
-    def _set_list(self, listofset):
-        self.sets.item_list(listofset)
-
-    def _search_list(self, listofsearch):
-        self.search.item_list(listofsearch)
-
-    def _scripture_list(self, listofscripture):
-        pass
-
-    def _edit_item(self, itemtype, item):
-        pass
-
-    def _edit_set(self, item):
-        pass
-
-    def _show_set(self, set):
-        self.present.show_set(set)

@@ -11,17 +11,17 @@ from kivy.uix.label import Label
 from kivy.uix.button import Button
 from kivy.uix.screenmanager import Screen, ScreenManager
 from kivy.properties import BooleanProperty, NumericProperty, ListProperty
-from kivy.adapters.listadapter import ListAdapter
+from twisted.internet import defer
+from blinker import signal
 from functools import partial
 from .fontutil import iconfont
 from .recyclelist import SPRecycleView, ListItem
 from kivy.metrics import dp, sp
-from ..network.messages import Search, ChangeShowSet
-from ..network.messages import DeleteEditSet, DeleteEditItem
 from .buttonrow import Buttons
 from .modalpopup import ModalPopup
 from ..control.spsong import SPSong
 from ..control.spset import SPSet
+from ..network.messages import Search
 
 Builder.load_string("""
 <SearchScreen>:
@@ -86,8 +86,6 @@ Builder.load_string("""
 
 
 class ListScreen(Screen):
-    itemlist = ListProperty([])
-
     def __init__(self, **kwargs):
         super(ListScreen, self).__init__(**kwargs)
         Clock.schedule_once(self._finish_init)
@@ -96,6 +94,7 @@ class ListScreen(Screen):
         pass
 
     def item_list(self, listofitem):
+        # deprecated
         data = []
         app = App.get_running_app()
         for i, item in enumerate(listofitem):
@@ -130,6 +129,7 @@ class SearchScreen(ListScreen):
         self.buttons.button3.text = iconfont('listadd', app.ui_fs_button) + ' Add'
 
     def get_vals(self, item):
+        # deprecated
         title = item.title
         subtitle = [] 
         for t in (item.author, item.aka, item.key_line):
@@ -142,16 +142,28 @@ class SearchScreen(ListScreen):
         summary = text[0:4]
         return title, subtitle, summary
 
+    @defer.inlineCallbacks
     def do_search(self, searchTerm):
-        self.sendMessage(Search, term=searchTerm)
-
-    def bt_edit(self, index):
         app = App.get_running_app()
-        app.base.current_song = self.itemlist[index]
+        searchList = yield app.client.search(searchTerm)
+        data = []
+        for i, item in enumerate(searchList):
+            viewclass = 'ListItem'
+            h = app.ui_fs_main*1.5 + dp(10)
+            data.append({'titletext': item['name'],
+                         'expand_angle': 0, 'button_opacity': 0,
+                         'viewclass': viewclass, 'height': h,
+                         'rv': self.rv, 'relpath': item['relpath']})
+        self.rv.data = data
+
+    def bt_edit(self, relpath):
+        app = App.get_running_app()
+        app.client.change_own_item('song', relpath)
         app.base.to_screen('editsong')
 
-    def bt_delete(self, index):
-        songObject = self.itemlist[index]
+    def bt_delete(self, relpath):
+        app = App.get_running_app()
+        songObject = yield app.client.get_item('song', relpath)
         message = ("Are you sure you want to delete '{0}'?".
                    format(songObject.filepath))
         popup = ModalPopup(message=message,
@@ -168,7 +180,7 @@ class SearchScreen(ListScreen):
 
     def bt_new(self):
         app = App.get_running_app()
-        app.base.current_song = SPSong()
+        app.client.change_own_item('song', '')
         app.base.to_screen('editsong')
 
     def bt_songs(self):
@@ -177,9 +189,15 @@ class SearchScreen(ListScreen):
 
     def bt_add(self):
         app = App.get_running_app()
-        index = self.rv.selection
-        if index > -1:
-            app.base.add_song(self.itemlist[index])
+        relpath = self.rv.selection
+        if not relpath:  # No valid selection
+            return
+        if app.base.presenting:  # Most recently presenting a song
+            presentscreen = app.base.sm.get_screen('present')
+            presentscreen.add_item('song', relpath)
+        else:  # Most recently editing a set
+            if app.client.ownSet:
+                app.client.add_item_to_own_set('song', relpath)
 
 
 class SongScreen(ListScreen):
@@ -192,8 +210,54 @@ class SongScreen(ListScreen):
         self.buttons.button1.text = iconfont('new', app.ui_fs_button) + ' New'
         self.buttons.button2.text = iconfont('search', app.ui_fs_button) + ' Search'
         self.buttons.button3.text = iconfont('listadd', app.ui_fs_button) + ' Add'
+        signal('songList').connect(self.update_songs)
+        Clock.schedule_once(self._get_details, 1)
+
+    @defer.inlineCallbacks
+    def _get_details(self, dt=None):
+        data = self.rv.data
+        for e in data:
+            if not e.has_key('subtitletext') and e.has_key('relpath'):
+                app = App.get_running_app()
+                item = yield app.client.get_item('song', e['relpath'])
+                subtitle = []
+                for t in (item.author, item.aka, item.key_line):
+                    if t:
+                        subtitle.append(t)
+                subtitle = " | ".join(subtitle)
+                text = item.words.split('\n')
+                text = [t for t in text 
+                        if t != '' and not (t[0] == '[' and t[-1] == ']')]
+                summary = text[0:4]
+                if subtitle:
+                    viewclass = 'ListItem'
+                    h = app.ui_fs_main*1.5 + app.ui_fs_detail*1.5 + dp(10)
+                else:
+                    viewclass = 'ListItem'
+                    h = app.ui_fs_main*1.5 + dp(10)
+                e['subtitletext'] = subtitle
+                e['summarytext'] = summary
+                e['viewclass'] = viewclass
+                e['height'] = h
+        Clock.schedule_once(self._get_details, 1)
+
+
+    def update_songs(self, sender=None):
+        app = App.get_running_app()
+        songList = app.client.songList
+        data = []
+        for i, item in enumerate(songList):
+            viewclass = 'ListItem'
+            h = app.ui_fs_main*1.5 + dp(10)
+            data.append({'titletext': item['name'],
+                         'expand_angle': 0, 'button_opacity': 0,
+                         'viewclass': viewclass, 'height': h,
+                         'rv': self.rv, 'relpath': item['relpath'],
+                         'mtime': item['mtime']})
+        self.rv.data = data
 
     def get_vals(self, item):
+        # deprecated
         title = item.title
         subtitle = [] 
         for t in (item.author, item.aka, item.key_line):
@@ -206,13 +270,15 @@ class SongScreen(ListScreen):
         summary = text[0:4]
         return title, subtitle, summary
 
-    def bt_edit(self, index):
+    def bt_edit(self, relpath):
         app = App.get_running_app()
-        app.base.current_song = self.itemlist[index]
+        app.client.change_own_item('song', relpath)
         app.base.to_screen('editsong')
 
-    def bt_delete(self, index):
-        songObject = self.itemlist[index]
+    @defer.inlineCallbacks
+    def bt_delete(self, relpath):
+        app = App.get_running_app()
+        songObject = yield app.client.get_item('song', relpath)
         message = ("Are you sure you want to delete '{0}'?".
                    format(songObject.filepath))
         popup = ModalPopup(message=message,
@@ -225,11 +291,12 @@ class SongScreen(ListScreen):
         popup.open()
 
     def _do_delete_song(self, itemtype, filepath, instance):
-        self.sendMessage(DeleteEditItem, itemtype=itemtype, relpath=filepath)
+        app = App.get_running_app()
+        app.client.delete_item(itemtype=itemtype, relpath=filepath)
 
     def bt_new(self):
         app = App.get_running_app()
-        app.base.current_song = SPSong()
+        app.client.change_own_item('song', '')
         app.base.to_screen('editsong')
 
     def bt_search(self):
@@ -238,9 +305,15 @@ class SongScreen(ListScreen):
 
     def bt_add(self):
         app = App.get_running_app()
-        index = self.rv.selection
-        if index > -1:
-            app.base.add_song(self.itemlist[index])
+        relpath = self.rv.selection
+        if not relpath:  # No valid selection
+            return
+        if app.base.presenting:  # Most recently presenting a song
+            presentscreen = app.base.sm.get_screen('present')
+            presentscreen.add_item('song', relpath)
+        else:  # Most recently editing a set
+            if app.client.ownSet:
+                app.client.add_item_to_own_set('song', relpath)
 
 
 class SetScreen(ListScreen):
@@ -253,8 +326,58 @@ class SetScreen(ListScreen):
         self.buttons.button1.text = iconfont('new', app.ui_fs_button) + ' New'
         self.buttons.button2.text = iconfont('sort', app.ui_fs_button) + ' Sort'
         self.buttons.button3.text = iconfont('showset', app.ui_fs_button) + ' Show'
+        signal('setList').connect(self.update_sets)
+        Clock.schedule_once(self._get_details, 1)
+
+    @defer.inlineCallbacks
+    def _get_details(self, dt=None):
+        data = self.rv.data
+        for e in data:
+            if not e.has_key('subtitletext') and e.has_key('relpath'):
+                app = App.get_running_app()
+                item = yield app.client.get_set(e['relpath'])
+                text = [i['name'] for i in item.list_songs()]
+                iconsize = str(int(app.ui_fs_detail*1.5))
+                if len(text) > 9:
+                    subtitle = [iconfont('9+', iconsize)]
+                else:
+                    subtitle = [iconfont(str(len(text)), iconsize)]
+                for i in text[:4]:
+                    subtitle.append(' '.join(i.split(' ', 2)[:2]))
+                if len(text) > 4:
+                    summary = text[:4]
+                    summary.append('...')
+                    subtitle.append('...')
+                else:
+                    summary = text
+                subtitle = " | ".join(subtitle)
+                if subtitle:
+                    viewclass = 'ListItem'
+                    h = app.ui_fs_main*1.5 + app.ui_fs_detail*1.5 + dp(10)
+                else:
+                    viewclass = 'ListItem'
+                    h = app.ui_fs_main*1.5 + dp(10)
+                e['subtitletext'] = subtitle
+                e['summarytext'] = summary
+                e['viewclass'] = viewclass
+                e['height'] = h
+        Clock.schedule_once(self._get_details, 1)
+
+    def update_sets(self, sender=None):
+        app = App.get_running_app()
+        setList = app.client.setList
+        data = []
+        for i, item in enumerate(setList):
+            viewclass = 'ListItem'
+            h = app.ui_fs_main*1.5 + dp(10)
+            data.append({'titletext': item['name'],
+                         'expand_angle': 0, 'button_opacity': 0,
+                         'viewclass': viewclass, 'height': h,
+                         'rv': self.rv, 'relpath': item['relpath']})
+        self.rv.data = data
 
     def get_vals(self, item):
+        #deprecated
         app = App.get_running_app()
         title = item.name
         text = [i['name'] for i in item.list_songs()]
@@ -274,13 +397,15 @@ class SetScreen(ListScreen):
         subtitle = " | ".join(subtitle)
         return title, subtitle, summary
 
-    def bt_edit(self, index):
+    def bt_edit(self, relpath):
         app = App.get_running_app()
-        app.base.edit_set(self.itemlist[index])
+        app.client.change_own_set(relpath)
         app.base.to_screen('editset')
 
-    def bt_delete(self, index):
-        setObject = self.itemlist[index]
+    @defer.inlineCallbacks
+    def bt_delete(self, relpath):
+        app = App.get_running_app()
+        setObject = yield app.client.get_set(relpath)
         message = ("Are you sure you want to delete '{0}'?".
                    format(setObject.filepath))
         popup = ModalPopup(message=message,
@@ -291,19 +416,22 @@ class SetScreen(ListScreen):
         popup.open()
 
     def _do_delete_set(self, filepath, instance):
-        self.sendMessage(DeleteEditSet, relpath=filepath)
+        app = App.get_running_app()
+        app.client.delete_set(relpath=filepath)
 
     def bt_new(self):
         app = App.get_running_app()
-        app.base.edit_set(SPSet())
+        app.client.change_own_set('')
         app.base.to_screen('editset')
 
     def bt_sort(self):
         pass
 
+    @defer.inlineCallbacks
     def bt_show(self):
         app = App.get_running_app()
-        index = self.rv.selection
-        if index > -1:
-            self.sendMessage(ChangeShowSet, set=self.itemlist[index])
+        relpath = self.rv.selection
+        if relpath:
+            setObject = yield app.client.get_set(relpath)
+            app.client.change_current_set(setObject)
             app.base.to_screen('present')
