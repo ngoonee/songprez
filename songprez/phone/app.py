@@ -23,7 +23,7 @@ from ..control.spclientcontrol import SPClientControl
 from .basewidget import BaseWidget
 from .settings import SPSettings
 from .settingsjson import default_settings, build_settings
-from ..network.spclient import SPClientFactory
+from ..network.spdiscovery import SPDiscovery
 from .fontutil import font_register
 from .modalpopup import ModalPopup
 
@@ -43,6 +43,7 @@ class SongPrezApp(App):
         self.settings_cls = SPSettings
         self.server = None
         self.client = None
+        self.seeker = None
         font_register()
         self.base = BaseWidget()
         Clock.schedule_once(self._verify_server)
@@ -54,6 +55,7 @@ class SongPrezApp(App):
             dataDir = self.config.get("filesfolders", "datadir")
             self.server = SPServerControl(indexDir, dataDir)
             self.client = SPClientControl()
+            self.seeker = SPDiscovery()
         except Exception as e:
             logger.exception(e.message)
             self.open_settings()
