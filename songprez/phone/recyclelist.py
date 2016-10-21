@@ -341,14 +341,14 @@ class ListItem(SelectableView, RecycleViewMixin, FloatLayout, StencilView):
         if not self.rv:
             return
         i = self.rv._find_index_from_relpath(self.relpath)
-        if i and self.rv.data[i]['expand_angle'] != value:
+        if i is not None and self.rv.data[i]['expand_angle'] != value:
             self.rv.data[i]['expand_angle'] = value
 
     def on_height(self, instance, value):
         if not self.rv:
             return
         i = self.rv._find_index_from_relpath(self.relpath)
-        if self.rv and i and self.rv.data[i]['height'] != value:
+        if self.rv and i is not None and self.rv.data[i]['height'] != value:
             self.rv.data[i]['height'] = value
             self.rv.refresh_views(data=True)
 
@@ -356,7 +356,7 @@ class ListItem(SelectableView, RecycleViewMixin, FloatLayout, StencilView):
         if not self.rv:
             return
         i = self.rv._find_index_from_relpath(self.relpath)
-        if i:
+        if i is not None:
             self.backcolor = [.25, .25, .25, 1] if i % 2 else [.125, .125, .125, 1]
 
 
