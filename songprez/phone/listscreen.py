@@ -93,29 +93,6 @@ class ListScreen(Screen):
     def _finish_init(self, dt):
         pass
 
-    def item_list(self, listofitem):
-        # deprecated
-        data = []
-        app = App.get_running_app()
-        for i, item in enumerate(listofitem):
-            title, subtitle, summary = self.get_vals(item)
-            if subtitle:
-                viewclass = 'ListItem'
-                h = app.ui_fs_main*1.5 + app.ui_fs_detail*1.5 + dp(10)
-            else:
-                viewclass = 'ListItem'
-                h = app.ui_fs_main*1.5 + dp(10)
-            data.append({'index': i, 'titletext': title,
-                         'subtitletext': subtitle, 'summarytext': summary,
-                         'expand_angle': 0, 'button_opacity': 0,
-                         'viewclass': viewclass, 'height': h,
-                         'rv': self.rv})
-        self.rv.data = data
-        self.itemlist = listofitem
-
-    def get_vals(self, item):
-        return u'', u'', u''
-
 
 class SearchScreen(ListScreen):
     def _finish_init(self, dt):
@@ -127,20 +104,6 @@ class SearchScreen(ListScreen):
         self.buttons.button1.text = iconfont('new', app.ui_fs_button) + ' New'
         self.buttons.button2.text = iconfont('songs', app.ui_fs_button) + ' Songs'
         self.buttons.button3.text = iconfont('listadd', app.ui_fs_button) + ' Add'
-
-    def get_vals(self, item):
-        # deprecated
-        title = item.title
-        subtitle = [] 
-        for t in (item.author, item.aka, item.key_line):
-            if t:
-                subtitle.append(t)
-        subtitle = " | ".join(subtitle)
-        text = item.words.split('\n')
-        text = [t for t in text 
-                if t != '' and not (t[0] == '[' and t[-1] == ']')]
-        summary = text[0:4]
-        return title, subtitle, summary
 
     @defer.inlineCallbacks
     def do_search(self, searchTerm):
@@ -164,16 +127,23 @@ class SearchScreen(ListScreen):
     def bt_delete(self, relpath):
         app = App.get_running_app()
         songObject = yield app.client.get_item('song', relpath)
-        message = ("Are you sure you want to delete '{0}'?".
-                   format(songObject.filepath))
-        popup = ModalPopup(message=message,
-                           lefttext=iconfont('delete') + ' Delete',
-                           leftcolor=(0.8, 0, 0, 1),
-                           righttext=iconfont('cancel') + ' Cancel')
-        popup.bind(on_left_action=partial(self._do_delete_song,
-                                          'song',
-                                          songObject.filepath))
-        popup.open()
+        if songObject != None:
+            message = ("Are you sure you want to delete '{0}'?".
+                       format(songObject.filepath))
+            popup = ModalPopup(message=message,
+                               lefttext=iconfont('delete') + ' Delete',
+                               leftcolor=(0.8, 0, 0, 1),
+                               righttext=iconfont('cancel') + ' Cancel')
+            popup.bind(on_left_action=partial(self._do_delete_song,
+                                              'song',
+                                              songObject.filepath))
+            popup.open()
+        else:
+            message = ("Error reading from '{0}'."
+                       .format(relpath))
+            popup = ModalPopup(message=message,
+                               righttext=iconfont('ok') + ' OK')
+            popup.open()
 
     def _do_delete_song(self, itemtype, filepath, instance):
         self.sendMessage(DeleteEditItem, itemtype=itemtype, relpath=filepath)
@@ -220,25 +190,28 @@ class SongScreen(ListScreen):
             if not e.has_key('subtitletext') and e.has_key('relpath'):
                 app = App.get_running_app()
                 item = yield app.client.get_item('song', e['relpath'])
-                subtitle = []
-                for t in (item.author, item.aka, item.key_line):
-                    if t:
-                        subtitle.append(t)
-                subtitle = " | ".join(subtitle)
-                text = item.words.split('\n')
-                text = [t for t in text 
-                        if t != '' and not (t[0] == '[' and t[-1] == ']')]
-                summary = text[0:4]
-                if subtitle:
-                    viewclass = 'ListItem'
-                    h = app.ui_fs_main*1.5 + app.ui_fs_detail*1.5 + dp(10)
+                if item == None:
+                    e['subtitletext'] = 'Error loading'
                 else:
-                    viewclass = 'ListItem'
-                    h = app.ui_fs_main*1.5 + dp(10)
-                e['subtitletext'] = subtitle
-                e['summarytext'] = summary
-                e['viewclass'] = viewclass
-                e['height'] = h
+                    subtitle = []
+                    for t in (item.author, item.aka, item.key_line):
+                        if t:
+                            subtitle.append(t)
+                    subtitle = " | ".join(subtitle)
+                    text = item.words.split('\n')
+                    text = [t for t in text 
+                            if t != '' and not (t[0] == '[' and t[-1] == ']')]
+                    summary = text[0:4]
+                    if subtitle:
+                        viewclass = 'ListItem'
+                        h = app.ui_fs_main*1.5 + app.ui_fs_detail*1.5 + dp(10)
+                    else:
+                        viewclass = 'ListItem'
+                        h = app.ui_fs_main*1.5 + dp(10)
+                    e['subtitletext'] = subtitle
+                    e['summarytext'] = summary
+                    e['viewclass'] = viewclass
+                    e['height'] = h
         Clock.schedule_once(self._get_details, 1)
 
 
@@ -256,20 +229,6 @@ class SongScreen(ListScreen):
                          'mtime': item['mtime']})
         self.rv.data = data
 
-    def get_vals(self, item):
-        # deprecated
-        title = item.title
-        subtitle = [] 
-        for t in (item.author, item.aka, item.key_line):
-            if t:
-                subtitle.append(t)
-        subtitle = " | ".join(subtitle)
-        text = item.words.split('\n')
-        text = [t for t in text 
-                if t != '' and not (t[0] == '[' and t[-1] == ']')]
-        summary = text[0:4]
-        return title, subtitle, summary
-
     def bt_edit(self, relpath):
         app = App.get_running_app()
         app.client.change_own_item('song', relpath)
@@ -279,16 +238,23 @@ class SongScreen(ListScreen):
     def bt_delete(self, relpath):
         app = App.get_running_app()
         songObject = yield app.client.get_item('song', relpath)
-        message = ("Are you sure you want to delete '{0}'?".
-                   format(songObject.filepath))
-        popup = ModalPopup(message=message,
-                           lefttext=iconfont('delete') + ' Delete',
-                           leftcolor=(0.8, 0, 0, 1),
-                           righttext=iconfont('cancel') + ' Cancel')
-        popup.bind(on_left_action=partial(self._do_delete_song,
-                                          'song',
-                                          songObject.filepath))
-        popup.open()
+        if songObject != None:
+            message = ("Are you sure you want to delete '{0}'?".
+                       format(songObject.filepath))
+            popup = ModalPopup(message=message,
+                               lefttext=iconfont('delete') + ' Delete',
+                               leftcolor=(0.8, 0, 0, 1),
+                               righttext=iconfont('cancel') + ' Cancel')
+            popup.bind(on_left_action=partial(self._do_delete_song,
+                                              'song',
+                                              songObject.filepath))
+            popup.open()
+        else:
+            message = ("Error reading from '{0}'."
+                       .format(relpath))
+            popup = ModalPopup(message=message,
+                               righttext=iconfont('ok') + ' OK')
+            popup.open()
 
     def _do_delete_song(self, itemtype, filepath, instance):
         app = App.get_running_app()
@@ -336,31 +302,34 @@ class SetScreen(ListScreen):
             if not e.has_key('subtitletext') and e.has_key('relpath'):
                 app = App.get_running_app()
                 item = yield app.client.get_set(e['relpath'])
-                text = [i['name'] for i in item.list_songs()]
-                iconsize = str(int(app.ui_fs_detail*1.5))
-                if len(text) > 9:
-                    subtitle = [iconfont('9+', iconsize)]
+                if item == None:
+                    e['subtitletext'] = 'Error loading'
                 else:
-                    subtitle = [iconfont(str(len(text)), iconsize)]
-                for i in text[:4]:
-                    subtitle.append(' '.join(i.split(' ', 2)[:2]))
-                if len(text) > 4:
-                    summary = text[:4]
-                    summary.append('...')
-                    subtitle.append('...')
-                else:
-                    summary = text
-                subtitle = " | ".join(subtitle)
-                if subtitle:
-                    viewclass = 'ListItem'
-                    h = app.ui_fs_main*1.5 + app.ui_fs_detail*1.5 + dp(10)
-                else:
-                    viewclass = 'ListItem'
-                    h = app.ui_fs_main*1.5 + dp(10)
-                e['subtitletext'] = subtitle
-                e['summarytext'] = summary
-                e['viewclass'] = viewclass
-                e['height'] = h
+                    text = [i['name'] for i in item.list_songs()]
+                    iconsize = str(int(app.ui_fs_detail*1.5))
+                    if len(text) > 9:
+                        subtitle = [iconfont('9+', iconsize)]
+                    else:
+                        subtitle = [iconfont(str(len(text)), iconsize)]
+                    for i in text[:4]:
+                        subtitle.append(' '.join(i.split(' ', 2)[:2]))
+                    if len(text) > 4:
+                        summary = text[:4]
+                        summary.append('...')
+                        subtitle.append('...')
+                    else:
+                        summary = text
+                    subtitle = " | ".join(subtitle)
+                    if subtitle:
+                        viewclass = 'ListItem'
+                        h = app.ui_fs_main*1.5 + app.ui_fs_detail*1.5 + dp(10)
+                    else:
+                        viewclass = 'ListItem'
+                        h = app.ui_fs_main*1.5 + dp(10)
+                    e['subtitletext'] = subtitle
+                    e['summarytext'] = summary
+                    e['viewclass'] = viewclass
+                    e['height'] = h
         Clock.schedule_once(self._get_details, 1)
 
     def update_sets(self, sender=None):
@@ -376,27 +345,6 @@ class SetScreen(ListScreen):
                          'rv': self.rv, 'relpath': item['relpath']})
         self.rv.data = data
 
-    def get_vals(self, item):
-        #deprecated
-        app = App.get_running_app()
-        title = item.name
-        text = [i['name'] for i in item.list_songs()]
-        iconsize = str(int(app.ui_fs_detail*1.5))
-        if len(text) > 9:
-            subtitle = [iconfont('9+', iconsize)]
-        else:
-            subtitle = [iconfont(str(len(text)), iconsize)]
-        for i in text[:4]:
-            subtitle.append(' '.join(i.split(' ', 2)[:2]))
-        if len(text) > 4:
-            summary = text[:4]
-            summary.append('...')
-            subtitle.append('...')
-        else:
-            summary = text
-        subtitle = " | ".join(subtitle)
-        return title, subtitle, summary
-
     def bt_edit(self, relpath):
         app = App.get_running_app()
         app.client.change_own_set(relpath)
@@ -406,14 +354,21 @@ class SetScreen(ListScreen):
     def bt_delete(self, relpath):
         app = App.get_running_app()
         setObject = yield app.client.get_set(relpath)
-        message = ("Are you sure you want to delete '{0}'?".
-                   format(setObject.filepath))
-        popup = ModalPopup(message=message,
-                           lefttext=iconfont('delete') + ' Delete',
-                           leftcolor=(0.8, 0, 0, 1),
-                           righttext=iconfont('cancel') + ' Cancel')
-        popup.bind(on_left_action=partial(self._do_delete_set, setObject.filepath))
-        popup.open()
+        if setObject != None:
+            message = ("Are you sure you want to delete '{0}'?".
+                       format(setObject.filepath))
+            popup = ModalPopup(message=message,
+                               lefttext=iconfont('delete') + ' Delete',
+                               leftcolor=(0.8, 0, 0, 1),
+                               righttext=iconfont('cancel') + ' Cancel')
+            popup.bind(on_left_action=partial(self._do_delete_set, setObject.filepath))
+            popup.open()
+        else:
+            message = ("Error reading from '{0}'."
+                       .format(relpath))
+            popup = ModalPopup(message=message,
+                               righttext=iconfont('ok') + ' OK')
+            popup.open()
 
     def _do_delete_set(self, filepath, instance):
         app = App.get_running_app()
@@ -433,5 +388,12 @@ class SetScreen(ListScreen):
         relpath = self.rv.selection
         if relpath:
             setObject = yield app.client.get_set(relpath)
-            app.client.change_current_set(setObject)
-            app.base.to_screen('present')
+            if setObject != None:
+                app.client.change_current_set(setObject)
+                app.base.to_screen('present')
+            else:
+                message = ("Error reading from '{0}'."
+                           .format(relpath))
+                popup = ModalPopup(message=message,
+                                   righttext=iconfont('ok') + ' OK')
+                popup.open()

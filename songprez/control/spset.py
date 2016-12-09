@@ -45,6 +45,10 @@ class SPSet(object):
         don't compare well. Probably should have more fine-grained, but that's
         just TODO I guess.
         '''
+        if other == None:
+            return False
+        if type(other) != type(self):
+            return False
         if len(self._items) != len(other._items):
             # Different lengths means different sets, obviously
             return False
@@ -71,8 +75,30 @@ class SPSet(object):
         try:
             root = etree.parse(filepath).getroot()
         except etree.ParseError:
-            return
+            raise LookupError("Unable to parse {}, not valid XML"
+                              .format(filepath))
+        # Find the base OpenSong directory by walking up the path to find the
+        # parent of 'Sets'
+        basedir, filename = os.path.split(filepath)
+        relpath = ''
+        while filename != 'Sets':
+            if relpath:
+                relpath = os.path.join(filename, relpath)
+            else:
+                relpath = filename
+            basedir, filename = os.path.split(basedir)
+            if filename == '':
+                raise IOError("%s is not in a proper directory structure"
+                              % filepath)
+        # Set the correct path
+        retval.filepath = relpath
+        # Set the correct name
         retval.name = root.attrib.get('name')
+        try:
+            items = root.getchildren()[0]
+        except IndexError:
+            # No children means no items/songs (empty set)
+            return retval
         items = root.getchildren()[0]
         for item in items:
             if item.attrib['type'] == 'song':
@@ -92,20 +118,6 @@ class SPSet(object):
                 pass
             elif item.attrib['type'] == 'custom':
                 pass
-        # Find the base OpenSong directory by walking up the path to find the
-        # parent of 'Sets'
-        basedir, filename = os.path.split(filepath)
-        relpath = ''
-        while filename != 'Sets':
-            if relpath:
-                relpath = os.path.join(filename, relpath)
-            else:
-                relpath = filename
-            basedir, filename = os.path.split(basedir)
-            if filename == '':
-                raise IOError("%s is not in a proper directory structure"
-                              % filepath)
-        retval.filepath = relpath
         cls.totaltime += time.time() - starttime
         return retval
 

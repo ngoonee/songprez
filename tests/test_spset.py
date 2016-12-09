@@ -9,19 +9,17 @@ Tests for `spset` module
 """
 
 import os
+import pytest
 import unittest
 
 from songprez.control import spset
 from songprez.control import spsong
 
-def test_read_non_set(tmpdir):
-    p = tmpdir.mkdir('settest')
-    testfile = p.join('testfile').__str__()
-    with open(testfile, 'w') as f:
-        f.write('This is just at text file, not XML')
-    assert spset.SPSet.read_from_file(testfile) is None
-
 class TestSPSet(unittest.TestCase):
+
+    @pytest.fixture(autouse=True)
+    def mktmpdir(self, tmpdir):
+        self.tmpdir = tmpdir
 
     def setUp(self):
         self.baseDir = os.path.join(os.path.curdir, 'tests', 'dirStructureTest')
@@ -29,6 +27,14 @@ class TestSPSet(unittest.TestCase):
                                                'Sets', 'SingleElementSet'))
         self.set2 = spset.SPSet.read_from_file(os.path.join(self.baseDir,
                                                'Sets', 'MultiElement Set'))
+
+    def test_read_non_set(self):
+        p = self.tmpdir.mkdir('settest')
+        testfile = p.join('testfile').__str__()
+        with open(testfile, 'w') as f:
+            f.write('This is just at text file, not XML')
+        with self.assertRaises(LookupError):
+            spset.SPSet.read_from_file(testfile)
 
     def test_listing_song(self):
         assert len(self.set1.list_songs()) == 1

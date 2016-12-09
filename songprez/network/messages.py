@@ -92,11 +92,15 @@ class CurrentToggles(amp.Command):
 class GetItem(amp.Command):
     arguments = [('itemtype', amp.Unicode()), ('relpath', amp.Unicode())]
     response = [('jsonitem', amp.String())]
+    errors = {LookupError: 'COULD_NOT_PARSE_PATH',
+              IOError: 'WRONG_DIRECTORY_STRUCTURE'}
 
 
 class GetSet(amp.Command):
     arguments = [('relpath', amp.Unicode())]
     response = [('jsonset', amp.String())]
+    errors = {LookupError: 'COULD_NOT_PARSE_PATH',
+              IOError: 'WRONG_DIRECTORY_STRUCTURE'}
 
 
 class Search(amp.Command):

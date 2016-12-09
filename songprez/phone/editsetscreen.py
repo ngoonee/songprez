@@ -109,7 +109,12 @@ class EditSetScreen(Screen):
             self.set = app.client.ownSet
             self.current_set = deepcopy(self.set)
             Clock.schedule_once(self.set_to_UI)
-            #self.set_to_UI()
+        else:
+            message = ("Could not load this set.")
+            popup = ModalPopup(message=message,
+                               righttext=iconfont('ok') + ' OK')
+            popup.open()
+
 
     def add_song(self, songObject):
         self.current_set.add_song(songObject, self._index_to_add)

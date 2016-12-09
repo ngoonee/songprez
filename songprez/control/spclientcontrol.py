@@ -74,6 +74,9 @@ class SPClientControl(object):
 
     @defer.inlineCallbacks
     def get_item(self, itemtype, relpath):
+        '''
+        May return None if there's a problem loading this set
+        '''
         def json_to_item(response, itemtype):
             if itemtype == 'song':
                 s = SPSong()
@@ -89,6 +92,9 @@ class SPClientControl(object):
 
     @defer.inlineCallbacks
     def get_set(self, relpath):
+        '''
+        May return None if there's a problem loading this set
+        '''
         def json_to_set(response):
             if response.has_key('jsonset'):
                 s = SPSet()

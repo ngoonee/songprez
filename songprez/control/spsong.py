@@ -64,6 +64,8 @@ class SPSong(object):
             root = etree.parse(filepath).getroot()
         except etree.ParseError:
             return
+            raise LookupError("Unable to parse {}, not valid XML"
+                              .format(filepath))
         for elem in root:
             if elem.text is not None:
                 if elem.tag in _xmldefaults.keys():
@@ -136,6 +138,10 @@ class SPSong(object):
         Compares all relevant properties. filepath and mtime do not matter in
         comparing songs for equivalence.
         '''
+        if other == None:
+            return False
+        if type(other) != type(self):
+            return False
         for key in _xmldefaults.iterkeys():
             if getattr(self, key) != getattr(other, key):
                 return False
