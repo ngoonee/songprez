@@ -57,7 +57,6 @@ class SPClientControl(object):
         signal('scriptureList').send()
 
     def current_set(self, set):
-        print('called with', set)
         self.curSet = set
         signal('curSet').send()
 

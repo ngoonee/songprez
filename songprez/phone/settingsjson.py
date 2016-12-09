@@ -28,22 +28,32 @@ defaultdatadir = os.path.expanduser(defaultdatadir)
 # Index directory should be in data_dir
 defaultindexdir = os.path.join(data_dir, 'index')
 
-settings_object['Files & Folders'] = [
+settings_object['General'] = [
+        {'type': 'title',
+            'title': 'Files & Folders'},
         {'type': 'pathex',
             'title': 'SongPrez Data Folder',
             'desc': 'SongPrez will not start if this folder does not exist',
-            'section': 'filesfolders',
+            'section': 'general',
             'key': 'datadir',
             'dirselect': True,
             'default': defaultdatadir},
         {'type': 'pathex',
             'title': 'SongPrez Search Index Folder',
             'desc': 'Indices for searching are stored here. Default values are fine.',
-            'section': 'filesfolders',
+            'section': 'general',
             'key': 'indexdir',
             'dirselect': True,
             'show_hidden': True,
             'default': defaultindexdir},
+        {'type': 'title',
+            'title': 'Sharing'},
+        {'type': 'string',
+            'title': 'SongPrez Sharing Name',
+            'desc': 'Unique name identifying this device',
+            'section': 'general',
+            'key': 'name',
+            'default': ''},
         ]
 
 settings_object['User Interface'] = [

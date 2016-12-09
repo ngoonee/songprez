@@ -8,12 +8,14 @@ from kivy.properties import ObjectProperty
 from kivy.uix.screenmanager import ScreenManager
 from kivy.uix.boxlayout import BoxLayout
 from ..control.spset import SPSet
+from .scanscreen import ScanScreen
 from .mainscreen import MainScreen
 from .presentscreen import PresentScreen
 from .listscreen import SetScreen, SongScreen, SearchScreen
 from .fontutil import iconfont
 from .editsetscreen import EditSetScreen
 from .editsongscreen import EditSongScreen
+from .toolbar import SPToolbar
 
 Builder.load_string("""
 #:import FallOutTransition kivy.uix.screenmanager.FallOutTransition
@@ -35,14 +37,13 @@ Builder.load_string("""
     editsong: editsong
     settings: settings
     sm: sm
-    title: title
+    toolbar: toolbar
     orientation: "vertical"
-    Label:
-        id: title
-        size_hint_y: None
-        height: '48dp'
-        markup: True
-        font_size: app.ui_fs_title
+    SPToolbar:
+        id: toolbar
+        title: 'SongPrez'
+        background_color: app.theme_cls.primary_color
+        left_action_items: [['menu', lambda x: app.nav_drawer.toggle()]]
     ScreenManager:
         id: sm
         Screen:
@@ -72,6 +73,8 @@ Builder.load_string("""
         Screen:
             id: settings
             name: 'settings'
+        ScanScreen:
+            name: 'scan'
 """)
 
 
@@ -82,33 +85,36 @@ class BaseWidget(BoxLayout):
         self._history = []
         Window.bind(on_key_down=self._on_keyboard_down)
         self.sm.bind(current=self._change_title)
-        self.to_screen('main')
+        self.to_screen('scan')
 
     def _change_title(self, instance, data):
-        title = self.title
+        toolbar = self.toolbar
         # Set the main label
-        if data == 'main':
-            title.text = 'SongPrez'
+        if data == 'main' or data == 'preload' or data == 'scan':
+            toolbar.title = 'SongPrez'
         elif data == 'sets':
-            title.text = 'Sets ' + iconfont('sets')
+            toolbar.title = 'Sets ' + iconfont('sets')
         elif data == 'songs':
-            title.text = 'Songs ' + iconfont('songs')
+            toolbar.title = 'Songs ' + iconfont('songs')
         elif data == 'present':
             self.presenting = True
-            title.text = 'Present ' + iconfont('present')
+            toolbar.title = 'Present ' + iconfont('present')
         elif data == 'search':
-            title.text = 'Search ' + iconfont('search')
+            toolbar.title = 'Search ' + iconfont('search')
         elif data == 'scripture':
-            title.text = 'Scripture ' + iconfont('scripture')
+            toolbar.title = 'Scripture ' + iconfont('scripture')
         elif data == 'settings':
-            title.text = 'Settings ' + iconfont('settings')
+            toolbar.title = 'Settings ' + iconfont('settings')
         elif data == 'editset':
             self.presenting = False
-            title.text = (iconfont('edit') + ' Edit Set ' + iconfont('sets'))
+            toolbar.title = (iconfont('edit') + ' Edit Set ' + iconfont('sets'))
         elif data == 'editsong':
-            title.text = (iconfont('edit') + ' Edit Song ' + iconfont('songs'))
+            toolbar.title = (iconfont('edit') + ' Edit Song ' + iconfont('songs'))
+        return
         # Save screen history
-        if data == 'main' and self._history == []:
+        if data in ('preload', 'scan'):
+            pass
+        elif data == 'main' and self._history == []:
             self._history = ['main',]
         elif data == 'settings':
             app = App.get_running_app()

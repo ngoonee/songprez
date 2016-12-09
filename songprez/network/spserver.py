@@ -15,7 +15,6 @@ class SPServerProtocol(amp.AMP):
         self.control = factory.control
 
     def connectionMade(self):
-        print(self.transport.client)
         logger.info('SPServer: Host: "%s" %s --- Client: %s connected',
                     self.transport.hostname, self.transport.repstr,
                     self.transport.client)

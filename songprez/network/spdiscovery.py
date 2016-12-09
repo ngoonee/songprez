@@ -78,8 +78,8 @@ class SPDiscovery(DatagramProtocol):
         logger.debug(u'SPDiscovery: Received %s from %s', datagram, address)
         if datagram.startswith('SongPrezTarget'):
             ip = address[0]
-            if ip in self.ips:
-                ip = 'localhost'
+            #if ip in self.ips:
+                #ip = 'localhost'
             name = datagram.split(':', 1)[1]
             index = next((i for (i, d) in enumerate(self.targets)
                           if d['addr'] == ip), None)

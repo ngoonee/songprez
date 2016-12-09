@@ -56,6 +56,7 @@ icon_map = {'donate': u'\uf4cb',  # square-inc-cash
             'expand': u'\uf140',  # chevron-down
             'collapse': u'\uf143',  # chevron-up
             'reorder': u'\uf687',  # reorder-horizontal
+            'remote': u'\uf454',  # remote
             '0': u'\uf3a1',  # numeric-0-box
             '1': u'\uf3a4',  # numeric-1-box
             '2': u'\uf3a7',  # numeric-2-box

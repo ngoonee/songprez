@@ -18,9 +18,11 @@ from kivy.clock import Clock
 from kivy.properties import StringProperty, BooleanProperty, ListProperty
 from kivy.properties import NumericProperty, ObjectProperty, DictProperty
 from kivy.metrics import dp, sp
+from kivymd.theming import ThemeManager
 from ..control.spservercontrol import SPServerControl
 from ..control.spclientcontrol import SPClientControl
 from .basewidget import BaseWidget
+from .navdrawer import SPNavDrawer
 from .settings import SPSettings
 from .settingsjson import default_settings, build_settings
 from ..network.spdiscovery import SPDiscovery
@@ -30,10 +32,12 @@ from .modalpopup import ModalPopup
 
 class SongPrezApp(App):
     base = ObjectProperty(None)
+    nav_drawer = ObjectProperty(None)
     dataDir = StringProperty('')
     indexDir = StringProperty('')
     sendMessage = ObjectProperty(None)
     buttonsize = NumericProperty(dp(32))
+    theme_cls = ThemeManager()
     ui_fs_button = NumericProperty(sp(24))
     ui_fs_title = NumericProperty(sp(24))
     ui_fs_main = NumericProperty(sp(18))
@@ -46,13 +50,24 @@ class SongPrezApp(App):
         self.seeker = None
         font_register()
         self.base = BaseWidget()
+        self.nav_drawer = SPNavDrawer()
+        self.theme_cls.theme_style = 'Dark'
+        self.theme_cls.primary_palette = 'Indigo'
+        self.theme_cls.primary_hue = '800'
+        self.theme_cls.primary_light_hue = '600'
+        self.theme_cls.primary_dark_hue = '900'
+        self.theme_cls.accent_palette = 'Green'
         Clock.schedule_once(self._verify_server)
         return self.base
 
     def _verify_server(self, dt):
+        '''
+        If previously been run and properly set up, just go straight in
+        If not properly set up, need to either join other host or set up local
+        '''
         try:
-            indexDir = self.config.get("filesfolders", "indexdir")
-            dataDir = self.config.get("filesfolders", "datadir")
+            indexDir = self.config.get("general", "indexdir")
+            dataDir = self.config.get("general", "datadir")
             self.server = SPServerControl(indexDir, dataDir)
             self.client = SPClientControl()
             self.seeker = SPDiscovery()
