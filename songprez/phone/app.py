@@ -29,6 +29,21 @@ from ..network.spdiscovery import SPDiscovery
 from .fontutil import font_register
 from .modalpopup import ModalPopup
 
+# Monkey patch to use Noto Sans rather than kivymd's default Roboto
+from kivymd.label import MDLabel
+MDLabel._font_styles = DictProperty({'Body1': ['NotoSans', False, 14, 13],
+                                 'Body2': ['NotoSans', True, 14, 13],
+                                 'Caption': ['NotoSans', False, 12, None],
+                                 'Subhead': ['NotoSans', False, 16, 15],
+                                 'Title': ['NotoSans', True, 20, None],
+                                 'Headline': ['NotoSans', False, 24, None],
+                                 'Display1': ['NotoSans', False, 34, None],
+                                 'Display2': ['NotoSans', False, 45, None],
+                                 'Display3': ['NotoSans', False, 56, None],
+                                 'Display4': ['NotoSans', False, 112, None],
+                                 'Button': ['NotoSans', True, 14, None],
+                                 'Icon': ['Icons', False, 24, None]})
+
 
 class SongPrezApp(App):
     base = ObjectProperty(None)
@@ -52,7 +67,7 @@ class SongPrezApp(App):
         self.base = BaseWidget()
         self.nav_drawer = SPNavDrawer()
         self.theme_cls.theme_style = 'Dark'
-        self.theme_cls.primary_palette = 'Indigo'
+        self.theme_cls.primary_palette = 'Teal'
         self.theme_cls.primary_hue = '800'
         self.theme_cls.primary_light_hue = '600'
         self.theme_cls.primary_dark_hue = '900'
