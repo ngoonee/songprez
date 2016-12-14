@@ -9,7 +9,7 @@ from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.screenmanager import Screen
 from kivy.uix.carousel import Carousel
 #from kivy.garden.recycleview import RecycleView
-from .recycle2list import MDRecycleView, ListItem2, ScanItem
+from .recycle2list import MDRecycleView
 from kivy.properties import ListProperty, StringProperty
 from .fontutil import iconfont
 from kivymd.label import MDLabel
@@ -22,7 +22,7 @@ Builder.load_string("""
 #:import STANDARD_INCREMENT kivymd.material_resources.STANDARD_INCREMENT
 <Instructions>:
     text: ''
-    padding: (dp(16), 0.5*STANDARD_INCREMENT, root.theme_cls.horizontal_margins, 0.3*STANDARD_INCREMENT)
+    padding: (dp(16), 0.3*STANDARD_INCREMENT, root.theme_cls.horizontal_margins, 0.3*STANDARD_INCREMENT)
     size_hint: 1, None
     height: self.minimum_height
     MDLabel:
@@ -42,7 +42,6 @@ Builder.load_string("""
             text: 'Select the SongPrez host you want to connect to.'
         MDRecycleView:
             id: rv
-            viewclass: 'ScanItem'
         AnchorLayout:
             anchor_x: 'right'
             padding: dp(16), dp(8)
@@ -81,7 +80,8 @@ class ScanScreen(Screen):
             data = []
             for t in app.seeker.targets:
                 data.append({'text': t['name'],
-                             'secondary_text': t['addr']})
+                             'secondary_text': t['addr'],
+                             'viewclass': 'ScanItem'})
             self.rv.data = data
 
     def _done_preload(self):

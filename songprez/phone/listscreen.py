@@ -16,6 +16,7 @@ from blinker import signal
 from functools import partial
 from .fontutil import iconfont
 from .recyclelist import SPRecycleView, ListItem
+from .recycle2list import MDRecycleView
 from kivy.metrics import dp, sp
 from .buttonrow import Buttons
 from .modalpopup import ModalPopup
@@ -73,10 +74,8 @@ Builder.load_string("""
         orientation: 'vertical'
         padding: '5dp'
         spacing: '5dp'
-        SPRecycleView:
+        MDRecycleView:
             id: rv
-            edit_action: root.bt_edit
-            delete_action: root.bt_delete
         Buttons:
             id: buttons
             button1_action: root.bt_new
@@ -299,37 +298,20 @@ class SetScreen(ListScreen):
     def _get_details(self, dt=None):
         data = self.rv.data
         for e in data:
-            if not e.has_key('subtitletext') and e.has_key('relpath'):
+            if not e.has_key('subtitle_text') and e.has_key('relpath'):
                 app = App.get_running_app()
                 item = yield app.client.get_set(e['relpath'])
                 if item == None:
-                    e['subtitletext'] = 'Error loading'
+                    e['subtitle_text'] = 'Error loading'
                 else:
                     text = [i['name'] for i in item.list_songs()]
-                    iconsize = str(int(app.ui_fs_detail*1.5))
-                    if len(text) > 9:
-                        subtitle = [iconfont('9+', iconsize)]
-                    else:
-                        subtitle = [iconfont(str(len(text)), iconsize)]
-                    for i in text[:4]:
+                    subtitle = []
+                    for i in text:
                         subtitle.append(' '.join(i.split(' ', 2)[:2]))
-                    if len(text) > 4:
-                        summary = text[:4]
-                        summary.append('...')
-                        subtitle.append('...')
-                    else:
-                        summary = text
                     subtitle = " | ".join(subtitle)
-                    if subtitle:
-                        viewclass = 'ListItem'
-                        h = app.ui_fs_main*1.5 + app.ui_fs_detail*1.5 + dp(10)
-                    else:
-                        viewclass = 'ListItem'
-                        h = app.ui_fs_main*1.5 + dp(10)
-                    e['subtitletext'] = subtitle
-                    e['summarytext'] = summary
-                    e['viewclass'] = viewclass
-                    e['height'] = h
+                    e['subtitle_text'] = subtitle
+                    e['viewclass'] = 'CountItem'
+                    e['num_items'] = len(text)
         Clock.schedule_once(self._get_details, 1)
 
     def update_sets(self, sender=None):
@@ -337,12 +319,10 @@ class SetScreen(ListScreen):
         setList = app.client.setList
         data = []
         for i, item in enumerate(setList):
-            viewclass = 'ListItem'
             h = app.ui_fs_main*1.5 + dp(10)
-            data.append({'titletext': item['name'],
-                         'expand_angle': 0, 'button_opacity': 0,
-                         'viewclass': viewclass, 'height': h,
-                         'rv': self.rv, 'relpath': item['relpath']})
+            data.append({'title_text': item['name'],
+                         'viewclass': 'CountItem',
+                         'relpath': item['relpath']})
         self.rv.data = data
 
     def bt_edit(self, relpath):

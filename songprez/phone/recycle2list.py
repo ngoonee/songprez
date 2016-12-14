@@ -11,13 +11,16 @@ from kivy.metrics import dp
 from kivy.uix.recycleview import RecycleView
 from kivy.uix.recycleview.views import RecycleDataViewBehavior
 from kivy.uix.recycleboxlayout import RecycleBoxLayout
-from kivy.uix.behaviors import FocusBehavior
 from kivy.uix.recycleview.layout import LayoutSelectionBehavior
 from kivymd.theming import ThemableBehavior
 from kivymd.list import TwoLineListItem
+from kivymd.label import MDLabel
+from kivymd.backgroundcolorbehavior import SpecificBackgroundColorBehavior
 
 Builder.load_string('''
+#:import md_icons kivymd.icon_definitions.md_icons
 <MDRecycleView>:
+    key_viewclass: 'viewclass'
     SelectableRecycleBoxLayout:
         default_size: None, None
         default_size_hint: 1, None
@@ -26,120 +29,126 @@ Builder.load_string('''
         padding: 0, self._list_vertical_padding
         orientation: 'vertical'
 
-<ListItem2>:
-    title_fs: app.ui_fs_main
-    detail_fs: app.ui_fs_detail
-    button_fs: app.ui_fs_button
-    buttonsize: app.buttonsize
+<SelectableItem>:
+    canvas:
+        Color:
+            rgba: self.theme_cls.primary_color if self.selected else (1, 1, 1, 0)
+        Rectangle:
+            pos: self.x + self.width - dp(8), self.y
+            size: dp(8), self.height
+    theme_text_color: 'Primary'
+    secondary_theme_text_color: 'Primary'
 
+<SingleLine@MDLabel>:
+    size_hint: None, None
+    height: self.texture_size[1]
+    halign: 'left'
+    valign: 'middle'
+    shorten: True
+    shorten_from: 'right'
+    theme_text_color: root.parent.theme_text_color
+    x: root.parent.x + dp(16)
+    width: root.parent.x + root.parent.width - dp(16) - dp(48)
+
+<BasicItem>:
     title: title
-    canvas.before:
+    subtitle: subtitle
+    height: dp(60) if self.subtitle_text else dp(40)
+    canvas:
         Color:
-            rgba: self.theme_cls.primary_color if self.selected else (0, 0, 0, 0)
-        Rectangle:
-            pos: self.pos
-            size: self.size
-        Color:
-            rgba: self.theme_cls.primary_color if self.selected else (0, 0, 0, 0)
+            rgba: self.theme_cls.divider_color
         Line:
-            rounded_rectangle: [self.pos[0], self.pos[1], self.size[0], self.size[1], 10]
-    Label:
+            points: (root.x+dp(16), root.y+1, root.x+self.width-dp(16), root.y+1)
+    SingleLine:
         id: title
-        pos: root.pos
-        halign: 'left'
-        valign: 'middle'
-        text: root.text
-        text_size: root.size
-        shorten: True
-        shorten_from: 'right'
-        font_size: root.title_fs
+        text: root.title_text
+        font_style: 'Subhead'
+        y: root.y + (dp(31) if root.subtitle_text else dp(11))
+    SingleLine:
+        id: subtitle
+        text: root.subtitle_text
+        font_style: 'Body1'
+        y: root.y + dp(10)
+
+<CountItem>:
+    num: num
+    MDLabel:
+        id: num
+        size_hint: None, None
+        size: dp(24), dp(24)
+        font_style: 'Icon'
+        text: u"{}".format(md_icons[root.icon]) if root.icon else u""
+        theme_text_color: root.theme_text_color
+        x: root.x + root.width - dp(16) - dp(24)
+        y: root.y + (dp(18) if root.subtitle_text else dp(8))
+
 <ScanItem>:
-    canvas.before:
-        Color:
-            rgba: self.theme_cls.primary_color if self.selected else (0, 0, 0, 0)
-        Rectangle:
-            pos: self.pos
-            size: self.size
+    ripple_alpha: 0
+    height: dp(60)
+    divider: 'Inset'
 ''')
 
 
 class MDRecycleView(ThemableBehavior, RecycleView):
     selection = StringProperty([])
 
+
 class SelectableRecycleBoxLayout(LayoutSelectionBehavior,
                                  RecycleBoxLayout):
-    ''' Adds selection and focus behaviour to the view. '''
     _min_list_height = dp(16)
     _list_vertical_padding = dp(8)
 
 
-class ScanItem(RecycleDataViewBehavior, TwoLineListItem):
-    selected = BooleanProperty(False)
-    selectable = BooleanProperty(True)
-    def __init__(self, **kwargs):
-        super(ScanItem, self).__init__(**kwargs)
-        self.divider = 'Inset'
-
-    def refresh_view_attrs(self, rv, index, data):
-        ''' Catch and handle the view changes '''
-        self.index = index
-        return super(ScanItem, self).refresh_view_attrs(
-            rv, index, data)
-
-    def on_touch_down(self, touch):
-        ''' Add selection on touch down '''
-        handled = super(ScanItem, self).on_touch_down(touch)
-        selected = False
-        if self.collide_point(*touch.pos) and self.selectable:
-            selected = self.parent.select_with_touch(self.index, touch)
-        return handled or selected
-
-    def apply_selection(self, rv, index, is_selected):
-        ''' Respond to the selection of items in the view. '''
-        self.selected = is_selected
-        if is_selected:
-            rv.selection = rv.data[index]['secondary_text']
-
-
-class ListItem2(ThemableBehavior, RecycleDataViewBehavior, FloatLayout, StencilView):
-    ''' Add selection support to the Label '''
+class SelectableItem(RecycleDataViewBehavior):
+    ''' Adds selection and focus behaviour to the view. '''
     index = None
     selected = BooleanProperty(False)
     selectable = BooleanProperty(True)
 
-    text = StringProperty('')
-    #subtitletext = StringProperty('')
-    #summarytext = ListProperty([])
-    #rv = ObjectProperty(None)
-    #expand_angle = NumericProperty(0)
-    #button_opacity = NumericProperty(0)
-    #set_edit = BooleanProperty(False)
-    #relpath = StringProperty('')
-    #backcolor = ListProperty([0, 0, 0, 0])
-    #_summary = ListProperty([])
-
-    def __init__(self, **kwargs):
-        super(ListItem2, self).__init__(**kwargs)
-
     def refresh_view_attrs(self, rv, index, data):
         ''' Catch and handle the view changes '''
         self.index = index
-        return super(ListItem2, self).refresh_view_attrs(
+        return super(SelectableItem, self).refresh_view_attrs(
             rv, index, data)
 
     def on_touch_down(self, touch):
         ''' Add selection on touch down '''
-        if super(ListItem2, self).on_touch_down(touch):
-            return True
         if self.collide_point(*touch.pos) and self.selectable:
             return self.parent.select_with_touch(self.index, touch)
 
     def apply_selection(self, rv, index, is_selected):
         ''' Respond to the selection of items in the view. '''
         self.selected = is_selected
-        print(self.size)
-        print(self.title.size)
+
+
+class BasicItem(SelectableItem, ThemableBehavior, FloatLayout,
+                     StencilView
+                     ):
+    title_text = StringProperty('')
+    subtitle_text = StringProperty('')
+
+    def apply_selection(self, rv, index, is_selected):
+        super(BasicItem, self).apply_selection(rv, index, is_selected)
         if is_selected:
-            print("selection changed to {0}".format(rv.data[index]))
+            rv.selection = rv.data[index].get('relpath', u'')
+
+
+class CountItem(BasicItem):
+    num_items = NumericProperty(0)
+    icon = StringProperty(u"")
+
+    def on_num_items(self, instance, value):
+        if value == 0:
+            self.icon = u""
+        elif value < 10:
+            self.icon = u"numeric-" + str(value) + u"-box"
         else:
-            print("selection removed for {0}".format(rv.data[index]))
+            self.icon = u"numeric-9-plus-box"
+
+
+class ScanItem(SelectableItem, TwoLineListItem):
+    def apply_selection(self, rv, index, is_selected):
+        ''' Respond to the selection of items in the view. '''
+        super(ScanItem, self).apply_selection(rv, index, is_selected)
+        if is_selected:
+            rv.selection = rv.data[index]['secondary_text']
