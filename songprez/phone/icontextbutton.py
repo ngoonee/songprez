@@ -32,8 +32,8 @@ Builder.load_string('''
             font_style: 'Icon'
             text: u"{}".format(md_icons[root.icon])
             size_hint_x: None
-            text_size: (None, root.height)
-            size: (root.height, self.texture_size[1])
+            -text_size: (None, root.height)
+            width: self.texture_size[0]
             halign: 'right'
             theme_text_color: root.theme_text_color
             text_color: root.text_color
@@ -45,7 +45,8 @@ Builder.load_string('''
             text: root._capitalized_text
             font_style: 'Button'
             size_hint_x: None
-            text_size: (None, root.height)
+            -text_size: (None, root.height)
+            width: self.texture_size[0]
             theme_text_color: root.theme_text_color
             text_color: root.text_color
             disabled: root.disabled
