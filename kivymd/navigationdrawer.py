@@ -10,7 +10,9 @@ from kivymd.slidingpanel import SlidingPanel
 from kivymd.theming import ThemableBehavior
 
 Builder.load_string('''
+#:import Toolbar kivymd.toolbar.Toolbar
 <NavDrawerToolbar@Toolbar>
+    specific_text_color: root.theme_cls.secondary_text_color
     canvas:
         Color:
             rgba: root.theme_cls.divider_color
@@ -30,7 +32,7 @@ Builder.load_string('''
         title: root.title
         opposite_colors: False
         title_theme_color: 'Secondary'
-        background_color: root.theme_cls.bg_light
+        md_bg_color: root.theme_cls.bg_light
         elevation: 0
     ScrollView:
         do_scroll_x: False
@@ -44,6 +46,10 @@ Builder.load_string('''
         font_style: 'Icon'
         theme_text_color: 'Secondary'
 ''')
+
+
+class NavDrawerToolbar:
+    pass
 
 
 class NavigationDrawer(SlidingPanel, ThemableBehavior,

@@ -42,7 +42,9 @@ Builder.load_string("""
     SPToolbar:
         id: toolbar
         title: 'SongPrez'
-        background_color: app.theme_cls.primary_color
+        md_bg_color: app.theme_cls.primary_color
+        background_palette: 'Primary'
+        background_hue: '500'
         left_action_items: [['menu', lambda x: app.nav_drawer.toggle()]]
     ScreenManager:
         id: sm

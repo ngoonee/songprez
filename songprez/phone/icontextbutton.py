@@ -11,6 +11,7 @@ Builder.load_string('''
 #:import MDLabel kivymd.label.MDLabel
 <IconTextButton>:
     canvas:
+        Clear
         Color:
             rgba: self._current_button_color
         RoundedRectangle:
@@ -22,7 +23,7 @@ Builder.load_string('''
     width: content.width + dp(32)
     padding: (dp(8), 0)
     theme_text_color: 'Primary'
-    background_color: root.theme_cls.primary_color
+    md_bg_color: root.theme_cls.primary_color
     BoxLayout:
         id: content
         size_hint_x: None

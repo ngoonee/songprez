@@ -5,21 +5,22 @@
 #
 # @author: jrm
 
+from kivy.animation import Animation
+from kivy.clock import Clock
+from kivy.core.window import Window
+from kivy.lang import Builder
+from kivy.logger import Logger
+from kivy.metrics import dp, sp
 from kivy.properties import StringProperty, DictProperty, ListProperty, \
     ObjectProperty, OptionProperty, BoundedNumericProperty, NumericProperty, BooleanProperty
-from kivy.uix.screenmanager import Screen
-from kivy.lang import Builder
-from kivy.metrics import dp, sp
 from kivy.uix.boxlayout import BoxLayout
-from kivymd.theming import ThemableBehavior
-from kivymd.backgroundcolorbehavior import BackgroundColorBehavior
+from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.screenmanager import Screen
+from kivymd.backgroundcolorbehavior import (BackgroundColorBehavior,
+                                            SpecificBackgroundColorBehavior)
 from kivymd.button import MDFlatButton, BaseFlatButton, BasePressedButton
 from kivymd.elevationbehavior import RectangularElevationBehavior
-from kivy.animation import Animation
-from kivy.uix.floatlayout import FloatLayout
-from kivy.core.window import Window
-from kivy.clock import Clock
-from kivy.logger import Logger
+from kivymd.theming import ThemableBehavior
 
 Builder.load_string("""
 #:import sm kivy.uix.screenmanager
@@ -34,7 +35,7 @@ Builder.load_string("""
             id: tab_bar
             size_hint_y: None
             height: panel._tab_display_height[panel.tab_display_mode]
-            background_color: panel.tab_color or panel.theme_cls.primary_color
+            md_bg_color: panel.tab_color or panel.theme_cls.primary_color
             canvas:
                 # Draw bottom border
                 Color:
@@ -68,10 +69,9 @@ Builder.load_string("""
     width: (_label.texture_size[0] + dp(16))
     padding: (dp(12), 0)
     theme_text_color: 'Custom'
-    text_color: (self.panel.tab_text_color_active or app.theme_cls.bg_light if app.theme_cls.theme_style == "Light" \
-            else app.theme_cls.opposite_bg_light) if self.tab and self.tab.manager \
-            and self.tab.manager.current==self.tab.name else (self.panel.tab_text_color \
-            or self.panel.theme_cls.primary_light)
+    text_color: (self.panel.tab_text_color_active or self.panel.specific_text_color) if self.tab and self.tab.manager \
+            and self.tab.manager.current==self.tab.name else (self.panel.tab_text_color or \
+            self.panel.specific_secondary_text_color)
     on_press: 
         self.tab.dispatch('on_tab_press')
     on_release: self.tab.dispatch('on_tab_release')
@@ -106,7 +106,7 @@ Builder.load_string("""
     MDBottomNavigationBar:
         size_hint_y: None
         height: dp(56)  # Spec
-        background_color: root.theme_cls.bg_dark
+        md_bg_color: root.theme_cls.bg_dark
         BoxLayout:
             pos_hint: {'center_x': .5, 'center_y': .5}
             id: tab_bar
@@ -274,7 +274,7 @@ class MDTab(Screen, ThemableBehavior):
         self.register_event_type('on_tab_release')
 
     def on_leave(self, *args):
-        self.parent_widget.ids.tab_manager.transition.direction = self.parent_widget.prev_dir
+        self.parent_widget.ids.tab_manager.transition.direction = self.parent_widget.normal_dir
         
     def on_tab_touch_down(self, *args):
         pass
@@ -320,7 +320,7 @@ class MDBottomNavigationItem(MDTab):
         pass
 
 
-class TabbedPanelBase(ThemableBehavior, BackgroundColorBehavior, BoxLayout):
+class TabbedPanelBase(ThemableBehavior, SpecificBackgroundColorBehavior, BoxLayout):
     """
     A class that contains all variables a TabPannel must have
     It is here so I (zingballyhoo) don't get mad about the TabbedPannels not being DRY
@@ -367,6 +367,10 @@ class MDTabbedPanel(TabbedPanelBase):
         self.prev_dir = None
         self.index = 0
         self._refresh_tabs()
+        Clock.schedule_once(self._set_normal_dir, 0)
+
+    def _set_normal_dir(self, *args):
+        self.normal_dir = str(self.ids.tab_manager.transition.direction)
         
     def on_tab_width_mode(self, *args):
         self._refresh_tabs()
@@ -515,7 +519,7 @@ BoxLayout:
     Toolbar:
         id: toolbar
         title: 'Page title'
-        background_color: app.theme_cls.primary_color
+        md_bg_color: app.theme_cls.primary_color
         left_action_items: [['menu', lambda x: '']]
         right_action_items: [['magnify', lambda x: ''],['dots-vertical',lambda x:'']]
     MDTabbedPanel:
