@@ -20,10 +20,8 @@ from kivymd.label import MDLabel
 from kivymd.menu import MDDropdownMenu
 from kivymd.button import MDFloatingActionButton
 from .fontutil import iconfont
-from .recyclelist import SPRecycleView, ListItem
 from .recycle2list import MDRecycleView
 from kivy.metrics import dp, sp
-from .buttonrow import Buttons
 from .icontextbutton import IconTextMenuItem
 from .modalpopup import ModalPopup
 from ..control.spsong import SPSong
@@ -33,48 +31,35 @@ from ..network.messages import Search
 Builder.load_string("""
 <SearchScreen>:
     rv: rv
-    buttons: buttons
-    sendMessage: app.sendMessage
     BoxLayout:
         orientation: 'vertical'
-        padding: '5dp'
         spacing: '5dp'
         TextInput:
             size_hint_y: None
             height: self.minimum_height
             multiline: False
             on_text_validate: root.do_search(self.text)
-        SPRecycleView:
+        MDRecycleView:
             id: rv
-            edit_action: root.bt_edit
-            delete_action: root.bt_delete
-        Buttons:
-            id: buttons
-            button1_action: root.bt_new
-            button2_action: root.bt_songs
-            button3_action: root.bt_add
+            primary_action: root.primary_action
+            long_press_action: root.long_press_action
 
 <SongScreen>:
     rv: rv
-    buttons: buttons
-    sendMessage: app.sendMessage
     BoxLayout:
         orientation: 'vertical'
-        padding: '5dp'
-        spacing: '5dp'
-        SPRecycleView:
+        MDRecycleView:
             id: rv
-            edit_action: root.bt_edit
-            delete_action: root.bt_delete
-        Buttons:
-            id: buttons
-            button1_action: root.bt_new
-            button2_action: root.bt_search
-            button3_action: root.bt_add
+            primary_action: root.primary_action
+            long_press_action: root.long_press_action
+    MDFloatingActionButton:
+        icon: 'plus'
+        size: dp(40), dp(40)
+        pos: root.x + root.width - dp(56), root.y + dp(16)
+        on_release: root.do_new()
 
 <SetScreen>:
     rv: rv
-    sendMessage: app.sendMessage
     BoxLayout:
         orientation: 'vertical'
         MDRecycleView:
@@ -110,67 +95,71 @@ class ListScreen(Screen):
 class SearchScreen(ListScreen):
     def _finish_init(self, dt):
         app = App.get_running_app()
-        self.rv.data = [{'viewclass': 'Label',
-                         'text': 'No search results yet',
-                         'font_size': app.ui_fs_main,
-                         'height': sp(50)}]
-        self.buttons.button1.text = iconfont('new', app.ui_fs_button) + ' New'
-        self.buttons.button2.text = iconfont('songs', app.ui_fs_button) + ' Songs'
-        self.buttons.button3.text = iconfont('listadd', app.ui_fs_button) + ' Add'
+        self.rv.data = [{'viewclass': 'MDLabel',
+                         'text': 'No search results yet!',
+                         'font_style': 'Headline',
+                         'theme_text_color': 'Primary',
+                         'secondary_theme_text_color': 'Primary',
+                         'height': sp(60)}]
 
     @defer.inlineCallbacks
     def do_search(self, searchTerm):
+        self.dismiss_all()
         app = App.get_running_app()
         searchList = yield app.client.search(searchTerm)
         data = []
         for i, item in enumerate(searchList):
             viewclass = 'ListItem'
             h = app.ui_fs_main*1.5 + dp(10)
-            data.append({'titletext': item['name'],
-                         'expand_angle': 0, 'button_opacity': 0,
-                         'viewclass': viewclass, 'height': h,
-                         'rv': self.rv, 'relpath': item['relpath']})
+            data.append({'title_text': item['name'],
+                         'viewclass': 'BasicItem',
+                         'relpath': item['relpath']})
         self.rv.data = data
 
-    def bt_edit(self, relpath):
+    def do_edit(self, relpath):
+        self.dismiss_all()
         app = App.get_running_app()
         app.client.change_own_item('song', relpath)
         app.base.to_screen('editsong')
 
-    def bt_delete(self, relpath):
+    def do_copy(self, relpath):
+        self.dismiss_all()
+        print('Song copy not yet implemented')
+
+    @defer.inlineCallbacks
+    def do_delete(self, relpath):
+        self.dismiss_all()
         app = App.get_running_app()
         songObject = yield app.client.get_item('song', relpath)
         if songObject != None:
-            message = ("Are you sure you want to delete '{0}'?".
-                       format(songObject.filepath))
-            popup = ModalPopup(message=message,
-                               lefttext=iconfont('delete') + ' Delete',
-                               leftcolor=(0.8, 0, 0, 1),
-                               righttext=iconfont('cancel') + ' Cancel')
-            popup.bind(on_left_action=partial(self._do_delete_song,
-                                              'song',
-                                              songObject.filepath))
-            popup.open()
+            title = "Delete permanently?"
+            message = ("You are about to delete '{0}'. This cannot be undone."
+                       .format(songObject.filepath))
+            content = MDLabel(font_style='Body1',
+                              theme_text_color='Secondary',
+                              text=message,
+                              size_hint_y=None,
+                              valign='top')
+            content.bind(texture_size=content.setter('size'))
+            self.dialog = MDDialog(title=title,
+                                   content=content,
+                                   size_hint=(.8, .6),
+                                   auto_dismiss=False)
+            self.dialog.add_icontext_button("delete", "delete",
+                    action=lambda x: self._do_delete_song('song', relpath))
+            self.dialog.add_icontext_button("cancel", "close-circle",
+                    action=lambda x: self.dialog.dismiss())
+            self.dialog.open()
         else:
-            message = ("Error reading from '{0}'."
-                       .format(relpath))
-            popup = ModalPopup(message=message,
-                               righttext=iconfont('ok') + ' OK')
-            popup.open()
+            self.error_dialog(relpath)
 
-    def _do_delete_song(self, itemtype, filepath, instance):
-        self.sendMessage(DeleteEditItem, itemtype=itemtype, relpath=filepath)
-
-    def bt_new(self):
+    def _do_delete_song(self, itemtype, filepath):
+        self.dismiss_all()
         app = App.get_running_app()
-        app.client.change_own_item('song', '')
-        app.base.to_screen('editsong')
+        app.client.delete_item(itemtype=itemtype, relpath=filepath)
 
-    def bt_songs(self):
-        app = App.get_running_app()
-        app.base.to_screen('songs')
-
-    def bt_add(self):
+    def do_add(self):
+        self.dismiss_all()
         app = App.get_running_app()
         relpath = self.rv.selection
         if not relpath:  # No valid selection
@@ -182,17 +171,75 @@ class SearchScreen(ListScreen):
             if app.client.ownSet:
                 app.client.add_item_to_own_set('song', relpath)
 
+    @defer.inlineCallbacks
+    def primary_action(self, item_data):
+        self.dismiss_all()
+        app = App.get_running_app()
+        relpath = item_data.get('relpath')
+        if relpath:
+            songObject = yield app.client.get_item('song', relpath)
+            if songObject != None:
+                content = MDLabel(font_style='Body1',
+                                  theme_text_color='Secondary',
+                                  text=songObject.words,
+                                  size_hint_y=None,
+                                  valign='top')
+                content.bind(texture_size=content.setter('size'))
+                self.dialog = MDDialog(title=songObject.title,
+                                       content=content,
+                                       size_hint=(.8, .6),
+                                       auto_dismiss=True)
+                self.dialog.add_icontext_button("edit", "pencil",
+                        action=lambda x: self.do_edit(relpath))
+                self.dialog.add_icontext_button("add", "playlist-plus",
+                        action=lambda x: self.do_add(relpath))
+                self.dialog.open()
+            else:
+                self.error_dialog(relpath)
+
+    def long_press_action(self, item_data, caller):
+        self.dismiss_all()
+        app = App.get_running_app()
+        relpath = item_data.get('relpath')
+        if relpath:
+            self.menu = MDDropdownMenu(items=[{'viewclass': 'IconTextMenuItem',
+                                               'icon': 'delete',
+                                               'text': 'Delete Song',
+                                               'on_release': lambda: self.do_delete(relpath)},
+                                              {'viewclass': 'IconTextMenuItem',
+                                               'icon': 'content-copy',
+                                               'text': 'Copy Song',
+                                               'on_release': lambda: self.do_copy(relpath)},],
+                                       width_mult=3
+                                      )
+            self.menu.open(caller)
+
+    def error_dialog(self, relpath):
+        self.dismiss_all()
+        content = MDLabel(font_style='Body1',
+                          theme_text_color='Secondary',
+                          text=u"Song at '{}' not found".format(relpath),
+                          size_hint_y=None,
+                          valign='top')
+        content.bind(texture_size=content.setter('size'))
+        self.dialog = MDDialog(title=u"Problem loading song",
+                               content=content,
+                               size_hint=(.8, .4),
+                               auto_dismiss=True)
+        self.dialog.add_action_button("OK",
+                action=lambda x: self.dialog.dismiss())
+        self.dialog.open()
+
 
 class SongScreen(ListScreen):
     def _finish_init(self, dt):
         app = App.get_running_app()
-        self.rv.data = [{'viewclass': 'Label',
+        self.rv.data = [{'viewclass': 'MDLabel',
                          'text': 'Please wait, still loading songs!',
-                         'font_size': app.ui_fs_main,
-                         'height': sp(50)}]
-        self.buttons.button1.text = iconfont('new', app.ui_fs_button) + ' New'
-        self.buttons.button2.text = iconfont('search', app.ui_fs_button) + ' Search'
-        self.buttons.button3.text = iconfont('listadd', app.ui_fs_button) + ' Add'
+                         'font_style': 'Headline',
+                         'theme_text_color': 'Primary',
+                         'secondary_theme_text_color': 'Primary',
+                         'height': sp(60)}]
         signal('songList').connect(self.update_songs)
         Clock.schedule_once(self._get_details, 1)
 
@@ -204,87 +251,79 @@ class SongScreen(ListScreen):
                 app = App.get_running_app()
                 item = yield app.client.get_item('song', e['relpath'])
                 if item == None:
-                    e['subtitletext'] = 'Error loading'
+                    e['subtitle_text'] = 'Error loading'
                 else:
                     subtitle = []
                     for t in (item.author, item.aka, item.key_line):
                         if t:
                             subtitle.append(t)
                     subtitle = " | ".join(subtitle)
-                    text = item.words.split('\n')
-                    text = [t for t in text 
-                            if t != '' and not (t[0] == '[' and t[-1] == ']')]
-                    summary = text[0:4]
-                    if subtitle:
-                        viewclass = 'ListItem'
-                        h = app.ui_fs_main*1.5 + app.ui_fs_detail*1.5 + dp(10)
-                    else:
-                        viewclass = 'ListItem'
-                        h = app.ui_fs_main*1.5 + dp(10)
-                    e['subtitletext'] = subtitle
-                    e['summarytext'] = summary
-                    e['viewclass'] = viewclass
-                    e['height'] = h
+                    e['subtitle_text'] = subtitle
+                    e['viewclass'] = 'BasicItem'
         Clock.schedule_once(self._get_details, 1)
-
 
     def update_songs(self, sender=None):
         app = App.get_running_app()
         songList = app.client.songList
         data = []
         for i, item in enumerate(songList):
-            viewclass = 'ListItem'
-            h = app.ui_fs_main*1.5 + dp(10)
-            data.append({'titletext': item['name'],
-                         'expand_angle': 0, 'button_opacity': 0,
-                         'viewclass': viewclass, 'height': h,
-                         'rv': self.rv, 'relpath': item['relpath'],
+            data.append({'title_text': item['name'],
+                         'viewclass': 'BasicItem',
+                         'relpath': item['relpath'],
                          'mtime': item['mtime']})
         self.rv.data = data
 
-    def bt_edit(self, relpath):
+    def do_edit(self, relpath):
+        self.dismiss_all()
         app = App.get_running_app()
         app.client.change_own_item('song', relpath)
         app.base.to_screen('editsong')
 
+    def do_copy(self, relpath):
+        self.dismiss_all()
+        print('Song copy not yet implemented')
+
     @defer.inlineCallbacks
-    def bt_delete(self, relpath):
+    def do_delete(self, relpath):
+        self.dismiss_all()
         app = App.get_running_app()
         songObject = yield app.client.get_item('song', relpath)
         if songObject != None:
-            message = ("Are you sure you want to delete '{0}'?".
-                       format(songObject.filepath))
-            popup = ModalPopup(message=message,
-                               lefttext=iconfont('delete') + ' Delete',
-                               leftcolor=(0.8, 0, 0, 1),
-                               righttext=iconfont('cancel') + ' Cancel')
-            popup.bind(on_left_action=partial(self._do_delete_song,
-                                              'song',
-                                              songObject.filepath))
-            popup.open()
+            title = "Delete permanently?"
+            message = ("You are about to delete '{0}'. This cannot be undone."
+                       .format(songObject.filepath))
+            content = MDLabel(font_style='Body1',
+                              theme_text_color='Secondary',
+                              text=message,
+                              size_hint_y=None,
+                              valign='top')
+            content.bind(texture_size=content.setter('size'))
+            self.dialog = MDDialog(title=title,
+                                   content=content,
+                                   size_hint=(.8, .6),
+                                   auto_dismiss=False)
+            self.dialog.add_icontext_button("delete", "delete",
+                    action=lambda x: self._do_delete_song('song', relpath))
+            self.dialog.add_icontext_button("cancel", "close-circle",
+                    action=lambda x: self.dialog.dismiss())
+            self.dialog.open()
         else:
-            message = ("Error reading from '{0}'."
-                       .format(relpath))
-            popup = ModalPopup(message=message,
-                               righttext=iconfont('ok') + ' OK')
-            popup.open()
+            self.error_dialog(relpath)
 
-    def _do_delete_song(self, itemtype, filepath, instance):
+    def _do_delete_song(self, itemtype, filepath):
+        self.dismiss_all()
         app = App.get_running_app()
         app.client.delete_item(itemtype=itemtype, relpath=filepath)
 
-    def bt_new(self):
+    def do_new(self):
+        self.dismiss_all()
         app = App.get_running_app()
         app.client.change_own_item('song', '')
         app.base.to_screen('editsong')
 
-    def bt_search(self):
+    def do_add(self, relpath):
+        self.dismiss_all()
         app = App.get_running_app()
-        app.base.to_screen('search')
-
-    def bt_add(self):
-        app = App.get_running_app()
-        relpath = self.rv.selection
         if not relpath:  # No valid selection
             return
         if app.base.presenting:  # Most recently presenting a song
@@ -293,6 +332,65 @@ class SongScreen(ListScreen):
         else:  # Most recently editing a set
             if app.client.ownSet:
                 app.client.add_item_to_own_set('song', relpath)
+
+    @defer.inlineCallbacks
+    def primary_action(self, item_data):
+        self.dismiss_all()
+        app = App.get_running_app()
+        relpath = item_data.get('relpath')
+        if relpath:
+            songObject = yield app.client.get_item('song', relpath)
+            if songObject != None:
+                content = MDLabel(font_style='Body1',
+                                  theme_text_color='Secondary',
+                                  text=songObject.words,
+                                  size_hint_y=None,
+                                  valign='top')
+                content.bind(texture_size=content.setter('size'))
+                self.dialog = MDDialog(title=songObject.title,
+                                       content=content,
+                                       size_hint=(.8, .6),
+                                       auto_dismiss=True)
+                self.dialog.add_icontext_button("edit", "pencil",
+                        action=lambda x: self.do_edit(relpath))
+                self.dialog.add_icontext_button("add", "playlist-plus",
+                        action=lambda x: self.do_add(relpath))
+                self.dialog.open()
+            else:
+                self.error_dialog(relpath)
+
+    def long_press_action(self, item_data, caller):
+        self.dismiss_all()
+        app = App.get_running_app()
+        relpath = item_data.get('relpath')
+        if relpath:
+            self.menu = MDDropdownMenu(items=[{'viewclass': 'IconTextMenuItem',
+                                               'icon': 'delete',
+                                               'text': 'Delete Song',
+                                               'on_release': lambda: self.do_delete(relpath)},
+                                              {'viewclass': 'IconTextMenuItem',
+                                               'icon': 'content-copy',
+                                               'text': 'Copy Song',
+                                               'on_release': lambda: self.do_copy(relpath)},],
+                                       width_mult=3
+                                      )
+            self.menu.open(caller)
+
+    def error_dialog(self, relpath):
+        self.dismiss_all()
+        content = MDLabel(font_style='Body1',
+                          theme_text_color='Secondary',
+                          text=u"Song at '{}' not found".format(relpath),
+                          size_hint_y=None,
+                          valign='top')
+        content.bind(texture_size=content.setter('size'))
+        self.dialog = MDDialog(title=u"Problem loading song",
+                               content=content,
+                               size_hint=(.8, .4),
+                               auto_dismiss=True)
+        self.dialog.add_action_button("OK",
+                action=lambda x: self.dialog.dismiss())
+        self.dialog.open()
 
 
 class SetScreen(ListScreen):
@@ -332,7 +430,6 @@ class SetScreen(ListScreen):
         setList = app.client.setList
         data = []
         for i, item in enumerate(setList):
-            h = app.ui_fs_main*1.5 + dp(10)
             data.append({'title_text': item['name'],
                          'viewclass': 'CountItem',
                          'relpath': item['relpath']})
@@ -346,6 +443,7 @@ class SetScreen(ListScreen):
 
     def do_copy(self, relpath):
         self.dismiss_all()
+        print('Set copy not yet implemented')
 
     @defer.inlineCallbacks
     def do_delete(self, relpath):
@@ -354,13 +452,14 @@ class SetScreen(ListScreen):
         setObject = yield app.client.get_set(relpath)
         if setObject != None:
             title = "Delete permanently?"
-            message = ("You are about to delete '{0}'. This cannot be undone"
+            message = ("You are about to delete '{0}'. This cannot be undone."
                        .format(setObject.filepath))
             content = MDLabel(font_style='Body1',
                               theme_text_color='Secondary',
                               text=message,
+                              size_hint_y=None,
                               valign='top')
-            content.bind(size=content.setter('text_size'))
+            content.bind(texture_size=content.setter('size'))
             self.dialog = MDDialog(title=title,
                                    content=content,
                                    size_hint=(.8, .6),
@@ -371,11 +470,7 @@ class SetScreen(ListScreen):
                     action=lambda x: self.dialog.dismiss())
             self.dialog.open()
         else:
-            message = ("Error reading from '{0}'."
-                       .format(relpath))
-            popup = ModalPopup(message=message,
-                               righttext=iconfont('ok') + ' OK')
-            popup.open()
+            self.error_dialog(relpath)
 
     def _do_delete_set(self, filepath):
         self.dismiss_all()
@@ -416,8 +511,9 @@ class SetScreen(ListScreen):
                 content = MDLabel(font_style='Body1',
                                   theme_text_color='Secondary',
                                   text=song_names,
+                                  size_hint_y=None,
                                   valign='top')
-                content.bind(size=content.setter('text_size'))
+                content.bind(texture_size=content.setter('size'))
                 self.dialog = MDDialog(title=setObject.name,
                                        content=content,
                                        size_hint=(.8, .6),
@@ -452,8 +548,9 @@ class SetScreen(ListScreen):
         content = MDLabel(font_style='Body1',
                           theme_text_color='Secondary',
                           text=u"Set at '{}' not found".format(relpath),
+                          size_hint_y=None,
                           valign='top')
-        content.bind(size=content.setter('text_size'))
+        content.bind(texture_size=content.setter('size'))
         self.dialog = MDDialog(title=u"Problem loading set",
                                content=content,
                                size_hint=(.8, .4),
