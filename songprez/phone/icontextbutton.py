@@ -5,6 +5,7 @@ from kivy.properties import StringProperty, BoundedNumericProperty
 from kivymd.button import BaseRaisedButton, BasePressedButton
 from kivymd.ripplebehavior import RectangularRippleBehavior
 from kivymd.elevationbehavior import RectangularElevationBehavior
+from kivy.uix.recycleview.views import RecycleDataViewBehavior
 
 Builder.load_string('''
 #:import md_icons kivymd.icon_definitions.md_icons
@@ -27,7 +28,8 @@ Builder.load_string('''
     BoxLayout:
         id: content
         size_hint_x: None
-        width: icon.width + text.width
+        width: icon.width + text.width + dp(8)
+        spacing: dp(8)
         MDLabel:
             id: icon
             font_style: 'Icon'
@@ -54,6 +56,11 @@ Builder.load_string('''
             valign: 'middle'
             halign: 'left'
             opposite_colors: root.opposite_colors
+<IconTextMenuItem>:
+    canvas.before:
+        Clear
+    -md_bg_color: 0, 0, 0, 0
+    -width: self.content.width
 ''')
 
 class IconTextButton(RectangularRippleBehavior, BaseRaisedButton,
@@ -66,3 +73,7 @@ class IconTextButton(RectangularRippleBehavior, BaseRaisedButton,
 
     def on_text(self, instance, value):
         self._capitalized_text = value.upper()
+
+
+class IconTextMenuItem(RecycleDataViewBehavior, IconTextButton):
+    pass

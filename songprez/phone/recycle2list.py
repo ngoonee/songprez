@@ -2,6 +2,7 @@
 import kivy
 kivy.require('1.9.1')
 from kivy.app import App
+from kivy.clock import Clock
 from kivy.lang import Builder
 from kivy.uix.stencilview import StencilView
 from kivy.uix.floatlayout import FloatLayout
@@ -16,12 +17,15 @@ from kivymd.theming import ThemableBehavior
 from kivymd.list import TwoLineListItem
 from kivymd.label import MDLabel
 from kivymd.backgroundcolorbehavior import SpecificBackgroundColorBehavior
+from functools import partial
 
 Builder.load_string('''
 #:import md_icons kivymd.icon_definitions.md_icons
 <MDRecycleView>:
+    layout: layout
     key_viewclass: 'viewclass'
     SelectableRecycleBoxLayout:
+        id: layout
         default_size: None, None
         default_size_hint: 1, None
         size_hint_y: None
@@ -91,12 +95,16 @@ Builder.load_string('''
 
 class MDRecycleView(ThemableBehavior, RecycleView):
     selection = StringProperty([])
+    select_action = ObjectProperty(None)
+    long_press_action = ObjectProperty(None)
 
 
 class SelectableRecycleBoxLayout(LayoutSelectionBehavior,
                                  RecycleBoxLayout):
     _min_list_height = dp(16)
     _list_vertical_padding = dp(8)
+    multiselect = False
+    touch_multiselect = False
 
 
 class SelectableItem(RecycleDataViewBehavior):
@@ -104,21 +112,40 @@ class SelectableItem(RecycleDataViewBehavior):
     index = None
     selected = BooleanProperty(False)
     selectable = BooleanProperty(True)
+    rv = ObjectProperty(None)
 
     def refresh_view_attrs(self, rv, index, data):
-        ''' Catch and handle the view changes '''
         self.index = index
+        self.rv = rv
         return super(SelectableItem, self).refresh_view_attrs(
             rv, index, data)
 
     def on_touch_down(self, touch):
-        ''' Add selection on touch down '''
         if self.collide_point(*touch.pos) and self.selectable:
+            self.create_clock(touch)
             return self.parent.select_with_touch(self.index, touch)
 
     def apply_selection(self, rv, index, is_selected):
         ''' Respond to the selection of items in the view. '''
         self.selected = is_selected
+
+    def on_touch_up(self, touch):
+        if self.collide_point(*touch.pos) and self.selectable:
+            self.delete_clock(touch)
+            if self.rv.primary_action:
+                self.rv.primary_action(self.rv.data[self.index])
+
+    def create_clock(self, touch):
+        callback = partial(self.long_press, touch)
+        Clock.schedule_once(callback, 0.5)
+        touch.ud['event'] = callback
+
+    def delete_clock(self, touch):
+        Clock.unschedule(touch.ud['event'])
+
+    def long_press(self, touch, dt):
+        if self.rv.long_press_action:
+            self.rv.long_press_action(self.rv.data[self.index], self)
 
 
 class BasicItem(SelectableItem, ThemableBehavior, FloatLayout,

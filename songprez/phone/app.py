@@ -44,6 +44,43 @@ MDLabel._font_styles = DictProperty({'Body1': ['NotoSans', False, 14, 13],
                                  'Button': ['NotoSans', True, 14, None],
                                  'Icon': ['Icons', False, 24, None]})
 
+# Monkey patch to allow adding icontextbutton
+from kivymd.dialog import MDDialog
+from .icontextbutton import IconTextButton
+def add_icontext_button(self, text, icon, action=None):
+    button = IconTextButton(text=text,
+                            icon=icon,
+                            size_hint=(None, None))
+    if action:
+        button.bind(on_release=action)
+    self._action_buttons.append(button)
+def _update_action_buttons(self, *args):
+    self._action_area.clear_widgets()
+    for btn in self._action_buttons:
+        if isinstance(btn, IconTextButton):
+            if btn.text == 'delete':
+                btn.md_bg_color = (1., 0., 0., 1.)
+            elif btn == self._action_buttons[-1]:
+                btn.md_bg_color = self.theme_cls.accent_color
+            else:
+                btn.md_bg_color = self.theme_cls.primary_color
+        self._action_area.add_widget(btn)
+MDDialog.add_icontext_button = add_icontext_button
+MDDialog._update_action_buttons = _update_action_buttons
+
+# Monkey patch to allow touch_multiselect/multiselect from
+# CompoundSelectionBehavior to work with RecycleView's
+# LayoutSelectionBehavior
+from kivy.uix.recycleview.layout import LayoutSelectionBehavior
+def select_node(self, node):
+    super(LayoutSelectionBehavior, self).select_node(node)
+def on_selected_nodes(self, grid, nodes):
+    for node in nodes:
+        view = self.recycleview.view_adapter.get_visible_view(node)
+        if view is not None:
+            self.apply_selection(node, view, True)
+LayoutSelectionBehavior.select_node = select_node
+LayoutSelectionBehavior.on_selected_nodes = on_selected_nodes
 
 class SongPrezApp(App):
     base = ObjectProperty(None)
