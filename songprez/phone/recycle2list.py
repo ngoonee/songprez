@@ -59,7 +59,7 @@ Builder.load_string('''
     title: title
     subtitle: subtitle
     #height: dp(60) if self.subtitle_text else dp(40)
-    canvas:
+    canvas.before:
         Color:
             rgba: self.theme_cls.divider_color
         Line:
