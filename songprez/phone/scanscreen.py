@@ -8,8 +8,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.screenmanager import Screen
 from kivy.uix.carousel import Carousel
-#from kivy.garden.recycleview import RecycleView
-from .recycle2list import MDRecycleView
+from .recyclelist import SPRecycleView
 from kivy.properties import ListProperty, StringProperty
 from .fontutil import iconfont
 from kivymd.label import MDLabel
@@ -40,11 +39,11 @@ Builder.load_string("""
         orientation: 'vertical'
         Instructions:
             text: 'Select the SongPrez host you want to connect to.'
-        MDRecycleView:
+        SPRecycleView:
             id: rv
         AnchorLayout:
             anchor_x: 'right'
-            padding: dp(16), dp(8)
+            padding: dp(8)
             size_hint_y: None
             height: connect.height + dp(16)
             IconTextButton:

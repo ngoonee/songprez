@@ -20,7 +20,7 @@ from kivymd.label import MDLabel
 from kivymd.menu import MDDropdownMenu
 from kivymd.button import MDFloatingActionButton
 from .fontutil import iconfont
-from .recycle2list import MDRecycleView
+from .recyclelist import SPRecycleView
 from kivy.metrics import dp, sp
 from .icontextbutton import IconTextMenuItem
 from .modalpopup import ModalPopup
@@ -39,7 +39,7 @@ Builder.load_string("""
             height: self.minimum_height
             multiline: False
             on_text_validate: root.do_search(self.text)
-        MDRecycleView:
+        SPRecycleView:
             id: rv
             primary_action: root.primary_action
             long_press_action: root.long_press_action
@@ -48,7 +48,7 @@ Builder.load_string("""
     rv: rv
     BoxLayout:
         orientation: 'vertical'
-        MDRecycleView:
+        SPRecycleView:
             id: rv
             primary_action: root.primary_action
             long_press_action: root.long_press_action
@@ -62,7 +62,7 @@ Builder.load_string("""
     rv: rv
     BoxLayout:
         orientation: 'vertical'
-        MDRecycleView:
+        SPRecycleView:
             id: rv
             primary_action: root.primary_action
             long_press_action: root.long_press_action

@@ -1,437 +1,193 @@
 #!/usr/bin/env python
 import kivy
-# kivy.require('1.9.0')
+kivy.require('1.9.1')
 from kivy.app import App
-from kivy.lang import Builder
 from kivy.clock import Clock
-from kivy.uix.label import Label
+from kivy.lang import Builder
 from kivy.uix.stencilview import StencilView
 from kivy.uix.floatlayout import FloatLayout
-from kivy.uix.selectableview import SelectableView
 from kivy.properties import StringProperty, ObjectProperty, ListProperty
 from kivy.properties import NumericProperty, BooleanProperty, DictProperty
-from .fontutil import iconfont
-from kivy.garden.recycleview import RecycleView, RecycleViewMixin
 from kivy.metrics import dp
-from kivy.animation import Animation
+from kivy.uix.recycleview import RecycleView
+from kivy.uix.recycleview.views import RecycleDataViewBehavior
+from kivy.uix.recycleboxlayout import RecycleBoxLayout
+from kivy.uix.recycleview.layout import LayoutSelectionBehavior
+from kivymd.theming import ThemableBehavior
+from kivymd.list import TwoLineListItem
+from kivymd.label import MDLabel
+from kivymd.backgroundcolorbehavior import SpecificBackgroundColorBehavior
+from functools import partial
 
-Builder.load_string("""
+Builder.load_string('''
+#:import md_icons kivymd.icon_definitions.md_icons
 <SPRecycleView>:
-    canvas.before:
-        Color:
-            rgba: (.125, .125, .125, 1)
-        RoundedRectangle:
-            size: self.size
-            pos: self.pos
-            radius: dp(10),
+    layout: layout
     key_viewclass: 'viewclass'
-    key_size: 'height'
+    SelectableRecycleBoxLayout:
+        id: layout
+        default_size: None, None
+        default_size_hint: 1, None
+        size_hint_y: None
+        key_size: 's'
+        height: self.minimum_height if self.minimum_height else self._min_list_height
+        padding: 0, self._list_vertical_padding
+        orientation: 'vertical'
 
-<BlankListItem>:
-    button_fs: app.ui_fs_button
-    buttonsize: app.buttonsize
-    move_up: move_up
-    move_down: move_down
-    scripture: scripture
-    remove_item: remove_item
-    add_item: add_item
-    Label:
-        id: move_up
-        size_hint: None, None
-        color: 0.6, 0.6, 0.6, 1
-        size: root.buttonsize*1.5, root.buttonsize*1.5
-        font_size: root.button_fs*1.5
-        markup: True
-    Label:
-        id: move_down
-        color: 0.6, 0.6, 0.6, 1
-        size_hint: None, None
-        size: root.buttonsize*1.5, root.buttonsize*1.5
-        font_size: root.button_fs*1.5
-        markup: True
-    Label:
-        id: scripture
-        size_hint: None, None
-        size: root.buttonsize*1.5, root.buttonsize*1.5
-        font_size: root.button_fs*1.5
-        markup: True
-    Label:
-        id: remove_item
-        color: 0.6, 0.6, 0.6, 1
-        size_hint: None, None
-        size: root.buttonsize*1.5, root.buttonsize*1.5
-        font_size: root.button_fs*1.5
-        markup: True
-    Label:
-        id: add_item
-        size_hint: None, None
-        size: root.buttonsize*1.5, root.buttonsize*1.5
-        font_size: root.button_fs*1.5
-        markup: True
-
-
-<ListItem>:
-    title_fs: app.ui_fs_main
-    detail_fs: app.ui_fs_detail
-    button_fs: app.ui_fs_button
-    buttonsize: app.buttonsize
-
-    title: title
-    expand: expand
-    subtitle: subtitle
-    edit: edit
-    delete: delete
-    move_up: move_up
-    move_down: move_down
-    scripture: scripture
-    remove_item: remove_item
-    add_item: add_item
+<SelectableItem>:
     canvas.before:
         Color:
-            rgba: self.backcolor
-        RoundedRectangle:
-            size: self.size
-            pos: self.pos
-            radius: dp(10),
+            rgba: self.theme_cls.primary_color if self.selected else (1, 1, 1, 0)
+        Rectangle:
+            pos: self.x + self.width - dp(8), self.y
+            size: dp(8), self.height
+    theme_text_color: 'Primary'
+    secondary_theme_text_color: 'Primary'
+
+<SingleLine@MDLabel>:
+    size_hint: None, None
+    height: self.texture_size[1]
+    halign: 'left'
+    valign: 'middle'
+    shorten: True
+    shorten_from: 'right'
+    theme_text_color: root.parent.theme_text_color
+    x: root.parent.x + dp(16)
+    width: root.parent.x + root.parent.width - dp(16) - dp(48)
+
+<BasicItem>:
+    title: title
+    subtitle: subtitle
+    #height: dp(60) if self.subtitle_text else dp(40)
+    canvas.before:
         Color:
-            rgba: 0, 0, 0, 1
+            rgba: self.theme_cls.divider_color
         Line:
-            rounded_rectangle: [self.pos[0], self.pos[1], self.size[0], self.size[1], 5]
-    Label:
+            points: (root.x+dp(16), root.y+1, root.x+self.width-dp(16), root.y+1)
+    SingleLine:
         id: title
-        size_hint: None, None
-        halign: 'left'
-        text: root.titletext
-        shorten: True
-        shorten_from: 'right'
-        font_size: root.title_fs
-    Label:
-        id: expand
-        size_hint: None, None
-        size: root.buttonsize, root.buttonsize
-        font_size: root.button_fs
-        markup: True
-        canvas.before:
-            PushMatrix
-            Rotate:
-                angle: root.expand_angle
-                origin: self.center
-        canvas.after:
-            PopMatrix
-    Label:
-        id: edit
-        size_hint: None, None
-        size: root.buttonsize, root.buttonsize
-        font_size: root.button_fs
-        markup: True
-        opacity: root.button_opacity
-    Label:
-        id: delete
-        size_hint: None, None
-        size: root.buttonsize, root.buttonsize
-        font_size: root.button_fs
-        markup: True
-        opacity: root.button_opacity
-    Label:
+        text: root.title_text
+        font_style: 'Subhead'
+        y: root.y + (dp(31) if root.subtitle_text else dp(11))
+    SingleLine:
         id: subtitle
-        font_size: root.detail_fs
+        text: root.subtitle_text
+        font_style: 'Body1'
+        y: root.y + dp(10)
+
+<CountItem>:
+    num: num
+    MDLabel:
+        id: num
         size_hint: None, None
-        halign: 'left'
-        text: root.subtitletext
-        shorten: True
-        shorten_from: 'right'
-        markup: True
-    Label:
-        id: move_up
-        size_hint: None, None
-        size: root.buttonsize*1.5, root.buttonsize*1.5
-        font_size: root.button_fs*1.5
-        markup: True
-    Label:
-        id: move_down
-        size_hint: None, None
-        size: root.buttonsize*1.5, root.buttonsize*1.5
-        font_size: root.button_fs*1.5
-        markup: True
-    Label:
-        id: scripture
-        size_hint: None, None
-        size: root.buttonsize*1.5, root.buttonsize*1.5
-        font_size: root.button_fs*1.5
-        markup: True
-    Label:
-        id: remove_item
-        size_hint: None, None
-        size: root.buttonsize*1.5, root.buttonsize*1.5
-        font_size: root.button_fs*1.5
-        markup: True
-    Label:
-        id: add_item
-        size_hint: None, None
-        size: root.buttonsize*1.5, root.buttonsize*1.5
-        font_size: root.button_fs*1.5
-        markup: True
-""")
+        size: dp(24), dp(24)
+        font_style: 'Icon'
+        text: u"{}".format(md_icons[root.icon]) if root.icon else u""
+        theme_text_color: root.theme_text_color
+        x: root.x + root.width - dp(16) - dp(24)
+        y: root.y + (dp(18) if root.subtitle_text else dp(8))
+
+<DragItem>:
+    MDIconButton:
+        icon: 'reorder-horizontal'
+        x: root.x + root.width - dp(48)
+        y: root.y
+        height: root.height
+
+<ScanItem>:
+    ripple_alpha: 0
+    height: dp(60)
+    divider: 'Inset'
+''')
 
 
-class SPRecycleView(RecycleView):
-    edit_action = ObjectProperty(None)
-    delete_action = ObjectProperty(None)
-    selection = StringProperty('')
-    oldselection = StringProperty('')
-
-    def __init__(self, **kwargs):
-        super(SPRecycleView, self).__init__(**kwargs)
-
-    def _find_index_from_relpath(self, p):
-        index = next((i for (i, d) in enumerate(self.data)
-                      if d['relpath'] == p), None)
-        return index
-
-    def on_selection(self, instance, value):
-        if self.oldselection:
-            i = self._find_index_from_relpath(self.oldselection)
-            view = self.adapter.get_view(i)
-            view.deselect(manual=False)
-            self.oldselection = ''
-        if value:
-            #i = self._find_index_from_relpath(value))
-            #view = self.adapter.get_view(i)
-            self.oldselection = value
+class SPRecycleView(ThemableBehavior, RecycleView):
+    selection = StringProperty([])
+    select_action = ObjectProperty(None)
+    long_press_action = ObjectProperty(None)
 
 
-class BlankListItem(SelectableView, RecycleViewMixin, FloatLayout, StencilView):
-    def __init__(self, **kwargs):
-        super(BlankListItem, self).__init__(**kwargs)
-        self.move_up.text = iconfont('listmoveup')
-        self.move_down.text = iconfont('listmovedown')
-        self.scripture.text = iconfont('scripture')
-        self.remove_item.text = iconfont('listremove')
-        self.add_item.text = iconfont('listadd')
+class SelectableRecycleBoxLayout(LayoutSelectionBehavior,
+                                 RecycleBoxLayout):
+    _min_list_height = dp(16)
+    _list_vertical_padding = dp(8)
+    multiselect = False
+    touch_multiselect = False
 
-    def on_touch_down(self, touch):
-        if self.collide_point(*touch.pos):
-            if self.scripture.collide_point(*touch.pos):
-                self.rv.scripture_action(self.relpath)
-                return True
-            if self.add_item.collide_point(*touch.pos):
-                self.rv.add_item_action(self.relpath)
-                return True
-        return super(BlankListItem, self).on_touch_down(touch)
 
-    def refresh_view_layout(self, rv, index, pos, size, viewport):
-        last_y = pos[1] + size[1] - dp(5)
-        pos_y = last_y - 1.5*self.buttonsize
-        rightbar_x = pos[0] + size[0] - dp(10) - self.buttonsize
-        intra_x = (rightbar_x - 5*1.5*self.buttonsize)/6
-        self.move_up.pos = (int(intra_x), int(pos_y))
-        self.move_down.pos = (int(1.5*self.buttonsize + 2*intra_x), int(pos_y))
-        self.scripture.pos = (int(3*self.buttonsize + 3*intra_x), int(pos_y))
-        self.remove_item.pos = (int(4.5*self.buttonsize + 4*intra_x), int(pos_y))
-        self.add_item.pos = (int(6*self.buttonsize + 5*intra_x), int(pos_y))
-        super(BlankListItem, self).refresh_view_layout(rv, index, pos, size, viewport)
-
-class ListItem(SelectableView, RecycleViewMixin, FloatLayout, StencilView):
-    titletext = StringProperty('')
-    subtitletext = StringProperty('')
-    summarytext = ListProperty([])
+class SelectableItem(RecycleDataViewBehavior):
+    ''' Adds selection and focus behaviour to the view. '''
+    index = None
+    selected = BooleanProperty(False)
+    selectable = BooleanProperty(True)
     rv = ObjectProperty(None)
-    expand_angle = NumericProperty(0)
-    button_opacity = NumericProperty(0)
-    set_edit = BooleanProperty(False)
-    relpath = StringProperty('')
-    backcolor = ListProperty([0, 0, 0, 0])
-    _summary = ListProperty([])
 
-    def __init__(self, **kwargs):
-        super(ListItem, self).__init__(**kwargs)
-        self.expand.text = iconfont('expand')
-        self.edit.text = iconfont('edit')
-        self.delete.text = iconfont('delete')
-        for i in range(5):
-            self._summary.append(Label(font_size=self.detail_fs,
-                                      size_hint=(None, None),
-                                      halign='left',
-                                      shorten=True,
-                                      shorten_from='right',
-                                      markup=True))
-            self.add_widget(self._summary[i])
-        self.move_up.text = iconfont('listmoveup')
-        self.move_down.text = iconfont('listmovedown')
-        self.scripture.text = iconfont('scripture')
-        self.remove_item.text = iconfont('listremove')
-        self.add_item.text = iconfont('listadd')
-
-    def on_summarytext(self, instance, value):
-        for i in range(5):
-            self._summary[i].text = ''
-        for i, v in enumerate(value):
-            self._summary[i].text = v
+    def refresh_view_attrs(self, rv, index, data):
+        self.index = index
+        self.rv = rv
+        return super(SelectableItem, self).refresh_view_attrs(
+            rv, index, data)
 
     def on_touch_down(self, touch):
-        if self.collide_point(*touch.pos):
-            if self.is_selected:
-                if self.edit.collide_point(*touch.pos):
-                    self.rv.edit_action(self.relpath)
-                    return True
-                elif self.delete.collide_point(*touch.pos):
-                    self.rv.delete_action(self.relpath)
-                    return True
-                elif self.set_edit:
-                    if self.move_up.collide_point(*touch.pos):
-                        self.rv.move_up_action(self.relpath)
-                        return True
-                    if self.move_down.collide_point(*touch.pos):
-                        self.rv.move_down_action(self.relpath)
-                        return True
-                    if self.scripture.collide_point(*touch.pos):
-                        self.rv.scripture_action(self.relpath)
-                        return True
-                    if self.remove_item.collide_point(*touch.pos):
-                        self.rv.remove_item_action(self.relpath)
-                        return True
-                    if self.add_item.collide_point(*touch.pos):
-                        self.rv.add_item_action(self.relpath)
-                        return True
-                self.deselect()  # Fall-through, didn't hit anything
-            else:
-                self.select()  # Not currently selected, select it
-            return True
-        return super(ListItem, self).on_touch_down(touch)
+        if self.collide_point(*touch.pos) and self.selectable:
+            self.create_clock(touch)
+            return self.parent.select_with_touch(self.index, touch)
 
-    def update_height(self):
-        height = dp(5) + self.title_fs*1.5 + dp(5)
-        if self.subtitletext:
-            height += self.detail_fs*1.5
-        if self.is_selected:
-            count = [1 for w in self._summary if w.text != '']
-            height_diff = len(count)*self.detail_fs*1.5 + dp(5)
-            if height_diff < 2*self.buttonsize:
-                # Too few summary lines
-                height_diff = 2*self.buttonsize + dp(5)
-                if self.subtitletext:
-                    height_diff -= self.detail_fs*1.5
-            if self.set_edit:
-                height_diff += 1.5*self.buttonsize
-            height = int(height + height_diff)
-            angle = -90
-            opacity = 1
+    def apply_selection(self, rv, index, is_selected):
+        ''' Respond to the selection of items in the view. '''
+        self.selected = is_selected
+
+    def on_touch_up(self, touch):
+        if self.collide_point(*touch.pos) and self.selectable:
+            self.delete_clock(touch)
+            if self.rv.primary_action:
+                self.rv.primary_action(self.rv.data[self.index])
+
+    def create_clock(self, touch):
+        callback = partial(self.long_press, touch)
+        Clock.schedule_once(callback, 0.5)
+        touch.ud['event'] = callback
+
+    def delete_clock(self, touch):
+        Clock.unschedule(touch.ud['event'])
+
+    def long_press(self, touch, dt):
+        if self.rv.long_press_action:
+            self.rv.long_press_action(self.rv.data[self.index], self)
+
+
+class BasicItem(SelectableItem, ThemableBehavior, FloatLayout,
+                     StencilView
+                     ):
+    title_text = StringProperty('')
+    subtitle_text = StringProperty('')
+
+    def apply_selection(self, rv, index, is_selected):
+        super(BasicItem, self).apply_selection(rv, index, is_selected)
+        if is_selected:
+            rv.selection = rv.data[index].get('relpath', u'')
+
+
+class CountItem(BasicItem):
+    num_items = NumericProperty(0)
+    icon = StringProperty(u"")
+
+    def on_num_items(self, instance, value):
+        if value == 0:
+            self.icon = u""
+        elif value < 10:
+            self.icon = u"numeric-" + str(value) + u"-box"
         else:
-            height = int(height)
-            angle = 0
-            opacity = 0
-        anim = Animation(height=height, d=0.2)
-        anim &= Animation(expand_angle=angle, d=0.2)
-        anim &= Animation(button_opacity=opacity, d=0.2)
-        anim.start(self)
-
-    def select(self, *args):
-        self.rv.selection = self.relpath
-        self.is_selected = True
-
-    def deselect(self, manual=True):
-        if manual:  # Actually from a click
-            self.rv.selection = ''
-        self.is_selected = False
-
-    def on_is_selected(self, instance, value):
-        self.update_height()
-
-    def on_expand_angle(self, instance, value):
-        if not self.rv:
-            return
-        i = self.rv._find_index_from_relpath(self.relpath)
-        if i is not None and self.rv.data[i]['expand_angle'] != value:
-            self.rv.data[i]['expand_angle'] = value
-
-    def on_height(self, instance, value):
-        if not self.rv:
-            return
-        i = self.rv._find_index_from_relpath(self.relpath)
-        if self.rv and i is not None and self.rv.data[i]['height'] != value:
-            self.rv.data[i]['height'] = value
-            self.rv.refresh_views(data=True)
-
-    def on_relpath(self, instance, value):
-        if not self.rv:
-            return
-        i = self.rv._find_index_from_relpath(self.relpath)
-        if i is not None:
-            self.backcolor = [.25, .25, .25, 1] if i % 2 else [.125, .125, .125, 1]
+            self.icon = u"numeric-9-plus-box"
 
 
-    def refresh_view_layout(self, rv, index, pos, size, viewport):
-        '''
-        Efficiency here is paramount, this gets called a LOT.
-        
-        For now, what is important is the changes in pos and size. pos changes
-        often (and for many items at once) while scrolling, while size only
-        changes with resizing (not an issue on mobile) or animating height
-        changes (and then only one item at a time).
+class DragItem(BasicItem):
+    pass
 
-        In ascii art, here's how things look
-        ----------------------------------------------------------------------
-            title                                                  | expand
-                subtitle                                           |
-        --------------------------- base_y -----------------------------------
-                    summary[0]                                     | edit
-                    summary[1]                                     | delete
-                    ...                                            |
-                    summary[n]                                     |
-        ----------------------------------------------------------------------
-                                                                   ^
-                                                                   |
-                                                                rightbar_x
-        '''
-        base_y = pos[1] + size[1] - dp(5) - self.title_fs*1.5 - dp(5)
-        rightbar_x = pos[0] + size[0] - dp(10) - self.buttonsize
-        if self.subtitletext:
-            base_y -= self.detail_fs*1.5
-        if self.subtitletext:
-            expand_pos = (int(rightbar_x),
-                          int(base_y + self.detail_fs*1.5))
-        else:
-            expand_pos = (int(pos[0] + size[0] - dp(10) - self.buttonsize),
-                          int(base_y))
-        self.expand.pos = expand_pos
-        edit_pos = (int(rightbar_x), int(expand_pos[1] - self.buttonsize))
-        self.edit.pos = edit_pos
-        delete_pos = (int(rightbar_x), int(edit_pos[1] - self.buttonsize))
-        self.delete.pos = delete_pos
-        if self.subtitletext:
-            title_pos = (int(pos[0] + dp(10)), int(base_y + dp(5) + self.detail_fs*1.5))
-        else:
-            title_pos = (int(pos[0] + dp(10)), int(base_y + dp(5)))
-        self.title.pos = title_pos
-        subtitle_pos = (int(pos[0] + dp(20)), int(base_y + dp(5)))
-        self.subtitle.pos = subtitle_pos
-        summary_pos = (int(pos[0] + dp(30)), int(base_y))
-        for i in range(len(self.summarytext)):
-            summary_pos = (summary_pos[0], int(summary_pos[1] - self.detail_fs*1.5))
-            self._summary[i].pos = summary_pos
-        if tuple(size) != tuple(self.size):
-            title_size = (int(size[0] - dp(10) - dp(10) - self.buttonsize),
-                          int(self.title_fs * 1.5))
-            self.title.size = title_size
-            self.title.text_size = title_size
-            subtitle_size = (int(size[0] - dp(20) - dp(10) - self.buttonsize),
-                             int(self.title_fs * 1.5))
-            self.subtitle.size = subtitle_size
-            self.subtitle.text_size = subtitle_size
-            for i in range(len(self.summarytext)):
-                self._summary[i].size = subtitle_size
-                self._summary[i].text_size = subtitle_size
-        if len(self._summary):
-            last_y = summary_pos[1]
-        else:
-            last_y = base_y
-        if last_y > delete_pos[1]:
-            last_y = delete_pos[1]
-        pos_y = last_y - 1.5*self.buttonsize
-        intra_x = (rightbar_x - 5*1.5*self.buttonsize)/6
-        self.move_up.pos = (int(intra_x), int(pos_y))
-        self.move_down.pos = (int(1.5*self.buttonsize + 2*intra_x), int(pos_y))
-        self.scripture.pos = (int(3*self.buttonsize + 3*intra_x), int(pos_y))
-        self.remove_item.pos = (int(4.5*self.buttonsize + 4*intra_x), int(pos_y))
-        self.add_item.pos = (int(6*self.buttonsize + 5*intra_x), int(pos_y))
-        super(ListItem, self).refresh_view_layout(rv, index, pos, size, viewport)
+
+class ScanItem(SelectableItem, TwoLineListItem):
+    def apply_selection(self, rv, index, is_selected):
+        ''' Respond to the selection of items in the view. '''
+        super(ScanItem, self).apply_selection(rv, index, is_selected)
+        if is_selected:
+            rv.selection = rv.data[index]['secondary_text']

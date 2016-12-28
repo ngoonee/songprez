@@ -8,78 +8,114 @@ from kivy.uix.scrollview import ScrollView
 from kivy.uix.screenmanager import Screen
 from kivy.properties import ListProperty, ObjectProperty
 from kivy.metrics import dp, sp
+from kivymd.textfields import SingleLineTextField
+from kivymd.button import MDIconButton
 from copy import deepcopy
 from blinker import signal
 from twisted.internet import defer
 from ..control.spset import SPSet
 from .fontutil import iconfont
-from .buttonrow import Buttons
 from .modalpopup import ModalPopup
-from .recyclelist import SPRecycleView, ListItem, BlankListItem
+from .recyclelist import SPRecycleView
 
 Builder.load_string("""
-#:set left_width '75sp'
-
-<LeftLabel@Label>:
-    size_hint_x: None
-    width: left_width
-    text_size: self.size
-    align: 'left'
-    font_size: app.ui_fs_detail
-
-<RightTextInput@TextInput>:
-    multiline: False
+<Divider@Widget>:
     size_hint_y: None
-    height: self.minimum_height
-    font_size: app.ui_fs_detail
+    height: dp(1)
+    canvas.before:
+        Color:
+            rgba: app.theme_cls.divider_color
+        Rectangle:
+            size: self.width - dp(16), self.height
+            pos: self.x + dp(8), self.y
 
 <EditSetScreen>:
     setname: setname
     filepath: filepath
     rv: rv
-    buttons: buttons
     sendMessage: app.sendMessage
     BoxLayout:
         orientation: 'vertical'
-        padding: '5dp'
-        spacing: '5dp'
-        canvas.before:
-            Color:
-                rgba: (.125, .125, .125, 1)
-            RoundedRectangle:
-                size: self.size
-                pos: self.pos
-                radius: dp(10),
-        GridLayout:
-            id: top
-            cols: 2
-            spacing: '5dp'
+        BoxLayout:
+            orientation: 'vertical'
+            spacing: dp(10)
+            padding: dp(16), dp(8), dp(16), dp(16)
             size_hint_y: None
             height: self.minimum_height
-            LeftLabel:
-                text: 'Name'
-            RightTextInput:
+            SingleLineTextField:
                 id: setname
-            LeftLabel:
-                text: 'Saved As'
-            RightTextInput:
+                hint_text: 'Name'
+            SingleLineTextField:
                 id: filepath
+                hint_text: 'Saved as'
+                message: "File path is relative to main SongPrez folder"
+                message_mode: "on_focus"
+        BoxLayout:
+            orientation: 'horizontal'
+            SPRecycleView:
+                canvas.before:
+                    Color:
+                        rgba: self.theme_cls.divider_color
+                    Line:
+                        points: (self.x+1, self.y+self.height, self.x+self.width, self.y+self.height, self.x+self.width, self.y+1, self.x+1, self.y+1)
+                id: rv
+            AnchorLayout:
+                anchor_y: 'top'
+                size_hint_x: None
+                width: dp(48)
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: self.minimum_height
+                    MDIconButton:
+                        icon: 'playlist-plus'
+                        disabled: True
+                        md_bg_color: (0, 0, 0, 0)
+                    MDIconButton:
+                        icon: 'magnify'
+                    MDIconButton:
+                        icon: 'file-document'
+                    MDIconButton:
+                        icon: 'bible'
+                    Divider
+                    MDIconButton:
+                        icon: 'playlist-remove'
+                    Divider
+                    MDIconButton:
+                        icon: 'arrow-up-bold'
+                    MDIconButton:
+                        icon: 'arrow-down-bold'
+        AnchorLayout:
+            anchor_x: 'right'
+            padding: dp(8)
+            size_hint_y: None
+            height: buttons.height + dp(16)
+            BoxLayout:
+                id: buttons
+                orientation: 'horizontal'
+                size_hint: None, None
+                width: self.minimum_width
                 height: self.minimum_height
-                readonly: True
-        SPRecycleView:
-            id: rv
-            edit_action: root.bt_edit
-            delete_action: root.bt_delete
-            move_up_action: root.bt_move_up
-            move_down_action: root.bt_move_down
-            scripture_action: root.bt_scripture
-            remove_item_action: root.bt_remove_item
-            add_item_action: root.bt_add_item
-        Buttons:
-            id: buttons
-            button1_action: root.bt_copy
-            button2_action: root.bt_saveas
-            button3_action: root.bt_save
+                spacing: dp(8)
+                IconTextButton:
+                    text: "COPY"
+                    icon: "content-copy"
+                    background_palette: 'Primary'
+                    theme_text_color: 'Custom'
+                    text_color: self.specific_text_color
+                IconTextButton:
+                    text: "SAVE AS"
+                    icon: "at"
+                    background_palette: 'Primary'
+                    theme_text_color: 'Custom'
+                    text_color: self.specific_text_color
+                IconTextButton:
+                    text: "SAVE"
+                    icon: "content-save"
+                    md_bg_color: app.theme_cls.accent_color
+                    background_palette: 'Accent'
+                    theme_text_color: 'Custom'
+                    text_color: self.specific_text_color
 """)
 
 class EditSetScreen(Screen):
@@ -94,14 +130,13 @@ class EditSetScreen(Screen):
 
     def _finish_init(self, dt):
         app = App.get_running_app()
-        self.rv.data = [{'viewclass': 'Label',
+        self.rv.data = [{'viewclass': 'MDLabel',
                          'text': 'Please wait, still loading songs!',
-                         'font_size': app.ui_fs_main,
-                         'height': sp(50)}]
+                         'font_style': 'Headline',
+                         'theme_text_color': 'Primary',
+                         'secondary_theme_text_color': 'Primary',
+                         'height': sp(60)}]
         signal('ownSet').connect(self._update_set)
-        self.buttons.button1.text = iconfont('copy', app.ui_fs_button) + ' Copy'
-        self.buttons.button2.text = iconfont('saveas', app.ui_fs_button) + ' Save As'
-        self.buttons.button3.text = iconfont('save', app.ui_fs_button) + ' Save'
 
     def _update_set(self, sender=None):
         app = App.get_running_app()
@@ -129,8 +164,8 @@ class EditSetScreen(Screen):
         self.setname.text = setObject.name
         self.filepath.text = setObject.filepath
         app = App.get_running_app()
-        h = dp(10) + 1.5*app.buttonsize
-        data = []
+        del self.rv.data[:]
+        data = self.rv.data
         if len(setObject.list_songs()):
             for i, v in enumerate(setObject.list_songs()):
                 name = v['name']
@@ -140,33 +175,27 @@ class EditSetScreen(Screen):
                 filepath = v['filepath']
                 item = yield app.client.get_item(itemtype, filepath)
                 item = yield item
-                # First get the requisite title, subtitle, and text values
-                title = item.title
-                subtitle = [] 
-                for t in (item.author, item.aka, item.key_line):
-                    if t:
-                        subtitle.append(t)
-                subtitle = " | ".join(subtitle)
-                text = item.words.split('\n')
-                text = [t for t in text 
-                        if t != '' and not (t[0] == '[' and t[-1] == ']')]
-                summary = text[0:4]
-                # Then create the dict
-                if subtitle:
-                    h = app.ui_fs_main*1.5 + app.ui_fs_detail*1.5 + dp(10)
+                if item:
+                    # First get the requisite title, subtitle, and text values
+                    title = item.title
+                    subtitle = [] 
+                    for t in (item.author, item.aka, item.key_line):
+                        if t:
+                            subtitle.append(t)
+                    subtitle = " | ".join(subtitle)
+                    data.append({'title_text': title,
+                                 'subtitle_text': subtitle,
+                                 'viewclass': 'DragItem',
+                                 's': (None, dp(60)) if subtitle else (None, dp(40)),
+                                 'relpath': item.filepath})
+                    self.itemlist.append(item)
                 else:
-                    h = app.ui_fs_main*1.5 + dp(10)
-                data.append({'index': i, 'titletext': title,
-                                     'subtitletext': subtitle,
-                                     'summarytext': summary,
-                                     'expand_angle': 0, 'button_opacity': 0,
-                                     'viewclass': 'ListItem', 'height': h,
-                                     'set_edit': True, 'rv': self.rv,
-                                     'relpath': item.filepath})
-                self.itemlist.append(item)
-        data.append({'index': len(data), 'viewclass': 'BlankListItem',
-                             'height': h, 'rv': self.rv, 'relpath': u''})
-        self.rv.data = data
+                    data.append({'title_text': 'Error loading {}'.format(v['filepath']),
+                                 'subtitle_text': '',
+                                 'viewclass': 'BasicItem',
+                                 's': (None, dp(60)),
+                                 'relpath': v['filepath']})
+                    self.itemlist.append(item)
     
     def UI_to_set(self):
         setObject = SPSet()
