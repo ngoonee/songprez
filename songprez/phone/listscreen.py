@@ -11,7 +11,7 @@ from kivy.uix.label import Label
 from kivy.uix.button import Button
 from kivy.uix.screenmanager import Screen, ScreenManager
 from kivy.properties import BooleanProperty, NumericProperty, ListProperty
-from kivy.properties import ObjectProperty
+from kivy.properties import ObjectProperty, DictProperty
 from twisted.internet import defer
 from blinker import signal
 from functools import partial
@@ -77,6 +77,7 @@ Builder.load_string("""
 class ListScreen(Screen):
     dialog = ObjectProperty(None)
     menu = ObjectProperty(None)
+    song_detail_cache = {}
 
     def __init__(self, **kwargs):
         super(ListScreen, self).__init__(**kwargs)
@@ -127,6 +128,7 @@ class SearchScreen(ListScreen):
                     subtitle = " | ".join(subtitle)
                     e['subtitle_text'] = subtitle
                     e['s'] = (None, dp(60)) if subtitle else (None, dp(40))
+                    ListScreen.song_detail_cache[e['relpath']] = e
                     self.rv.refresh_from_data(modified=slice(i, i+1, None))
                     # Specifying the refreshed part saves 33% of time used
             i += 1
@@ -141,8 +143,15 @@ class SearchScreen(ListScreen):
         newdata = [{'title_text': item['name'],
                     'viewclass': 'BasicItem',
                     's': (None, dp(40)),
-                    'relpath': item['relpath']}
+                    'relpath': item['relpath'],
+                    'mtime': item['mtime']}
                    for item in searchList]
+        for d in newdata:
+            if d['relpath'] in self.song_detail_cache.keys():
+                val = self.song_detail_cache[d['relpath']]
+                if d['mtime'] == val['mtime'] and val.has_key('subtitle_text'):
+                    d['subtitle_text'] = val['subtitle_text']
+                    d['s'] = val['s']
         self.rv.data.extend(newdata)
 
     def do_edit(self, relpath):
@@ -296,6 +305,7 @@ class SongScreen(ListScreen):
                     subtitle = " | ".join(subtitle)
                     e['subtitle_text'] = subtitle
                     e['s'] = (None, dp(60)) if subtitle else (None, dp(40))
+                    ListScreen.song_detail_cache[e['relpath']] = e
                     self.rv.refresh_from_data(modified=slice(i, i+1, None))
                     # Specifying the refreshed part saves 33% of time used
             i += 1
@@ -311,6 +321,12 @@ class SongScreen(ListScreen):
                     'relpath': item['relpath'],
                     'mtime': item['mtime']}
                     for item in songList]
+        for d in newdata:
+            if d['relpath'] in self.song_detail_cache.keys():
+                val = self.song_detail_cache[d['relpath']]
+                if d['mtime'] == val['mtime'] and val.has_key('subtitle_text'):
+                    d['subtitle_text'] = val['subtitle_text']
+                    d['s'] = val['s']
         self.rv.data.extend(newdata)
 
     def do_edit(self, relpath):
