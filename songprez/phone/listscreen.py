@@ -101,20 +101,49 @@ class SearchScreen(ListScreen):
                          'theme_text_color': 'Primary',
                          'secondary_theme_text_color': 'Primary',
                          'height': sp(60)}]
+        Clock.schedule_once(self._get_details, 1)
+
+    @defer.inlineCallbacks
+    def _get_details(self, dt=None):
+        app = App.get_running_app()
+        data = self.rv.data
+        i = 0
+        while i < len(data):
+            e = data[i]
+            if not e.has_key('subtitle_text') and e.has_key('relpath'):
+                item = yield app.client.get_item('song', e['relpath'])
+                if i >= len(data) or data[i] != e:
+                    # yield is async, and something may have changed data
+                    # in the meantime. If so, time to break the loop and
+                    # restart everything.
+                    break
+                elif item == None:
+                    e['subtitle_text'] = 'Error loading'
+                else:
+                    subtitle = []
+                    for t in (item.author, item.aka, item.key_line):
+                        if t:
+                            subtitle.append(t)
+                    subtitle = " | ".join(subtitle)
+                    e['subtitle_text'] = subtitle
+                    e['s'] = (None, dp(60)) if subtitle else (None, dp(40))
+                    self.rv.refresh_from_data(modified=slice(i, i+1, None))
+                    # Specifying the refreshed part saves 33% of time used
+            i += 1
+        Clock.schedule_once(self._get_details, 1)
 
     @defer.inlineCallbacks
     def do_search(self, searchTerm):
         self.dismiss_all()
         app = App.get_running_app()
         searchList = yield app.client.search(searchTerm)
-        data = []
-        for i, item in enumerate(searchList):
-            viewclass = 'ListItem'
-            h = app.ui_fs_main*1.5 + dp(10)
-            data.append({'title_text': item['name'],
-                         'viewclass': 'BasicItem',
-                         'relpath': item['relpath']})
-        self.rv.data = data
+        del self.rv.data[:]
+        newdata = [{'title_text': item['name'],
+                    'viewclass': 'BasicItem',
+                    's': (None, dp(40)),
+                    'relpath': item['relpath']}
+                   for item in searchList]
+        self.rv.data.extend(newdata)
 
     def do_edit(self, relpath):
         self.dismiss_all()
@@ -245,12 +274,19 @@ class SongScreen(ListScreen):
 
     @defer.inlineCallbacks
     def _get_details(self, dt=None):
+        app = App.get_running_app()
         data = self.rv.data
-        for e in data:
-            if not e.has_key('subtitletext') and e.has_key('relpath'):
-                app = App.get_running_app()
+        i = 0
+        while i < len(data):
+            e = data[i]
+            if not e.has_key('subtitle_text') and e.has_key('relpath'):
                 item = yield app.client.get_item('song', e['relpath'])
-                if item == None:
+                if i >= len(data) or data[i] != e:
+                    # yield is async, and something may have changed data
+                    # in the meantime. If so, time to break the loop and
+                    # restart everything.
+                    break
+                elif item == None:
                     e['subtitle_text'] = 'Error loading'
                 else:
                     subtitle = []
@@ -259,19 +295,23 @@ class SongScreen(ListScreen):
                             subtitle.append(t)
                     subtitle = " | ".join(subtitle)
                     e['subtitle_text'] = subtitle
-                    e['viewclass'] = 'BasicItem'
+                    e['s'] = (None, dp(60)) if subtitle else (None, dp(40))
+                    self.rv.refresh_from_data(modified=slice(i, i+1, None))
+                    # Specifying the refreshed part saves 33% of time used
+            i += 1
         Clock.schedule_once(self._get_details, 1)
 
     def update_songs(self, sender=None):
+        del self.rv.data[:]
         app = App.get_running_app()
         songList = app.client.songList
-        data = []
-        for i, item in enumerate(songList):
-            data.append({'title_text': item['name'],
-                         'viewclass': 'BasicItem',
-                         'relpath': item['relpath'],
-                         'mtime': item['mtime']})
-        self.rv.data = data
+        newdata = [{'title_text': item['name'],
+                    'viewclass': 'BasicItem',
+                    's': (None, dp(40)),
+                    'relpath': item['relpath'],
+                    'mtime': item['mtime']}
+                    for item in songList]
+        self.rv.data.extend(newdata)
 
     def do_edit(self, relpath):
         self.dismiss_all()
@@ -407,33 +447,41 @@ class SetScreen(ListScreen):
 
     @defer.inlineCallbacks
     def _get_details(self, dt=None):
+        app = App.get_running_app()
         data = self.rv.data
-        for e in data:
+        i = 0
+        while i < len(data):
+            e = data[i]
             if not e.has_key('subtitle_text') and e.has_key('relpath'):
-                app = App.get_running_app()
                 item = yield app.client.get_set(e['relpath'])
-                if item == None:
+                if i >= len(data) or data[i] != e:
+                    # yield is async, and something may have changed data
+                    # in the meantime. If so, time to break the loop and
+                    # restart everything.
+                    break
+                elif item == None:
                     e['subtitle_text'] = 'Error loading'
                 else:
-                    text = [i['name'] for i in item.list_songs()]
+                    text = [s['name'] for s in item.list_songs()]
                     subtitle = []
-                    for i in text:
-                        subtitle.append(' '.join(i.split(' ', 2)[:2]))
+                    for s in text:
+                        subtitle.append(' '.join(s.split(' ', 2)[:2]))
                     subtitle = " | ".join(subtitle)
                     e['subtitle_text'] = subtitle
-                    e['viewclass'] = 'CountItem'
                     e['num_items'] = len(text)
+            i += 1
         Clock.schedule_once(self._get_details, 1)
 
     def update_sets(self, sender=None):
+        del self.rv.data[:]
         app = App.get_running_app()
         setList = app.client.setList
-        data = []
-        for i, item in enumerate(setList):
-            data.append({'title_text': item['name'],
-                         'viewclass': 'CountItem',
-                         'relpath': item['relpath']})
-        self.rv.data = data
+        newdata = [{'title_text': item['name'],
+                    'viewclass': 'CountItem',
+                    's': (None, dp(60)),
+                    'relpath': item['relpath']}
+                   for item in setList]
+        self.rv.data.extend(newdata)
 
     def do_edit(self, relpath):
         self.dismiss_all()

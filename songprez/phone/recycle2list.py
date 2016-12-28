@@ -29,6 +29,7 @@ Builder.load_string('''
         default_size: None, None
         default_size_hint: 1, None
         size_hint_y: None
+        key_size: 's'
         height: self.minimum_height if self.minimum_height else self._min_list_height
         padding: 0, self._list_vertical_padding
         orientation: 'vertical'
@@ -57,7 +58,7 @@ Builder.load_string('''
 <BasicItem>:
     title: title
     subtitle: subtitle
-    height: dp(60) if self.subtitle_text else dp(40)
+    #height: dp(60) if self.subtitle_text else dp(40)
     canvas:
         Color:
             rgba: self.theme_cls.divider_color
