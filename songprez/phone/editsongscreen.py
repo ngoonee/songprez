@@ -4,13 +4,16 @@ import kivy
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.clock import Clock
+from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.screenmanager import Screen
 from kivy.metrics import dp
 from kivy.uix.label import Label
 from kivy.uix.button import Button
 from kivy.animation import Animation
-from kivy.properties import ObjectProperty
+from kivy.properties import ObjectProperty, StringProperty
+from kivymd.label import MDLabel
+from kivymd.dialog import MDDialog
 from functools import partial
 from blinker import signal
 from .fontutil import iconfont
@@ -18,21 +21,6 @@ from .modalpopup import ModalPopup
 from ..control.spsong import SPSong
 
 Builder.load_string("""
-#:set left_width '75sp'
-
-<LeftLabel@Label>:
-    size_hint_x: None
-    width: left_width
-    text_size: self.size
-    align: 'left'
-    font_size: app.ui_fs_detail
-
-<RightTextInput@TextInput>:
-    multiline: False
-    size_hint_y: None
-    height: self.minimum_height
-    font_size: app.ui_fs_detail
-
 <EditSongScreen>:
     title: title
     author: author
@@ -190,18 +178,12 @@ Builder.load_string("""
                 height: self.minimum_height
                 spacing: dp(8)
                 IconTextButton:
-                    text: "COPY"
-                    disabled: True if not root.filepath.text else False
-                    icon: "content-copy"
-                    background_palette: 'Primary'
-                    theme_text_color: 'Custom'
-                    text_color: self.specific_text_color
-                IconTextButton:
                     text: "SAVE AS"
                     icon: "at"
                     background_palette: 'Primary'
                     theme_text_color: 'Custom'
                     text_color: self.specific_text_color
+                    on_release: root.do_saveas()
                 IconTextButton:
                     text: "SAVE"
                     disabled: True if not root.filepath.text else False
@@ -210,6 +192,24 @@ Builder.load_string("""
                     background_palette: 'Accent'
                     theme_text_color: 'Custom'
                     text_color: self.specific_text_color
+                    on_release: root.do_save()
+
+<SaveAsDialogContent>:
+    filepath: filepath
+    orientation: 'vertical'
+    spacing: dp(16)
+    size_hint_y: None
+    height: self.minimum_height
+    MDLabel:
+        font_style: 'Body1'
+        theme_text_color: 'Secondary'
+        text: root.message
+        size_hint_y: None
+        height: self.texture_size[1]
+    SingleLineTextField:
+        id: filepath
+        text: root.suggestpath
+        hint_text: "File path"
 """)
 
 class TouchLabel(Label):
@@ -249,8 +249,14 @@ class TouchLabel(Label):
         self.root.key.text = so.key
 
 
+class SaveAsDialogContent(BoxLayout):
+    message = StringProperty('')
+    suggestpath = StringProperty('')
+
+
 class EditSongScreen(Screen):
     song = ObjectProperty(None)
+    dialog = ObjectProperty(None)
 
     def __init__(self, **kwargs):
         super(EditSongScreen, self).__init__(**kwargs)
@@ -312,55 +318,71 @@ class EditSongScreen(Screen):
         songObject.lyrics = self.lyrics.text 
         return songObject
 
-    def bt_copy(self):
-        pass
+    def dismiss_all(self):
+        if self.dialog:
+            self.dialog.dismiss()
 
-    def bt_saveas(self):
+    def do_saveas(self):
         songObject = self.UI_to_song()
+        title = "Save song as a different file?"
         message = ("Save the song '{0}' as".
                    format(songObject.title))
         if songObject.filepath:
             suggestpath = songObject.filepath
         else:
             suggestpath = songObject.title
-        popup = ModalPopup(message=message,
-                           lefttext=iconfont('save') + ' Save',
-                           leftcolor=(0, 0.6, 0, 1),
-                           righttext=iconfont('cancel') + ' Cancel',
-                           inputtext=suggestpath)
-        popup.bind(on_left_action=self._do_save)
-        popup.open()
+        content = SaveAsDialogContent(message=message,
+                                      suggestpath=suggestpath)
+        self.dialog = MDDialog(title=title,
+                               content=content,
+                               size_hint=(.8, .6),
+                               auto_dismiss=False)
+        self.dialog.add_icontext_button("save", "content-save",
+                action=lambda x: self._do_save(songObject, self.dialog.content.filepath.text))
+        self.dialog.add_icontext_button("cancel", "close-circle",
+                action=lambda x: self.dialog.dismiss())
+        self.dialog.open()
 
-    def bt_save(self):
+    def do_save(self):
         songObject = self.UI_to_song()
         if songObject != self.song:
             if songObject.filepath == '':
-                return self.bt_saveas()
+                return self.do_saveas()
+            title = "Save song?"
             message = ("Save the song '{0}' to file named '{1}'?".
                        format(songObject.title, songObject.filepath))
-            popup = ModalPopup(message=message,
-                               lefttext=iconfont('save') + ' Save',
-                               leftcolor=(0, 0.6, 0, 1),
-                               righttext=iconfont('cancel') + ' Cancel')
-            popup.bind(on_left_action=self._do_save)
+            content = MDLabel(font_style='Body1',
+                              theme_text_color='Secondary',
+                              text=message,
+                              size_hint_y=None,
+                              valign='top')
+            content.bind(texture_size=content.setter('size'))
+            self.dialog = MDDialog(title=title,
+                                   content=content,
+                                   size_hint=(.8, .6),
+                                   auto_dismiss=False)
+            self.dialog.add_icontext_button("save", "content-save",
+                    action=lambda x: self._do_save(songObject, songObject.filepath))
+            self.dialog.add_icontext_button("cancel", "close-circle",
+                    action=lambda x: self.dialog.dismiss())
         else:
-            message = ("Song '{0}' has not changed.".
+            title = "Nothing to save"
+            message = ("The song '{0}' has not changed.".
                        format(songObject.title))
-            popup = ModalPopup(message=message,
-                               righttext=iconfont('ok') + ' Ok')
-            popup.bind(on_left_action=self._noop)
-        popup.open()
+            content = MDLabel(font_style='Body1',
+                              theme_text_color='Secondary',
+                              text=message,
+                              size_hint_y=None,
+                              valign='top')
+            content.bind(texture_size=content.setter('size'))
+            self.dialog = MDDialog(title=title,
+                                   content=content,
+                                   size_hint=(.8, .4),
+                                   auto_dismiss=True)
+        self.dialog.open()
 
-    def _noop(self, instance):
-        return True
-
-    def _do_save(self, instance):
-        songObject = self.UI_to_song()
-        if instance.input.text:
-            if songObject.filepath:
-                self.sendMessage(DeleteEditItem, itemtype='song',
-                                 relpath=songObject.filepath)
-            songObject.filepath = instance.input.text
-        self.sendMessage(SaveEditItem, itemtype='song', item=songObject,
-                         relpath=songObject.filepath)
-        self.song = songObject
+    def _do_save(self, songObject, relpath):
+        self.dismiss_all()
+        songObject.filepath = relpath
+        app = App.get_running_app()
+        app.client.save_item(item=songObject, relpath=relpath)
