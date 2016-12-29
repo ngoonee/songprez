@@ -99,6 +99,7 @@ Builder.load_string("""
                 spacing: dp(8)
                 IconTextButton:
                     text: "COPY"
+                    disabled: True if not root.filepath.text else False
                     icon: "content-copy"
                     background_palette: 'Primary'
                     theme_text_color: 'Custom'
@@ -111,6 +112,7 @@ Builder.load_string("""
                     text_color: self.specific_text_color
                 IconTextButton:
                     text: "SAVE"
+                    disabled: True if not root.filepath.text else False
                     icon: "content-save"
                     md_bg_color: app.theme_cls.accent_color
                     background_palette: 'Accent'
