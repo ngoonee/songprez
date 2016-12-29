@@ -14,7 +14,6 @@ from kivy.properties import ObjectProperty
 from functools import partial
 from blinker import signal
 from .fontutil import iconfont
-from .buttonrow import Buttons
 from .modalpopup import ModalPopup
 from ..control.spsong import SPSong
 
@@ -54,22 +53,12 @@ Builder.load_string("""
     user2: user2
     user3: user3
     lyrics: lyrics
-    buttons: buttons
     transposeicon: transposeicon
     sendMessage: app.sendMessage
     BoxLayout:
         orientation: 'vertical'
-        padding: '5dp'
-        spacing: '5dp'
         ScrollView:
             do_scroll_x: False
-            canvas.before:
-                Color:
-                    rgba: (.125, .125, .125, 1)
-                RoundedRectangle:
-                    size: self.size
-                    pos: self.pos
-                    radius: dp(10),
             FloatLayout:
                 size_hint_y: None
                 height: mainsongbox.height
@@ -80,32 +69,28 @@ Builder.load_string("""
                     orientation: 'vertical'
                     size_hint_y: None
                     height: top.height + lyrics.height + bottom.height + dp(30)
-                    GridLayout:
+                    BoxLayout:
                         id: top
+                        orientation: 'vertical'
                         cols: 2
-                        spacing: '5dp'
+                        spacing: dp(10)
                         size_hint_y: None
                         height: self.minimum_height
-                        LeftLabel:
-                            text: 'Title'
-                        RightTextInput:
+                        SingleLineTextField:
                             id: title
-                        LeftLabel:
-                            text: 'Author'
-                        RightTextInput:
+                            hint_text: 'Title'
+                        SingleLineTextField:
                             id: author
-                        LeftLabel:
-                            text: 'AKA'
-                        RightTextInput:
+                            hint_text: 'Author'
+                        SingleLineTextField:
                             id: aka
-                        LeftLabel:
-                            text: 'Key Line'
-                        RightTextInput:
+                            hint_text: 'AKA'
+                        SingleLineTextField:
                             id: key_line
-                        LeftLabel:
-                            text: 'Saved As'
-                        RightTextInput:
+                            hint_text: 'Key line'
+                        SingleLineTextField:
                             id: filepath
+                            hint_text: 'Saved As'
                             height: self.minimum_height
                             readonly: True
                     TextInput:
@@ -114,76 +99,67 @@ Builder.load_string("""
                         height: self.minimum_height if self.minimum_height > transposeicon.height else transposeicon.height
                         font_size: app.ui_fs_detail
                         font_name: 'NotoSansMono'
-                    GridLayout:
+                    BoxLayout:
+                        orientation: 'vertical'
                         id: bottom
-                        cols: 2
-                        spacing: '5dp'
+                        spacing: dp(10)
                         size_hint_y: None
                         height: self.minimum_height
-                        LeftLabel:
-                            text: 'Order'
-                        RightTextInput:
+                        SingleLineTextField:
                             id: presentation
-                        LeftLabel:
-                            text: 'Hymn #'
-                        RightTextInput:
+                            hint_text: 'Order'
+                        SingleLineTextField:
                             id: hymn_number
-                        LeftLabel:
-                            text: 'Copyright'
-                        RightTextInput:
+                            hint_text: 'Hymn number'
+                        SingleLineTextField:
                             id: copyright
-                        LeftLabel:
-                            text: 'CCLI'
-                        RightTextInput:
+                            hint_text: 'Copyright'
+                        SingleLineTextField:
                             id: ccli
-                        LeftLabel:
-                            text: 'Key'
-                        RightTextInput:
+                            hint_text: 'CCLI'
+                        SingleLineTextField:
                             id: key
-                        LeftLabel:
-                            text: 'Capo'
+                            hint_text: 'Key'
                         BoxLayout:
                             orientation: 'horizontal'
                             size_hint_y: None
                             height: capo.height
-                            RightTextInput:
+                            SingleLineTextField:
                                 id: capo
+                                hint_text: 'Capo'
                             Widget:
                                 size_hint_x: None
                                 width: dp(20)
-                            Label:
+                            MDLabel:
                                 text: 'Print'
                                 size_hint_x: None
+                                -text_size: (None, capo.height)
+                                valign: 'middle'
                                 width: self.texture_size[0]
-                                font_size: app.ui_fs_detail
+                                font_style: 'Subhead'
+                                theme_text_color: 'Hint'
                             CheckBox:
                                 id: capo_print
                                 size_hint_x: None
                                 width: sp(32)
-                        LeftLabel:
-                            text: 'Tempo'
-                        RightTextInput:
+                        SingleLineTextField:
                             id: tempo
-                        LeftLabel:
-                            text: 'Time Sig'
-                        RightTextInput:
+                            hint_text: 'Tempo'
+                        SingleLineTextField:
                             id: time_sig
-                        LeftLabel:
-                            text: 'Theme'
-                        RightTextInput:
+                            hint_text: 'Time Signature'
+                        SingleLineTextField:
                             id: theme
-                        LeftLabel:
-                            text: 'User 1'
-                        RightTextInput:
+                            hint_text: 'Theme'
+                        SingleLineTextField:
                             id: user1
-                        LeftLabel:
-                            text: 'User 2'
-                        RightTextInput:
+                            hint_text: 'User 1'
+                        SingleLineTextField:
                             id: user2
-                        LeftLabel:
-                            text: 'User 3'
-                        RightTextInput:
+                            hint_text: 'User 2'
+                        SingleLineTextField:
                             id: user3
+                            hint_text: 'User 3'
                 TouchLabel:
                     transposebar: transposebar
                     id: transposeicon
@@ -201,11 +177,39 @@ Builder.load_string("""
                     pos: transposeicon.x - self.width, transposeicon.y - 5.5*app.buttonsize
                     orientation: 'vertical'
                     opacity: 0
-        Buttons:
-            id: buttons
-            button1_action: root.bt_copy
-            button2_action: root.bt_saveas
-            button3_action: root.bt_save
+        AnchorLayout:
+            anchor_x: 'right'
+            padding: dp(8)
+            size_hint_y: None
+            height: buttons.height + dp(16)
+            BoxLayout:
+                id: buttons
+                orientation: 'horizontal'
+                size_hint: None, None
+                width: self.minimum_width
+                height: self.minimum_height
+                spacing: dp(8)
+                IconTextButton:
+                    text: "COPY"
+                    disabled: True if not root.filepath.text else False
+                    icon: "content-copy"
+                    background_palette: 'Primary'
+                    theme_text_color: 'Custom'
+                    text_color: self.specific_text_color
+                IconTextButton:
+                    text: "SAVE AS"
+                    icon: "at"
+                    background_palette: 'Primary'
+                    theme_text_color: 'Custom'
+                    text_color: self.specific_text_color
+                IconTextButton:
+                    text: "SAVE"
+                    disabled: True if not root.filepath.text else False
+                    icon: "content-save"
+                    md_bg_color: app.theme_cls.accent_color
+                    background_palette: 'Accent'
+                    theme_text_color: 'Custom'
+                    text_color: self.specific_text_color
 """)
 
 class TouchLabel(Label):
@@ -255,9 +259,6 @@ class EditSongScreen(Screen):
     def _finish_init(self, dt):
         app = App.get_running_app()
         signal('ownItem').connect(self._update_song)
-        self.buttons.button1.text = iconfont('copy', app.ui_fs_button) + ' Copy'
-        self.buttons.button2.text = iconfont('saveas', app.ui_fs_button) + ' Save As'
-        self.buttons.button3.text = iconfont('save', app.ui_fs_button) + ' Save'
         self.transposeicon.text = iconfont('transpose', 2*app.ui_fs_button)
 
     def _update_song(self, sender=None):
