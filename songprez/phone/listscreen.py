@@ -199,7 +199,7 @@ class SearchScreen(ListScreen):
     def do_add(self):
         self.dismiss_all()
         app = App.get_running_app()
-        relpath = self.rv.selection
+        relpath = self.rv.selected_identifier
         if not relpath:  # No valid selection
             return
         if app.base.presenting:  # Most recently presenting a song

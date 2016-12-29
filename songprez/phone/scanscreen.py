@@ -67,10 +67,10 @@ class ScanScreen(Screen):
         Clock.schedule_once(self._finish_init)
 
     def _finish_init(self, dt):
-        self.rv.bind(selection=self._activate_button)
+        self.rv.bind(selected_identifier=self._activate_button)
 
     def _activate_button(self, instance, value):
-        self.button.disabled = False
+        self.button.disabled = not(value)
 
     def _do_scan(self, dt):
         app = App.get_running_app()
@@ -84,7 +84,7 @@ class ScanScreen(Screen):
             self.rv.data = data
 
     def _done_preload(self):
-        if self.rv.selection:
+        if self.rv.selected_identifier:
             app = App.get_running_app()
             self.scanner.cancel()
             app.base.to_screen('main')

@@ -102,8 +102,9 @@ Builder.load_string('''
 
 
 class SPRecycleView(ThemableBehavior, RecycleView):
-    selection = StringProperty([])
-    select_action = ObjectProperty(None)
+    selected_index = NumericProperty(-1)
+    selected_identifier = StringProperty(u'')
+    primary_action = ObjectProperty(None)
     long_press_action = ObjectProperty(None)
 
 
@@ -136,6 +137,10 @@ class SelectableItem(RecycleDataViewBehavior):
     def apply_selection(self, rv, index, is_selected):
         ''' Respond to the selection of items in the view. '''
         self.selected = is_selected
+        if is_selected:
+            self.rv.selected_index = index
+        elif not is_selected and self.rv.selected_index == index:
+            self.rv.selected_index = -1
 
     def on_touch_up(self, touch):
         if self.collide_point(*touch.pos) and self.selectable:
@@ -165,7 +170,7 @@ class BasicItem(SelectableItem, ThemableBehavior, FloatLayout,
     def apply_selection(self, rv, index, is_selected):
         super(BasicItem, self).apply_selection(rv, index, is_selected)
         if is_selected:
-            rv.selection = rv.data[index].get('relpath', u'')
+            rv.selected_identifier = rv.data[index].get('relpath', u'')
 
 
 class CountItem(BasicItem):
@@ -188,6 +193,8 @@ class DragItem(BasicItem):
 class ScanItem(SelectableItem, TwoLineListItem):
     def apply_selection(self, rv, index, is_selected):
         ''' Respond to the selection of items in the view. '''
+        if not is_selected and rv.selected_index == index:
+            rv.selected_identifier = u''
         super(ScanItem, self).apply_selection(rv, index, is_selected)
         if is_selected:
-            rv.selection = rv.data[index]['secondary_text']
+            rv.selected_identifier = rv.data[index]['secondary_text']
