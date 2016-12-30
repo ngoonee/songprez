@@ -215,7 +215,7 @@ class SPServerControl(object):
                 relpath = os.path.join(self._setPath, relpath)
             item.write_to_file(relpath)
             self._update_sets()
-            self._change_current_set(relpath=relpath)
+            self.change_current_set(item)
 
     def delete_set(self, relpath):
         if not os.path.isabs(relpath):

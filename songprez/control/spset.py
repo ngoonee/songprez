@@ -176,8 +176,10 @@ class SPSet(object):
         if itemtype == 'song':
             filepath = item.filepath
             basedir, name = os.path.split(filepath)
-            list_item = {'name': name, 'type': 'song',
-                         'presentation': item.presentation,
+            if basedir:
+                basedir += "/"
+            list_item = {'name': name, 'type': u'song',
+                         'presentation': u'',  # Start with no custom order
                          'path': basedir}
         else:
             return
@@ -193,7 +195,7 @@ class SPSet(object):
         item = self._items[index]
         if item['type'] == 'song':
             if item['path']:
-                path = os.path.join(item['path'], item['name'])
+                path = os.path.normpath(item['path']+item['name'])
             else:
                 path = item['name']
             if relpath == path:
@@ -206,26 +208,8 @@ class SPSet(object):
                 retval.append({'name': s['name'],
                                'itemtype': s['type'],
                                'presentation': s['presentation'],
-                               'filepath': os.path.join(s['path'],
-                                                        s['name'])})
-            '''
-            if s['@type'] == 'song':
-                retval.append({'name': s['@name'],
-                               'itemtype': s['@type'],
-                               'presentation': s['@presentation'],
-                               'filepath': os.path.join(s['@path'],
-                                           s['@name'])})
-            elif s['@type'] == 'scripture':
-                retval.append({'name': s['@name'],
-                               'itemtype': s['@type'],
-                               'print': s['@print'],
-                               'seconds': s.get('@seconds'),
-                               'loop': s.get('@loop'),
-                               'transition': s.get('@transition')})
-            else:
-                retval.append({'name': s['@name'],
-                               'itemtype': s['@type']})
-            '''
+                               'filepath': os.path.normpath(s['path']+
+                                                            s['name'])})
         return retval
 
     def from_song_list(self, songList):
@@ -236,20 +220,3 @@ class SPSet(object):
                                     'type': s['itemtype'],
                                     'presentation': s['presentation'],
                                     'path': os.path.dirname(s['filepath'])})
-            '''
-            if s['itemtype'] == 'song':
-                self._items.append({'@name': s['name'],
-                                    '@type': s['itemtype'],
-                                    '@presentation': s['presentation'],
-                                    '@path': os.path.dirname(s['filepath'])})
-            elif s['itemtype'] == 'scripture':
-                self._items.append({'@name': s['name'],
-                                    '@type': s['itemtype'],
-                                    '@print': s['print'],
-                                    '@seconds': s['seconds'],
-                                    '@loop': s['loop'],
-                                    '@transition': s['transition']})
-            else:
-                self._items.append({'@name': s['name'],
-                                    '@type': s['itemtype']})
-                                    '''

@@ -10,12 +10,15 @@ from kivy.properties import ListProperty, ObjectProperty
 from kivy.metrics import dp, sp
 from kivymd.textfields import SingleLineTextField
 from kivymd.button import MDIconButton
+from kivymd.label import MDLabel
+from kivymd.dialog import MDDialog
 from copy import deepcopy
 from blinker import signal
 from twisted.internet import defer
 from ..control.spset import SPSet
 from .fontutil import iconfont
 from .modalpopup import ModalPopup
+from .saveasdialog import SaveAsDialogContent
 from .recyclelist import SPRecycleView
 
 Builder.load_string("""
@@ -73,18 +76,24 @@ Builder.load_string("""
                         md_bg_color: (0, 0, 0, 0)
                     MDIconButton:
                         icon: 'magnify'
+                        on_release: root.add_from_search()
                     MDIconButton:
                         icon: 'file-document'
+                        on_release: root.add_from_list()
                     MDIconButton:
                         icon: 'bible'
+                        on_release: root.add_scripture()
                     Divider
                     MDIconButton:
                         icon: 'playlist-remove'
+                        on_release: root.remove_item()
                     Divider
                     MDIconButton:
                         icon: 'arrow-up-bold'
+                        on_release: root.do_move_up()
                     MDIconButton:
                         icon: 'arrow-down-bold'
+                        on_release: root.do_move_down()
         AnchorLayout:
             anchor_x: 'right'
             padding: dp(8)
@@ -98,18 +107,12 @@ Builder.load_string("""
                 height: self.minimum_height
                 spacing: dp(8)
                 IconTextButton:
-                    text: "COPY"
-                    disabled: True if not root.filepath.text else False
-                    icon: "content-copy"
-                    background_palette: 'Primary'
-                    theme_text_color: 'Custom'
-                    text_color: self.specific_text_color
-                IconTextButton:
                     text: "SAVE AS"
                     icon: "at"
                     background_palette: 'Primary'
                     theme_text_color: 'Custom'
                     text_color: self.specific_text_color
+                    on_release: root.do_saveas()
                 IconTextButton:
                     text: "SAVE"
                     disabled: True if not root.filepath.text else False
@@ -118,12 +121,14 @@ Builder.load_string("""
                     background_palette: 'Accent'
                     theme_text_color: 'Custom'
                     text_color: self.specific_text_color
+                    on_release: root.do_save()
 """)
 
 class EditSetScreen(Screen):
     itemlist = ListProperty([])
-    set = ObjectProperty(SPSet())
-    current_set = ObjectProperty(SPSet())
+    set = ObjectProperty(SPSet())  # The client set
+    current_set = ObjectProperty(SPSet())  # The internal set being modified
+    dialog = ObjectProperty(None)
 
     def __init__(self, **kwargs):
         super(EditSetScreen, self).__init__(**kwargs)
@@ -204,114 +209,144 @@ class EditSetScreen(Screen):
         setObject.name = self.setname.text
         setObject.filepath = self.filepath.text
         for item in self.itemlist:
-            setObject.add_song(item)
+            setObject.add_item(item, 'song')
         return setObject
 
-    def bt_edit(self, index):
+    def dismiss_all(self):
+        if self.dialog:
+            self.dialog.dismiss()
+
+    def do_edit(self, index):
+        self.dismiss_all()
         app = App.get_running_app()
         app.base.current_song = self.itemlist[index]
         app.base.to_screen('editsong')
 
-    def bt_delete(self, index):
-        self.bt_remove_item(index)
-
-    def bt_move_up(self, i):
-        rv = self.rv
-        data = self.rv.data
-        itemlist = self.itemlist
-        if i > 0:
-            # Save the selected state of the 'other' item
-            prevselect = rv.adapter.get_view(i-1).is_selected
-            # Swap the data dict and the actual item
-            data[i-1], data[i] = data[i], data[i-1]
-            itemlist[i-1], itemlist[i] = itemlist[i], itemlist[i-1]
-            # Change the index values
-            data[i-1]['index'] = i-1
-            data[i]['index'] = i
-            # Update the selected states
-            rv.adapter.get_view(i-1).is_selected = True
-            rv.adapter.get_view(i).is_selected = prevselect
-
-    def bt_move_down(self, i):
-        rv = self.rv
-        data = self.rv.data
-        itemlist = self.itemlist
-        if i+2 < len(data):  # 'data' includes the additional blank item
-            # Save the selected state of the 'other' item
-            prevselect = rv.adapter.get_view(i+1).is_selected
-            # Swap the data dict and the actual item
-            data[i+1], data[i] = data[i], data[i+1]
-            itemlist[i+1], itemlist[i] = itemlist[i], itemlist[i+1]
-            # Change the index values
-            data[i+1]['index'] = i+1
-            data[i]['index'] = i
-            # Update the selected states
-            rv.adapter.get_view(i+1).is_selected = True
-            rv.adapter.get_view(i).is_selected = prevselect
-
-    def bt_scripture(self, index):
-        pass
-
-    def bt_remove_item(self, i):
-        if i+1 < len(self.rv.data):  # 'data' includes the additional blank item
-            obj = self.itemlist[i]
-            self.current_set.remove_song(obj)
-            self.set_to_UI()
-
-    def bt_add_item(self, index):
+    def add_from_search(self):
+        self.dismiss_all()
         app = App.get_running_app()
         app.base.to_screen('search')
-        self._index_to_add = index+1
 
-    def bt_copy(self):
+    def add_from_list(self):
+        self.dismiss_all()
         pass
 
-    def bt_saveas(self):
+    def add_scripture(self):
+        self.dismiss_all()
+        pass
+
+    def remove_item(self):
+        self.dismiss_all()
+        rv = self.rv
+        data = self.rv.data
+        itemlist = self.itemlist
+        i = rv.selected_index
+        if i != -1:  # -1 when nothing selected
+            data.pop(i)
+            itemlist.pop(i)
+            if i < len(data):
+                rv.layout_manager.select_node(i)
+            else:
+                rv.layout_manager.select_node(i-1)
+            self.current_set = self.UI_to_set()
+
+    def do_move_up(self):
+        self.dismiss_all()
+        rv = self.rv
+        data = self.rv.data
+        itemlist = self.itemlist
+        i = rv.selected_index
+        if i != -1:  # -1 when nothing selected
+            target = i-1
+            if target > -1:
+                data[target], data[i] = data[i], data[target]
+                itemlist[target], itemlist[i] = itemlist[i], itemlist[target]
+                rv.layout_manager.select_node(target)
+                self.current_set = self.UI_to_set()
+
+    def do_move_down(self):
+        self.dismiss_all()
+        rv = self.rv
+        data = self.rv.data
+        itemlist = self.itemlist
+        i = rv.selected_index
+        if i != -1:  # -1 when nothing selected
+            target = i+1
+            if target < len(data):
+                data[target], data[i] = data[i], data[target]
+                itemlist[target], itemlist[i] = itemlist[i], itemlist[target]
+                rv.layout_manager.select_node(target)
+                self.current_set = self.UI_to_set()
+
+    def do_saveas(self):
+        self.dismiss_all()
         setObject = self.UI_to_set()
+        title = "Save set as a different file?"
         message = ("Save the set '{0}' as".
                    format(setObject.name))
         if setObject.filepath:
             suggestpath = setObject.filepath
         else:
             suggestpath = setObject.name
-        popup = ModalPopup(message=message,
-                           lefttext=iconfont('save') + ' Save',
-                           leftcolor=(0, 0.6, 0, 1),
-                           righttext=iconfont('cancel') + ' Cancel',
-                           inputtext=suggestpath)
-        popup.bind(on_left_action=self._do_save)
-        popup.open()
+        content = SaveAsDialogContent(message=message,
+                                      suggestpath=suggestpath)
+        self.dialog = MDDialog(title=title,
+                               content=content,
+                               size_hint=(.8, .6),
+                               auto_dismiss=False)
+        self.dialog.add_icontext_button("save", "content-save",
+                action=lambda x: self._do_save(setObject,
+                    self.dialog.content.filepath.text))
+        self.dialog.add_icontext_button("cancel", "close-circle",
+                action=lambda x: self.dialog.dismiss())
+        self.dialog.open()
 
-    def bt_save(self):
+    def do_save(self):
+        self.dismiss_all()
         setObject = self.UI_to_set()
         if setObject != self.set or setObject.name != self.set.name:
             if setObject.filepath == '':
-                return self.bt_saveas()
+                return self.do_saveas()
+            title = "Save set?"
             message = ("Save the set '{0}' to file named '{1}'?".
                        format(setObject.name, setObject.filepath))
             popup = ModalPopup(message=message,
                                lefttext=iconfont('save') + ' Save',
                                leftcolor=(0, 0.6, 0, 1),
                                righttext=iconfont('cancel') + ' Cancel')
-            popup.bind(on_left_action=self._do_save)
+            content = MDLabel(font_style='Body1',
+                              theme_text_color='Secondary',
+                              text=message,
+                              size_hint_y=None,
+                              valign='top')
+            content.bind(texture_size=content.setter('size'))
+            self.dialog = MDDialog(title=title,
+                                   content=content,
+                                   size_hint=(.8, .6),
+                                   auto_dismiss=False)
+            self.dialog.add_icontext_button("save", "content-save",
+                    action=lambda x: self._do_save(setObject, setObject.filepath))
+            self.dialog.add_icontext_button("cancel", "close-circle",
+                    action=lambda x: self.dialog.dismiss())
         else:
+            title = "Nothing to save"
             message = ("Set '{0}' has not changed.".
                        format(setObject.name))
-            popup = ModalPopup(message=message,
-                               righttext=iconfont('ok') + ' Ok')
-            popup.bind(on_left_action=self._noop)
-        popup.open()
+            content = MDLabel(font_style='Body1',
+                              theme_text_color='Secondary',
+                              text=message,
+                              size_hint_y=None,
+                              valign='top')
+            content.bind(texture_size=content.setter('size'))
+            self.dialog = MDDialog(title=title,
+                                   content=content,
+                                   size_hint=(.8, .4),
+                                   auto_dismiss=True)
+        self.dialog.open()
 
-    def _noop(self, instance):
-        return True
-
-    def _do_save(self, instance):
-        setObject = self.UI_to_set()
-        if instance.input.text:
-            if setObject.filepath:
-                self.sendMessage(DeleteEditSet,
-                                 relpath=setObject.filepath)
-            setObject.filepath = instance.input.text
-        self.sendMessage(SaveEditSet, set=setObject,
-                         relpath=setObject.filepath)
-        self.set = setObject
+    def _do_save(self, setObject, relpath):
+        self.dismiss_all()
+        setObject.filepath = relpath
+        app = App.get_running_app()
+        app.client.save_set(set=setObject, relpath=relpath)
+        app.client.change_own_set(relpath)

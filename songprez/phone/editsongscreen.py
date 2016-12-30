@@ -18,6 +18,7 @@ from functools import partial
 from blinker import signal
 from .fontutil import iconfont
 from .modalpopup import ModalPopup
+from .saveasdialog import SaveAsDialogContent
 from ..control.spsong import SPSong
 
 Builder.load_string("""
@@ -193,23 +194,6 @@ Builder.load_string("""
                     theme_text_color: 'Custom'
                     text_color: self.specific_text_color
                     on_release: root.do_save()
-
-<SaveAsDialogContent>:
-    filepath: filepath
-    orientation: 'vertical'
-    spacing: dp(16)
-    size_hint_y: None
-    height: self.minimum_height
-    MDLabel:
-        font_style: 'Body1'
-        theme_text_color: 'Secondary'
-        text: root.message
-        size_hint_y: None
-        height: self.texture_size[1]
-    SingleLineTextField:
-        id: filepath
-        text: root.suggestpath
-        hint_text: "File path"
 """)
 
 class TouchLabel(Label):
@@ -247,11 +231,6 @@ class TouchLabel(Label):
         so.transpose(i)
         self.root.lyrics.text = so.lyrics
         self.root.key.text = so.key
-
-
-class SaveAsDialogContent(BoxLayout):
-    message = StringProperty('')
-    suggestpath = StringProperty('')
 
 
 class EditSongScreen(Screen):
@@ -323,6 +302,7 @@ class EditSongScreen(Screen):
             self.dialog.dismiss()
 
     def do_saveas(self):
+        self.dismiss_all()
         songObject = self.UI_to_song()
         title = "Save song as a different file?"
         message = ("Save the song '{0}' as".
@@ -338,12 +318,14 @@ class EditSongScreen(Screen):
                                size_hint=(.8, .6),
                                auto_dismiss=False)
         self.dialog.add_icontext_button("save", "content-save",
-                action=lambda x: self._do_save(songObject, self.dialog.content.filepath.text))
+                action=lambda x: self._do_save(songObject,
+                    self.dialog.content.filepath.text))
         self.dialog.add_icontext_button("cancel", "close-circle",
                 action=lambda x: self.dialog.dismiss())
         self.dialog.open()
 
     def do_save(self):
+        self.dismiss_all()
         songObject = self.UI_to_song()
         if songObject != self.song:
             if songObject.filepath == '':
@@ -386,3 +368,4 @@ class EditSongScreen(Screen):
         songObject.filepath = relpath
         app = App.get_running_app()
         app.client.save_item(item=songObject, relpath=relpath)
+        app.client.change_own_item('song', relpath)
