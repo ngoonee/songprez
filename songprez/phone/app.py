@@ -170,7 +170,7 @@ class SongPrezApp(App):
 
     def close_settings(self, *largs):
         super(SongPrezApp, self).close_settings(*largs)
-        if not self.control:
+        if not self.server:
             Clock.schedule_once(self._verify_server)
         if len(largs) and largs[0] is self._app_settings:
             # Called using close button

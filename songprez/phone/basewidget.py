@@ -7,6 +7,7 @@ from kivy.app import App
 from kivy.properties import ObjectProperty
 from kivy.uix.screenmanager import ScreenManager
 from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.modalview import ModalView
 from kivymd.label import MDLabel
 from kivymd.dialog import MDDialog
 from ..control.spset import SPSet
@@ -50,16 +51,15 @@ Builder.load_string("""
         left_action_items: [['menu', lambda x: app.nav_drawer.toggle()]]
     ScreenManager:
         id: sm
-        Screen:
-            name: 'preload'
-        MainScreen:
-            name: 'main'
-        PresentScreen:
-            id: present
-            name: 'present'
         SetScreen:
             id: sets
             name: 'sets'
+        PresentScreen:
+            id: present
+            name: 'present'
+        EditSetScreen:
+            id: editset
+            name: 'editset'
         SongScreen:
             id: songs
             name: 'songs'
@@ -68,9 +68,6 @@ Builder.load_string("""
             name: 'search'
         Screen:
             name: 'scripture'
-        EditSetScreen:
-            id: editset
-            name: 'editset'
         EditSongScreen:
             id: editsong
             name: 'editsong'
@@ -90,12 +87,13 @@ class BaseWidget(BoxLayout):
         self.dialog = None
         Window.bind(on_key_down=self._on_keyboard_down)
         self.sm.bind(current=self._change_title)
+        self.sm.bind(current=self._track_history)
         self.to_screen('scan')
 
     def _change_title(self, instance, data):
         toolbar = self.toolbar
         # Set the main label
-        if data == 'main' or data == 'preload' or data == 'scan':
+        if data == 'scan':
             toolbar.title = 'SongPrez'
         elif data == 'sets':
             toolbar.title = 'Sets ' + iconfont('sets')
@@ -115,37 +113,52 @@ class BaseWidget(BoxLayout):
             toolbar.title = (iconfont('edit') + ' Edit Set ' + iconfont('sets'))
         elif data == 'editsong':
             toolbar.title = (iconfont('edit') + ' Edit Song ' + iconfont('songs'))
-        return
+
+    def _track_history(self, instance, data):
+        """
+        History tracking logic:-
+        1. The purpose of history tracking is for the 'back' button to do
+           something reasonable, rather than for repeated traversal through
+           useless screens.
+        2. There are two ways any screen is entered, either traversed to or
+           via the back button. The latter always removes it from history,
+           the former may or may not.
+        4. Adding songs/items can be done to a set being edited or the active
+           presentation. For convenience this can also be tracked here.
+        """
+        history = self._history
+        print(history)
         # Save screen history
-        if data in ('preload', 'scan'):
-            pass
-        elif data == 'main' and self._history == []:
-            self._history = ['main',]
-        elif data == 'settings':
-            app = App.get_running_app()
-            app.open_settings()
+        if len(history) == 0:
+            history.append(data)
         else:
-            scr_prio = {'main': 1,
-                        'present': 3, 'sets': 2,
-                        'editset': 4,
-                        'scripture': 5, 'search': 5, 'songs': 5,
-                        'editsong': 6}
-            diff = scr_prio[data] - scr_prio[self._history[-1]]
+            scr_prio = {'sets': 1,
+                        'present': 2,
+                        'editset': 3,
+                        'scripture': 4, 'search': 4, 'songs': 4,
+                        'editsong': 5,
+                        'settings': 6, 'scan': 6}
+            diff = scr_prio[data] - scr_prio[history[-1]]
             if diff == 0:  # Save level is sets<->present or songs<->search
-                self._history.pop()
+                history.pop()
                 self.sm.transition.direction = 'down'
             elif diff > 0:  # Normal case, progressing up the chain
                 self.sm.transition.direction = 'left'
             else:  # 'Backward' jump, need to pare the list down
                 newhistory = []
-                for i, v in enumerate(self._history):
+                for i, v in enumerate(history):
                     if scr_prio[data] - scr_prio[v] > 0:
                         newhistory.append(v)
                     else:
                         break
-                self._history = newhistory
+                del history[:]
+                history.extend(newhistory)
                 self.sm.transition.direction = 'right'
-            self._history.append(data)
+            history.append(data)
+        if data == 'settings':
+            app = App.get_running_app()
+            app.open_settings()
+        print(history)
             
     def _on_keyboard_down(self, *args):
         keycode = args[1]
@@ -155,13 +168,19 @@ class BaseWidget(BoxLayout):
         return False
 
     def back(self):
+        app = App.get_running_app()
         if self.dialog:
-            App.get_running_app().stop()
-        elif len(self._history) > 1:
+            # Pressing a second time to exit app
+            app.stop()
+        for widget in app.root_window.children:
+            # If there's a modalview (Popup/MDDialog) somewhere, dismiss it
+            if isinstance(widget, ModalView):
+                widget.dismiss()
+                return
+        if len(self._history) > 1:
+            if self.sm.current == 'settings':
+                app.close_settings()
             self.sm.current = self._history[-2]
-        elif self.sm.current == 'settings':
-            self.to_screen(self._history[-1])
-            App.get_running_app().close_settings()
         else:
             title = "Exit Songprez?"
             message = ("Please confirm that you want to exit Songprez, "
@@ -177,7 +196,7 @@ class BaseWidget(BoxLayout):
                                    size_hint=(.8, .6),
                                    auto_dismiss=True)
             self.dialog.add_icontext_button("ok", "checkbox-marked-circle-outline",
-                    action=lambda x: App.get_running_app().stop())
+                    action=lambda x: app.stop())
             self.dialog.add_icontext_button("cancel", "close-circle",
                     action=lambda x: self.dialog.dismiss())
             self.dialog.bind(on_dismiss=self._clear_dialog)
@@ -187,4 +206,10 @@ class BaseWidget(BoxLayout):
         self.dialog = None
 
     def to_screen(self, name):
+        """
+        Order of events when moving back and forth through history:-
+        1. All movement done using to_screen(name)
+        2. Check whether sm.current can be left (unsaved changes etc.)
+        3. Change sm.current
+        """
         self.sm.current = name
