@@ -27,7 +27,6 @@ from .settings import SPSettings
 from .settingsjson import default_settings, build_settings
 from ..network.spdiscovery import SPDiscovery
 from .fontutil import font_register
-from .modalpopup import ModalPopup
 
 # Monkey patch to use Noto Sans rather than kivymd's default Roboto
 from kivymd.label import MDLabel
@@ -127,15 +126,20 @@ class SongPrezApp(App):
             self.seeker = SPDiscovery()
         except Exception as e:
             logger.exception(e.message)
-            self.open_settings()
-            def quit(*args):
-                self.stop()
-            popup = ModalPopup(message='Please set up the SongPrez media folder',
-                               lefttext='Quit',
-                               leftcolor=(0.6, 0, 0, 1),
-                               righttext='OK')
-            popup.bind(on_left_action=quit)
-            popup.open()
+            self.base.to_screen('settings')
+            title = 'Could not start service'
+            message = 'Please set up the SongPrez media folder.'
+            content = MDLabel(font_style='Body1',
+                              theme_text_color='Secondary',
+                              text=message,
+                              size_hint_y=None,
+                              valign='top')
+            content.bind(texture_size=content.setter('size'))
+            dialog = MDDialog(title=title,
+                              content=content,
+                              size_hint=(.8, .6),
+                              auto_dismiss=True)
+            dialog.open()
 
     def on_pause(self):
         return True

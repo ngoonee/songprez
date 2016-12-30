@@ -23,7 +23,6 @@ from .fontutil import iconfont
 from .recyclelist import SPRecycleView
 from kivy.metrics import dp, sp
 from .icontextbutton import IconTextMenuItem
-from .modalpopup import ModalPopup
 from ..control.spsong import SPSong
 from ..control.spset import SPSet
 from ..network.messages import Search

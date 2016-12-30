@@ -17,7 +17,6 @@ from kivymd.dialog import MDDialog
 from functools import partial
 from blinker import signal
 from .fontutil import iconfont
-from .modalpopup import ModalPopup
 from .saveasdialog import SaveAsDialogContent
 from ..control.spsong import SPSong
 

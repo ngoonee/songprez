@@ -17,7 +17,6 @@ from blinker import signal
 from twisted.internet import defer
 from ..control.spset import SPSet
 from .fontutil import iconfont
-from .modalpopup import ModalPopup
 from .saveasdialog import SaveAsDialogContent
 from .recyclelist import SPRecycleView
 
@@ -152,10 +151,11 @@ class EditSetScreen(Screen):
             self.current_set = deepcopy(self.set)
             Clock.schedule_once(self.set_to_UI)
         else:
-            message = ("Could not load this set.")
-            popup = ModalPopup(message=message,
-                               righttext=iconfont('ok') + ' OK')
-            popup.open()
+            title = 'Error loading set'
+            self.dialog = MDDialog(title=title,
+                                   size_hint=(.8, .3),
+                                   auto_dismiss=True)
+            self.dialog.open()
 
 
     def add_song(self, songObject):
@@ -310,10 +310,6 @@ class EditSetScreen(Screen):
             title = "Save set?"
             message = ("Save the set '{0}' to file named '{1}'?".
                        format(setObject.name, setObject.filepath))
-            popup = ModalPopup(message=message,
-                               lefttext=iconfont('save') + ' Save',
-                               leftcolor=(0, 0.6, 0, 1),
-                               righttext=iconfont('cancel') + ' Cancel')
             content = MDLabel(font_style='Body1',
                               theme_text_color='Secondary',
                               text=message,
