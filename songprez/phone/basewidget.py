@@ -7,6 +7,8 @@ from kivy.app import App
 from kivy.properties import ObjectProperty
 from kivy.uix.screenmanager import ScreenManager
 from kivy.uix.boxlayout import BoxLayout
+from kivymd.label import MDLabel
+from kivymd.dialog import MDDialog
 from ..control.spset import SPSet
 from .scanscreen import ScanScreen
 from .mainscreen import MainScreen
@@ -85,6 +87,7 @@ class BaseWidget(BoxLayout):
         super(BaseWidget, self).__init__(**kwargs)
         self.presenting = True
         self._history = []
+        self.dialog = None
         Window.bind(on_key_down=self._on_keyboard_down)
         self.sm.bind(current=self._change_title)
         self.to_screen('scan')
@@ -152,13 +155,36 @@ class BaseWidget(BoxLayout):
         return False
 
     def back(self):
-        if len(self._history) > 1:
+        if self.dialog:
+            App.get_running_app().stop()
+        elif len(self._history) > 1:
             self.sm.current = self._history[-2]
         elif self.sm.current == 'settings':
             self.to_screen(self._history[-1])
             App.get_running_app().close_settings()
         else:
-            App.get_running_app().stop()  # Quit the app
+            title = "Exit Songprez?"
+            message = ("Please confirm that you want to exit Songprez, "
+                       "or press the back button again to exit.")
+            content = MDLabel(font_style='Body1',
+                              theme_text_color='Secondary',
+                              text=message,
+                              size_hint_y=None,
+                              valign='top')
+            content.bind(texture_size=content.setter('size'))
+            self.dialog = MDDialog(title=title,
+                                   content=content,
+                                   size_hint=(.8, .6),
+                                   auto_dismiss=True)
+            self.dialog.add_icontext_button("ok", "checkbox-marked-circle-outline",
+                    action=lambda x: App.get_running_app().stop())
+            self.dialog.add_icontext_button("cancel", "close-circle",
+                    action=lambda x: self.dialog.dismiss())
+            self.dialog.bind(on_dismiss=self._clear_dialog)
+            self.dialog.open()
+
+    def _clear_dialog(self, *args):
+        self.dialog = None
 
     def to_screen(self, name):
         self.sm.current = name
