@@ -195,18 +195,14 @@ class SearchScreen(ListScreen):
         app = App.get_running_app()
         app.client.delete_item(itemtype=itemtype, relpath=filepath)
 
-    def do_add(self):
+    def do_add(self, relpath):
         self.dismiss_all()
         app = App.get_running_app()
         relpath = self.rv.selected_identifier
         if not relpath:  # No valid selection
             return
-        if app.base.presenting:  # Most recently presenting a song
-            presentscreen = app.base.sm.get_screen('present')
-            presentscreen.add_item('song', relpath)
-        else:  # Most recently editing a set
-            if app.client.ownSet:
-                app.client.add_item_to_own_set('song', relpath)
+        app.base.add_item('song', relpath)
+        app.base.back(skip_modal=True)
 
     @defer.inlineCallbacks
     def primary_action(self, item_data):
@@ -381,12 +377,8 @@ class SongScreen(ListScreen):
         app = App.get_running_app()
         if not relpath:  # No valid selection
             return
-        if app.base.presenting:  # Most recently presenting a song
-            presentscreen = app.base.sm.get_screen('present')
-            presentscreen.add_item('song', relpath)
-        else:  # Most recently editing a set
-            if app.client.ownSet:
-                app.client.add_item_to_own_set('song', relpath)
+        app.base.add_item('song', relpath)
+        app.base.back(skip_modal=True)
 
     @defer.inlineCallbacks
     def primary_action(self, item_data):

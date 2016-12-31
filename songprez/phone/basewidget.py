@@ -83,12 +83,11 @@ class BaseWidget(BoxLayout):
     def __init__(self, **kwargs):
         super(BaseWidget, self).__init__(**kwargs)
         self.presenting = True
-        self._history = []
+        self._history = ['sets']
         self.dialog = None
         Window.bind(on_key_down=self._on_keyboard_down)
         self.sm.bind(current=self._change_title)
         self.sm.bind(current=self._track_history)
-        self.to_screen('scan')
 
     def _change_title(self, instance, data):
         toolbar = self.toolbar
@@ -167,16 +166,17 @@ class BaseWidget(BoxLayout):
             return True
         return False
 
-    def back(self):
+    def back(self, skip_modal=False):
         app = App.get_running_app()
         if self.dialog:
             # Pressing a second time to exit app
             app.stop()
-        for widget in app.root_window.children:
-            # If there's a modalview (Popup/MDDialog) somewhere, dismiss it
-            if isinstance(widget, ModalView):
-                widget.dismiss()
-                return
+        if not skip_modal:
+            for widget in app.root_window.children:
+                # If there's a modalview (Popup/MDDialog) somewhere, dismiss it
+                if isinstance(widget, ModalView):
+                    widget.dismiss()
+                    return
         if len(self._history) > 1:
             if self.sm.current == 'settings':
                 app.close_settings()
@@ -213,3 +213,9 @@ class BaseWidget(BoxLayout):
         3. Change sm.current
         """
         self.sm.current = name
+
+    def add_item(self, itemtype, relpath):
+        if self.presenting:
+            self.present.add_item(itemtype, relpath)
+        else:
+            self.editset.add_item(itemtype, relpath)

@@ -125,8 +125,7 @@ Builder.load_string("""
 
 class EditSetScreen(Screen):
     itemlist = ListProperty([])
-    set = ObjectProperty(SPSet())  # The client set
-    current_set = ObjectProperty(SPSet())  # The internal set being modified
+    edit_set = ObjectProperty(SPSet())  # The internal set being modified
     dialog = ObjectProperty(None)
 
     def __init__(self, **kwargs):
@@ -147,8 +146,7 @@ class EditSetScreen(Screen):
     def _update_set(self, sender=None):
         app = App.get_running_app()
         if isinstance(app.client.ownSet, SPSet):
-            self.set = app.client.ownSet
-            self.current_set = deepcopy(self.set)
+            self.edit_set = deepcopy(app.client.ownSet)
             Clock.schedule_once(self.set_to_UI)
         else:
             title = 'Error loading set'
@@ -157,17 +155,20 @@ class EditSetScreen(Screen):
                                    auto_dismiss=True)
             self.dialog.open()
 
-
-    def add_song(self, songObject):
-        self.current_set.add_song(songObject, self._index_to_add)
-        self._index_to_add = -1
+    @defer.inlineCallbacks
+    def add_item(self, itemtype, relpath):
+        app = App.get_running_app()
+        i = self.rv.selected_index
+        target = i + 1 if i != -1 else i
+        songObject = yield app.client.get_item(itemtype, relpath)
+        self.edit_set.add_item(songObject, itemtype, target)
         self.set_to_UI()
 
     @defer.inlineCallbacks
     def set_to_UI(self, dt=None):
         self.itemlist = []
         self.rv.data = []
-        setObject = self.current_set
+        setObject = self.edit_set
         self.setname.text = setObject.name
         self.filepath.text = setObject.filepath
         app = App.get_running_app()
@@ -229,7 +230,8 @@ class EditSetScreen(Screen):
 
     def add_from_list(self):
         self.dismiss_all()
-        pass
+        app = App.get_running_app()
+        app.base.to_screen('songs')
 
     def add_scripture(self):
         self.dismiss_all()
@@ -248,7 +250,7 @@ class EditSetScreen(Screen):
                 rv.layout_manager.select_node(i)
             else:
                 rv.layout_manager.select_node(i-1)
-            self.current_set = self.UI_to_set()
+            self.edit_set = self.UI_to_set()
 
     def do_move_up(self):
         self.dismiss_all()
@@ -262,7 +264,7 @@ class EditSetScreen(Screen):
                 data[target], data[i] = data[i], data[target]
                 itemlist[target], itemlist[i] = itemlist[i], itemlist[target]
                 rv.layout_manager.select_node(target)
-                self.current_set = self.UI_to_set()
+                self.edit_set = self.UI_to_set()
 
     def do_move_down(self):
         self.dismiss_all()
@@ -276,7 +278,7 @@ class EditSetScreen(Screen):
                 data[target], data[i] = data[i], data[target]
                 itemlist[target], itemlist[i] = itemlist[i], itemlist[target]
                 rv.layout_manager.select_node(target)
-                self.current_set = self.UI_to_set()
+                self.edit_set = self.UI_to_set()
 
     def do_saveas(self):
         self.dismiss_all()
@@ -303,8 +305,10 @@ class EditSetScreen(Screen):
 
     def do_save(self):
         self.dismiss_all()
+        app = App.get_running_app()
         setObject = self.UI_to_set()
-        if setObject != self.set or setObject.name != self.set.name:
+        if (setObject != app.client.ownSet
+                or setObject.name != app.client.ownSet.name):
             if setObject.filepath == '':
                 return self.do_saveas()
             title = "Save set?"
