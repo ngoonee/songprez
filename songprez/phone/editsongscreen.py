@@ -368,3 +368,29 @@ class EditSongScreen(Screen):
         app = App.get_running_app()
         app.client.save_item(item=songObject, relpath=relpath)
         app.client.change_own_item('song', relpath)
+
+    def safe_to_exit(self):
+        self.dismiss_all()
+        songObject = self.UI_to_song()
+        if songObject != self.song:
+            title = "Song not yet saved!"
+            message = ("Save the song '{0}' to file named '{1}'?".
+                       format(songObject.title, songObject.filepath))
+            content = MDLabel(font_style='Body1',
+                              theme_text_color='Secondary',
+                              text=message,
+                              size_hint_y=None,
+                              valign='top')
+            content.bind(texture_size=content.setter('size'))
+            self.dialog = MDDialog(title=title,
+                                   content=content,
+                                   size_hint=(.8, .6),
+                                   auto_dismiss=False)
+            self.dialog.add_icontext_button("save", "content-save",
+                    action=lambda x: self._do_save(songObject, songObject.filepath))
+            self.dialog.add_icontext_button("cancel", "close-circle",
+                    action=lambda x: self.dialog.dismiss())
+            self.dialog.open()
+            return False
+        else:
+            return True

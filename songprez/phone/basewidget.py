@@ -87,7 +87,6 @@ class BaseWidget(BoxLayout):
         self.dialog = None
         Window.bind(on_key_down=self._on_keyboard_down)
         self.sm.bind(current=self._change_title)
-        self.sm.bind(current=self._track_history)
 
     def _change_title(self, instance, data):
         toolbar = self.toolbar
@@ -113,7 +112,7 @@ class BaseWidget(BoxLayout):
         elif data == 'editsong':
             toolbar.title = (iconfont('edit') + ' Edit Song ' + iconfont('songs'))
 
-    def _track_history(self, instance, data):
+    def _plan_history_change(self, name):
         """
         History tracking logic:-
         1. The purpose of history tracking is for the 'back' button to do
@@ -125,11 +124,11 @@ class BaseWidget(BoxLayout):
         4. Adding songs/items can be done to a set being edited or the active
            presentation. For convenience this can also be tracked here.
         """
-        history = self._history
-        print(history)
+        new_history = self._history[:]
+        removed_screens = []
         # Save screen history
-        if len(history) == 0:
-            history.append(data)
+        if len(new_history) == 0:
+            new_history.append(name)
         else:
             scr_prio = {'sets': 1,
                         'present': 2,
@@ -137,27 +136,23 @@ class BaseWidget(BoxLayout):
                         'scripture': 4, 'search': 4, 'songs': 4,
                         'editsong': 5,
                         'settings': 6, 'scan': 6}
-            diff = scr_prio[data] - scr_prio[history[-1]]
+            diff = scr_prio[name] - scr_prio[new_history[-1]]
             if diff == 0:  # Save level is sets<->present or songs<->search
-                history.pop()
+                removed_screens.append(new_history.pop())
                 self.sm.transition.direction = 'down'
             elif diff > 0:  # Normal case, progressing up the chain
                 self.sm.transition.direction = 'left'
             else:  # 'Backward' jump, need to pare the list down
-                newhistory = []
-                for i, v in enumerate(history):
-                    if scr_prio[data] - scr_prio[v] > 0:
-                        newhistory.append(v)
+                for i, v in enumerate(new_history):
+                    if scr_prio[name] - scr_prio[v] > 0:
+                        split_point = i
                     else:
                         break
-                del history[:]
-                history.extend(newhistory)
+                removed_screens = new_history[i+1:]
+                new_history = new_history[:i]
                 self.sm.transition.direction = 'right'
-            history.append(data)
-        if data == 'settings':
-            app = App.get_running_app()
-            app.open_settings()
-        print(history)
+            new_history.append(name)
+        return new_history, removed_screens
             
     def _on_keyboard_down(self, *args):
         keycode = args[1]
@@ -180,7 +175,7 @@ class BaseWidget(BoxLayout):
         if len(self._history) > 1:
             if self.sm.current == 'settings':
                 app.close_settings()
-            self.sm.current = self._history[-2]
+            self.to_screen(self._history[-2])
         else:
             title = "Exit Songprez?"
             message = ("Please confirm that you want to exit Songprez, "
@@ -205,14 +200,33 @@ class BaseWidget(BoxLayout):
     def _clear_dialog(self, *args):
         self.dialog = None
 
-    def to_screen(self, name):
+    def to_screen(self, name, skip_save_check=False):
         """
-        Order of events when moving back and forth through history:-
-        1. All movement done using to_screen(name)
-        2. Check whether sm.current can be left (unsaved changes etc.)
-        3. Change sm.current
+        All screen changes must be done using to_screen(screen_name).
+
+        This allows for checks to be run prior to actually changinge the
+        screen (if necessary).
         """
+        # Check if current screen needs a save reminder
+        if not skip_save_check:
+            cur_scr = self.sm.current_screen
+            if getattr(cur_scr, 'safe_to_exit', None):
+                if not cur_scr.safe_to_exit():
+                    return
+        new_history, removed_screens = self._plan_history_change(name)
+        # Check if skipped-over screens need a save reminder
+        for scr_name in reversed(removed_screens):
+            scr = self.sm.get_screen(scr_name)
+            if getattr(scr, 'safe_to_exit', None):
+                if not scr.safe_to_exit():
+                    self.sm.current = scr_name
+                    return
+        # Passed all checks, go ahead and change both history and screen
+        self._history = new_history
         self.sm.current = name
+        if name == 'settings':
+            app = App.get_running_app()
+            app.open_settings()
 
     def add_item(self, itemtype, relpath):
         if self.presenting:

@@ -221,17 +221,17 @@ class EditSetScreen(Screen):
         self.dismiss_all()
         app = App.get_running_app()
         app.base.current_song = self.itemlist[index]
-        app.base.to_screen('editsong')
+        app.base.to_screen('editsong', skip_save_check=True)
 
     def add_from_search(self):
         self.dismiss_all()
         app = App.get_running_app()
-        app.base.to_screen('search')
+        app.base.to_screen('search', skip_save_check=True)
 
     def add_from_list(self):
         self.dismiss_all()
         app = App.get_running_app()
-        app.base.to_screen('songs')
+        app.base.to_screen('songs', skip_save_check=True)
 
     def add_scripture(self):
         self.dismiss_all()
@@ -350,3 +350,31 @@ class EditSetScreen(Screen):
         app = App.get_running_app()
         app.client.save_set(set=setObject, relpath=relpath)
         app.client.change_own_set(relpath)
+
+    def safe_to_exit(self):
+        self.dismiss_all()
+        app = App.get_running_app()
+        setObject = self.UI_to_set()
+        if (setObject != app.client.ownSet
+                or setObject.name != app.client.ownSet.name):
+            title = "Set not yet saved!"
+            message = ("Save the set '{0}' to file name '{1}'?".
+                       format(setObject.name, setObject.filepath))
+            content = MDLabel(font_style='Body1',
+                              theme_text_color='Secondary',
+                              text=message,
+                              size_hint_y=None,
+                              valign='top')
+            content.bind(texture_size=content.setter('size'))
+            self.dialog = MDDialog(title=title,
+                                   content=content,
+                                   size_hint=(.8, .6),
+                                   auto_dismiss=False)
+            self.dialog.add_icontext_button("save", "content-save",
+                    action=lambda x: self._do_save(setObject, setObject.filepath))
+            self.dialog.add_icontext_button("cancel", "close-circle",
+                    action=lambda x: self.dialog.dismiss())
+            self.dialog.open()
+            return False
+        else:
+            return True
