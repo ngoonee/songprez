@@ -12,7 +12,6 @@ from kivymd.label import MDLabel
 from kivymd.dialog import MDDialog
 from ..control.spset import SPSet
 from .scanscreen import ScanScreen
-from .mainscreen import MainScreen
 from .presentscreen import PresentScreen
 from .listscreen import SetScreen, SongScreen, SearchScreen
 from .fontutil import iconfont
