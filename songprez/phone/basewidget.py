@@ -14,7 +14,6 @@ from ..control.spset import SPSet
 from .scanscreen import ScanScreen
 from .presentscreen import PresentScreen
 from .listscreen import SetScreen, SongScreen, SearchScreen
-from .fontutil import iconfont
 from .editsetscreen import EditSetScreen
 from .editsongscreen import EditSongScreen
 from .toolbar import SPToolbar
@@ -47,7 +46,8 @@ Builder.load_string("""
         md_bg_color: app.theme_cls.primary_color
         background_palette: 'Primary'
         background_hue: '500'
-        left_action_items: [['menu', lambda x: app.nav_drawer.toggle()]]
+        left_action_items: [['keyboard-backspace', lambda x: app.base.back()]]
+        right_action_items: [['menu', lambda x: app.nav_drawer.toggle()]]
     ScreenManager:
         id: sm
         SetScreen:
@@ -81,35 +81,56 @@ Builder.load_string("""
 class BaseWidget(BoxLayout):
     def __init__(self, **kwargs):
         super(BaseWidget, self).__init__(**kwargs)
+        app = App.get_running_app()
         self.presenting = True
         self._history = ['sets']
+        self.sm.current = 'sets'
+        self.toolbar.title = 'Sets'
+        self.toolbar.left_action_items = [['home', lambda x: None]]
+        self.toolbar.right_action_items = [['book-open-page-variant', lambda x: None],
+                                           ['menu', lambda x: app.nav_drawer.toggle()]]
         self.dialog = None
         Window.bind(on_key_down=self._on_keyboard_down)
         self.sm.bind(current=self._change_title)
 
     def _change_title(self, instance, data):
+        app = App.get_running_app()
         toolbar = self.toolbar
+        toolbar.left_action_items = [['keyboard-backspace', self.back]]
         # Set the main label
         if data == 'scan':
             toolbar.title = 'SongPrez'
+            toolbar.right_action_items = [['remote', lambda x: None]]
         elif data == 'sets':
-            toolbar.title = 'Sets ' + iconfont('sets')
+            toolbar.title = 'Sets'
+            toolbar.left_action_items = [['home', lambda x: None]]
+            toolbar.right_action_items = [['book-open-page-variant', lambda x: None]]
         elif data == 'songs':
-            toolbar.title = 'Songs ' + iconfont('songs')
+            toolbar.title = 'Songs'
+            toolbar.right_action_items = [['file-document', lambda x: None]]
         elif data == 'present':
             self.presenting = True
-            toolbar.title = 'Present ' + iconfont('present')
+            toolbar.title = 'Present'
+            toolbar.right_action_items = [['presentation-play', lambda x: None]]
         elif data == 'search':
-            toolbar.title = 'Search ' + iconfont('search')
+            toolbar.title = 'Search'
+            toolbar.right_action_items = [['magnify', lambda x: None]]
         elif data == 'scripture':
-            toolbar.title = 'Scripture ' + iconfont('scripture')
+            toolbar.title = 'Scripture'
+            toolbar.right_action_items = [['bible', lambda x: None]]
         elif data == 'settings':
-            toolbar.title = 'Settings ' + iconfont('settings')
+            toolbar.title = 'Settings'
+            toolbar.right_action_items = [['settings', lambda x: None]]
         elif data == 'editset':
             self.presenting = False
-            toolbar.title = (iconfont('edit') + ' Edit Set ' + iconfont('sets'))
+            toolbar.title = 'Edit Set'
+            toolbar.right_action_items = [['pencil', lambda x: None],
+                                          ['book-open-page-variant', lambda x: None]]
         elif data == 'editsong':
-            toolbar.title = (iconfont('edit') + ' Edit Song ' + iconfont('songs'))
+            toolbar.title = 'Edit Song'
+            toolbar.right_action_items = [['pencil', lambda x: None],
+                                          ['file-document', lambda x: None]]
+        toolbar.right_action_items.append(['menu', lambda x: app.nav_drawer.toggle()])
 
     def _plan_history_change(self, name):
         """

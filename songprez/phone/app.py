@@ -103,7 +103,7 @@ class SongPrezApp(App):
         self.seeker = None
         font_register()
         self.base = BaseWidget()
-        self.nav_drawer = SPNavDrawer()
+        self.nav_drawer = SPNavDrawer(side='right')
         self.theme_cls.theme_style = 'Dark'
         self.theme_cls.primary_palette = 'Teal'
         self.theme_cls.primary_hue = '800'
