@@ -2,8 +2,8 @@
 from kivy.lang import Builder
 from kivy.metrics import dp
 from kivy.properties import StringProperty, BoundedNumericProperty
-from kivymd.button import BaseRaisedButton, BasePressedButton
-from kivymd.ripplebehavior import RectangularRippleBehavior
+from kivymd.button import BaseRaisedButton, BasePressedButton, BaseFlatButton
+from kivymd.ripplebehavior import RectangularRippleBehavior, CircularRippleBehavior
 from kivymd.elevationbehavior import RectangularElevationBehavior
 from kivy.uix.recycleview.views import RecycleDataViewBehavior
 
@@ -61,6 +61,29 @@ Builder.load_string('''
         Clear
     -md_bg_color: 0, 0, 0, 0
     -width: self.content.width
+<TransposeButton>:
+    canvas:
+        Clear
+        Color:
+            rgba: self._current_button_color
+        Ellipse:
+            size: self.size
+            pos: self.pos
+    content: content
+    size: dp(24), dp(24)
+    content: content
+    theme_text_color: 'Primary'
+    md_bg_color: self.theme_cls.primary_color
+    MDLabel:
+        id: content
+        font_style: 'Subhead'
+        text: root.text
+        theme_text_color: root.theme_text_color
+        text_color: root.text_color
+        disabled: root.disabled
+        valign: 'middle'
+        halign: 'center'
+        opposite_colors: root.opposite_colors
 ''')
 
 class IconTextButton(RectangularRippleBehavior, BaseRaisedButton,
@@ -77,3 +100,7 @@ class IconTextButton(RectangularRippleBehavior, BaseRaisedButton,
 
 class IconTextMenuItem(RecycleDataViewBehavior, IconTextButton):
     pass
+
+
+class TransposeButton(CircularRippleBehavior, BaseFlatButton, BasePressedButton):
+    text = StringProperty('')

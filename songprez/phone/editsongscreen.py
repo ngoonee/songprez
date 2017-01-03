@@ -14,9 +14,10 @@ from kivy.animation import Animation
 from kivy.properties import ObjectProperty, StringProperty
 from kivymd.label import MDLabel
 from kivymd.dialog import MDDialog
+from kivymd.button import MDIconButton
 from functools import partial
 from blinker import signal
-from .fontutil import iconfont
+from .icontextbutton import TransposeButton
 from .saveasdialog import SaveAsDialogContent
 from ..control.spsong import SPSong
 
@@ -81,12 +82,10 @@ Builder.load_string("""
                             hint_text: 'Saved As'
                             height: self.minimum_height
                             readonly: True
-                    TextInput:
+                    MultiLineTextField:
                         id: lyrics
                         size_hint_y: None
                         height: self.minimum_height if self.minimum_height > transposeicon.height else transposeicon.height
-                        font_size: app.ui_fs_detail
-                        font_name: 'NotoSansMono'
                     BoxLayout:
                         orientation: 'vertical'
                         id: bottom
@@ -152,19 +151,56 @@ Builder.load_string("""
                     transposebar: transposebar
                     id: transposeicon
                     root: root
-                    pos: lyrics.x + lyrics.width - 1*self.width, lyrics.y + lyrics.height - 1*self.height
-                    color: 0, 0, 0
-                    size_hint: None, None
-                    size: 2*app.buttonsize, 2*app.buttonsize
-                    markup: True
-                    opacity: 0.4
+                    pos: lyrics.x + lyrics.width - self.width, lyrics.y + lyrics.height - self.height
+                    icon: 'music-note'
+                    opacity: 0.6
                 BoxLayout:
                     id: transposebar
                     size_hint: None, None
-                    size: app.buttonsize, 13*app.buttonsize
-                    pos: transposeicon.x - self.width, transposeicon.y - 5.5*app.buttonsize
+                    size: dp(24), self.minimum_height
+                    spacing: dp(4)
+                    pos: transposeicon.x - self.width, transposeicon.y + .5*transposeicon.height - .5*self.height
                     orientation: 'vertical'
                     opacity: 0
+                    TransposeButton:
+                        text: '+6'
+                        on_press: root.do_transpose(6)
+                    TransposeButton:
+                        text: '+5'
+                        on_press: root.do_transpose(5)
+                    TransposeButton:
+                        text: '+4'
+                        on_press: root.do_transpose(4)
+                    TransposeButton:
+                        text: '+3'
+                        on_press: root.do_transpose(3)
+                    TransposeButton:
+                        text: '+2'
+                        on_press: root.do_transpose(2)
+                    TransposeButton:
+                        text: '+1'
+                        on_press: root.do_transpose(1)
+                    TransposeButton:
+                        text: '0'
+                        on_press: root.do_transpose(0)
+                    TransposeButton:
+                        text: '-1'
+                        on_press: root.do_transpose(-1)
+                    TransposeButton:
+                        text: '-2'
+                        on_press: root.do_transpose(-2)
+                    TransposeButton:
+                        text: '-3'
+                        on_press: root.do_transpose(-3)
+                    TransposeButton:
+                        text: '-4'
+                        on_press: root.do_transpose(-4)
+                    TransposeButton:
+                        text: '-5'
+                        on_press: root.do_transpose(-5)
+                    TransposeButton:
+                        text: '-6'
+                        on_press: root.do_transpose(-6)
         AnchorLayout:
             anchor_x: 'right'
             padding: dp(8)
@@ -195,20 +231,10 @@ Builder.load_string("""
                     on_release: root.do_save()
 """)
 
-class TouchLabel(Label):
-    def __init__(self, **kwargs):
-        super(TouchLabel, self).__init__(**kwargs)
-        Clock.schedule_once(self._finish_init)
-
-    def _finish_init(self, dt):
-        app = App.get_running_app()
-        for i in range(6, -7, -1):
-            prefix = '+' if i >0 else ''
-            but = Button(text=prefix+str(i),
-                         size_hint=(None, None),
-                         size=(app.buttonsize, app.buttonsize))
-            but.bind(on_press=partial(self._do_transpose, i))
-            self.transposebar.add_widget(but)
+class TouchLabel(MDIconButton):
+    def _finish_init(self, dt=None):
+        super(TouchLabel, self)._finish_init(dt)
+        self.content.font_size = dp(32)
 
     def on_touch_down(self, touch):
         if self.collide_point(*touch.pos):
@@ -223,14 +249,6 @@ class TouchLabel(Label):
             anim.start(self.transposebar)
         return False
 
-    def _do_transpose(self, i, instance):
-        so = SPSong()
-        so.lyrics = self.root.lyrics.text
-        so.key = self.root.key.text
-        so.transpose(i)
-        self.root.lyrics.text = so.lyrics
-        self.root.key.text = so.key
-
 
 class EditSongScreen(Screen):
     song = ObjectProperty(None)
@@ -243,7 +261,6 @@ class EditSongScreen(Screen):
     def _finish_init(self, dt):
         app = App.get_running_app()
         signal('ownItem').connect(self._update_song)
-        self.transposeicon.text = iconfont('transpose', 2*app.ui_fs_button)
 
     def _update_song(self, sender=None):
         app = App.get_running_app()
@@ -295,6 +312,14 @@ class EditSongScreen(Screen):
         songObject.user3 = self.user3.text 
         songObject.lyrics = self.lyrics.text 
         return songObject
+
+    def do_transpose(self, i):
+        so = SPSong()
+        so.lyrics = self.lyrics.text
+        so.key = self.key.text
+        so.transpose(i)
+        self.lyrics.text = so.lyrics
+        self.key.text = so.key
 
     def dismiss_all(self):
         if self.dialog:

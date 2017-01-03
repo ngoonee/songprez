@@ -16,7 +16,6 @@ from copy import deepcopy
 from blinker import signal
 from twisted.internet import defer
 from ..control.spset import SPSet
-from .fontutil import iconfont
 from .saveasdialog import SaveAsDialogContent
 from .recyclelist import SPRecycleView
 

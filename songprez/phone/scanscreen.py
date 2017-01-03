@@ -10,7 +10,6 @@ from kivy.uix.screenmanager import Screen
 from kivy.uix.carousel import Carousel
 from .recyclelist import SPRecycleView
 from kivy.properties import ListProperty, StringProperty
-from .fontutil import iconfont
 from kivymd.label import MDLabel
 from kivymd.theming import ThemableBehavior
 import kivymd.material_resources as m_res

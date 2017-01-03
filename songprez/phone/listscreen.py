@@ -19,7 +19,6 @@ from kivymd.dialog import MDDialog
 from kivymd.label import MDLabel
 from kivymd.menu import MDDropdownMenu
 from kivymd.button import MDFloatingActionButton
-from .fontutil import iconfont
 from .recyclelist import SPRecycleView
 from kivy.metrics import dp, sp
 from .icontextbutton import IconTextMenuItem
