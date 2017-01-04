@@ -65,24 +65,25 @@ Builder.load_string("""
                         spacing: dp(10)
                         size_hint_y: None
                         height: self.minimum_height
-                        SingleLineTextField:
+                        MDTextField:
                             id: title
                             hint_text: 'Title'
-                        SingleLineTextField:
+                        MDTextField:
                             id: author
                             hint_text: 'Author'
-                        SingleLineTextField:
+                        MDTextField:
                             id: aka
                             hint_text: 'AKA'
-                        SingleLineTextField:
+                        MDTextField:
                             id: key_line
                             hint_text: 'Key line'
-                        SingleLineTextField:
+                        MDTextField:
                             id: filepath
                             hint_text: 'Saved As'
                             height: self.minimum_height
                             readonly: True
-                    MultiLineTextField:
+                    MDTextField:
+                        multiline: True
                         id: lyrics
                         size_hint_y: None
                         height: self.minimum_height if self.minimum_height > transposeicon.height else transposeicon.height
@@ -92,26 +93,26 @@ Builder.load_string("""
                         spacing: dp(10)
                         size_hint_y: None
                         height: self.minimum_height
-                        SingleLineTextField:
+                        MDTextField:
                             id: presentation
                             hint_text: 'Order'
-                        SingleLineTextField:
+                        MDTextField:
                             id: hymn_number
                             hint_text: 'Hymn number'
-                        SingleLineTextField:
+                        MDTextField:
                             id: copyright
                             hint_text: 'Copyright'
-                        SingleLineTextField:
+                        MDTextField:
                             id: ccli
                             hint_text: 'CCLI'
-                        SingleLineTextField:
+                        MDTextField:
                             id: key
                             hint_text: 'Key'
                         BoxLayout:
                             orientation: 'horizontal'
                             size_hint_y: None
                             height: capo.height
-                            SingleLineTextField:
+                            MDTextField:
                                 id: capo
                                 hint_text: 'Capo'
                             Widget:
@@ -129,22 +130,22 @@ Builder.load_string("""
                                 id: capo_print
                                 size_hint_x: None
                                 width: sp(32)
-                        SingleLineTextField:
+                        MDTextField:
                             id: tempo
                             hint_text: 'Tempo'
-                        SingleLineTextField:
+                        MDTextField:
                             id: time_sig
                             hint_text: 'Time Signature'
-                        SingleLineTextField:
+                        MDTextField:
                             id: theme
                             hint_text: 'Theme'
-                        SingleLineTextField:
+                        MDTextField:
                             id: user1
                             hint_text: 'User 1'
-                        SingleLineTextField:
+                        MDTextField:
                             id: user2
                             hint_text: 'User 2'
-                        SingleLineTextField:
+                        MDTextField:
                             id: user3
                             hint_text: 'User 3'
                 TouchLabel:

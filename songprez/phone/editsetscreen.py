@@ -8,7 +8,7 @@ from kivy.uix.scrollview import ScrollView
 from kivy.uix.screenmanager import Screen
 from kivy.properties import ListProperty, ObjectProperty
 from kivy.metrics import dp, sp
-from kivymd.textfields import SingleLineTextField
+from kivymd.textfields import MDTextField
 from kivymd.button import MDIconButton
 from kivymd.label import MDLabel
 from kivymd.dialog import MDDialog
@@ -43,10 +43,10 @@ Builder.load_string("""
             padding: dp(16), dp(8), dp(16), dp(16)
             size_hint_y: None
             height: self.minimum_height
-            SingleLineTextField:
+            MDTextField:
                 id: setname
                 hint_text: 'Name'
-            SingleLineTextField:
+            MDTextField:
                 id: filepath
                 hint_text: 'Saved as'
                 message: "File path is relative to main SongPrez folder"

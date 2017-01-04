@@ -13,14 +13,14 @@ from kivymd.label import MDLabel
 from kivymd.theming import ThemableBehavior
 
 Builder.load_string('''
-<SingleLineTextField>:
+<MDTextField>:
     canvas.before:
         Clear
         Color:
             rgba: self.line_color_normal
         Line:
             id: "the_line"
-            points: self.x, self.y + dp(8), self.x + self.width, self.y + dp(8)
+            points: self.x, self.y + dp(16), self.x + self.width, self.y + dp(16)
             width: 1
             dash_length: dp(3)
             dash_offset: 2 if self.disabled else 0
@@ -28,19 +28,19 @@ Builder.load_string('''
             rgba: self._current_line_color
         Rectangle:
             size: self._line_width, dp(2)
-            pos: self.center_x - (self._line_width / 2), self.y + dp(8)
+            pos: self.center_x - (self._line_width / 2), self.y + dp(16)
         Color:
             rgba: self._current_error_color
         Rectangle:
             texture: self._msg_lbl.texture
             size: self._msg_lbl.texture_size
-            pos: self.x, self.y - dp(8)
+            pos: self.x, self.y
         Color:
             rgba: self._current_right_lbl_color
         Rectangle:
             texture: self._right_msg_lbl.texture
             size: self._right_msg_lbl.texture_size
-            pos: self.width-self._right_msg_lbl.texture_size[0]+dp(45), self.y - dp(8)
+            pos: self.width-self._right_msg_lbl.texture_size[0]+dp(45), self.y
         Color:
             rgba: (self._current_line_color if self.focus and not self.cursor_blink \
             else (0, 0, 0, 0))
@@ -68,11 +68,7 @@ Builder.load_string('''
     padding:    0, dp(16), 0, dp(10)
     multiline:    False
     size_hint_y: None
-    height: dp(48)
-
-<MultiLineTextField>:
-    -height: self.minimum_height
-    -multiline: True
+    height: self.minimum_height + dp(8)
 
 <TextfieldLabel>
     disabled_color: self.theme_cls.disabled_hint_text_color
@@ -122,7 +118,7 @@ class TextfieldLabel(MDLabel):
         self._currently_bound_property = c
 
 
-class SingleLineTextField(ThemableBehavior, FixedHintTextInput):
+class MDTextField(ThemableBehavior, FixedHintTextInput):
     line_color_normal = ListProperty()
     line_color_focus = ListProperty()
     error_color = ListProperty()
@@ -158,7 +154,7 @@ class SingleLineTextField(ThemableBehavior, FixedHintTextInput):
         self._hint_lbl = TextfieldLabel(font_style='Subhead',
                                         halign='left',
                                         valign='middle')
-        super(SingleLineTextField, self).__init__(**kwargs)
+        super(MDTextField, self).__init__(**kwargs)
         self.line_color_normal = self.theme_cls.divider_color
         self.line_color_focus = list(self.theme_cls.primary_color)
         self.base_line_color_focus = list(self.theme_cls.primary_color)
@@ -334,7 +330,3 @@ class SingleLineTextField(ThemableBehavior, FixedHintTextInput):
     def _set_max_text_length(self, instance, length):
         self.max_text_length = length
         self._right_msg_lbl.text = "{}/{}".format(len(self.text), length)
-
-
-class MultiLineTextField(SingleLineTextField):
-    pass

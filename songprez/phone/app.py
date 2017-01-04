@@ -42,8 +42,8 @@ MDLabel._font_styles = DictProperty({'Body1': ['NotoSans', False, 14, 13],
                                  'Display4': ['NotoSans', False, 112, None],
                                  'Button': ['NotoSans', True, 14, None],
                                  'Icon': ['Icons', False, 24, None]})
-from kivymd.textfields import SingleLineTextField
-SingleLineTextField.font_name = StringProperty('NotoSans')
+from kivymd.textfields import MDTextField
+MDTextField.font_name = StringProperty('NotoSans')
 
 # Monkey patch to allow adding icontextbutton
 from kivymd.dialog import MDDialog
