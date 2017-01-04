@@ -2,6 +2,7 @@
 import kivy
 # kivy.require('1.9.1')
 from kivy.lang import Builder
+from kivy.clock import Clock
 from kivy.core.window import Window
 from kivy.app import App
 from kivy.properties import ObjectProperty
@@ -84,14 +85,10 @@ class BaseWidget(BoxLayout):
         app = App.get_running_app()
         self.presenting = True
         self._history = ['sets']
-        self.sm.current = 'sets'
-        self.toolbar.title = 'Sets'
-        self.toolbar.left_action_items = [['home', lambda x: None]]
-        self.toolbar.right_action_items = [['book-open-page-variant', lambda x: None],
-                                           ['menu', lambda x: app.nav_drawer.toggle()]]
         self.dialog = None
         Window.bind(on_key_down=self._on_keyboard_down)
         self.sm.bind(current=self._change_title)
+        Clock.schedule_once(lambda x: self.to_screen('sets'))
 
     def _change_title(self, instance, data):
         app = App.get_running_app()
