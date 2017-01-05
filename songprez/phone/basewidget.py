@@ -5,12 +5,15 @@ from kivy.lang import Builder
 from kivy.clock import Clock
 from kivy.core.window import Window
 from kivy.app import App
+from kivy.animation import Animation
 from kivy.properties import ObjectProperty
 from kivy.uix.screenmanager import ScreenManager
 from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.modalview import ModalView
 from kivymd.label import MDLabel
 from kivymd.dialog import MDDialog
+from kivymd import snackbar as Snackbar
 from ..control.spset import SPSet
 from .scanscreen import ScanScreen
 from .presentscreen import PresentScreen
@@ -43,6 +46,9 @@ Builder.load_string("""
     orientation: "vertical"
     SPToolbar:
         id: toolbar
+        size_hint: 1, None
+        x: root.x
+        y: root.height - self.height
         title: 'SongPrez'
         md_bg_color: app.theme_cls.primary_color
         background_palette: 'Primary'
@@ -51,6 +57,9 @@ Builder.load_string("""
         right_action_items: [['menu', lambda x: app.nav_drawer.toggle()]]
     ScreenManager:
         id: sm
+        pos: root.pos
+        size_hint: 1, None
+        height: toolbar.y
         SetScreen:
             id: sets
             name: 'sets'
@@ -79,7 +88,7 @@ Builder.load_string("""
 """)
 
 
-class BaseWidget(BoxLayout):
+class BaseWidget(FloatLayout):
     def __init__(self, **kwargs):
         super(BaseWidget, self).__init__(**kwargs)
         app = App.get_running_app()
@@ -183,6 +192,9 @@ class BaseWidget(BoxLayout):
         if self.dialog:
             # Pressing a second time to exit app
             app.stop()
+        if self.toolbar.hidden:
+            self.show_toolbar()
+            return
         if not skip_modal:
             for widget in app.root_window.children:
                 # If there's a modalview (Popup/MDDialog) somewhere, dismiss it
@@ -251,3 +263,25 @@ class BaseWidget(BoxLayout):
             self.present.add_item(itemtype, relpath)
         else:
             self.editset.add_item(itemtype, relpath)
+
+    def hide_toolbar(self):
+        if not self.toolbar.hidden:
+            Animation.cancel_all(self.toolbar, 'y')
+            self.toolbar.hidden = True
+            anim = Animation(y=self.height, d=0.2)
+            anim.start(self.toolbar)
+            notification = ("Double-tap anywhere to show Toolbar")
+            Snackbar.make(notification)
+
+    def show_toolbar(self):
+        if self.toolbar.hidden:
+            Animation.cancel_all(self.toolbar, 'y')
+            self.toolbar.hidden = False
+            anim = Animation(y=(self.height - self.toolbar.height), d=0.2)
+            anim.start(self.toolbar)
+
+    def on_touch_down(self, touch):
+        if touch.is_double_tap:
+            self.show_toolbar()
+            return True
+        super(BaseWidget, self).on_touch_down(touch)

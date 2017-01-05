@@ -332,3 +332,10 @@ class PresentScreen(Screen):
 
     def edit(self):
         self.addbar.animate_out()
+
+    def on_parent(self, instance, parent):
+        app = App.get_running_app()
+        if parent:
+            app.base.hide_toolbar()
+        else:
+            app.base.show_toolbar()
