@@ -395,7 +395,7 @@ class EditSongScreen(Screen):
         app.client.save_item(item=songObject, relpath=relpath)
         app.client.change_own_item('song', relpath)
 
-    def safe_to_exit(self):
+    def safe_to_exit(self, target_screen):
         self.dismiss_all()
         songObject = self.UI_to_song()
         if songObject != self.song:
@@ -411,12 +411,19 @@ class EditSongScreen(Screen):
             self.dialog = MDDialog(title=title,
                                    content=content,
                                    size_hint=(.8, .6),
-                                   auto_dismiss=False)
+                                   auto_dismiss=True)
             self.dialog.add_icontext_button("save", "content-save",
                     action=lambda x: self._do_save(songObject, songObject.filepath))
-            self.dialog.add_icontext_button("cancel", "close-circle",
-                    action=lambda x: self.dialog.dismiss())
+            self.dialog.add_icontext_button("discard", "delete-variant",
+                    action=lambda x: self._proceed_to_target(target_screen))
             self.dialog.open()
             return False
         else:
             return True
+
+    def _proceed_to_target(self, target_screen):
+        self.dismiss_all()
+        app = App.get_running_app()
+        app.base.to_screen(target_screen, skip_save_check=True)
+        self.song = app.client.ownItem
+        self.song_to_UI()

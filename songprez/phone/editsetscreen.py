@@ -350,7 +350,7 @@ class EditSetScreen(Screen):
         app.client.save_set(set=setObject, relpath=relpath)
         app.client.change_own_set(relpath)
 
-    def safe_to_exit(self):
+    def safe_to_exit(self, target_screen):
         self.dismiss_all()
         app = App.get_running_app()
         setObject = self.UI_to_set()
@@ -368,12 +368,19 @@ class EditSetScreen(Screen):
             self.dialog = MDDialog(title=title,
                                    content=content,
                                    size_hint=(.8, .6),
-                                   auto_dismiss=False)
+                                   auto_dismiss=True)
             self.dialog.add_icontext_button("save", "content-save",
                     action=lambda x: self._do_save(setObject, setObject.filepath))
-            self.dialog.add_icontext_button("cancel", "close-circle",
-                    action=lambda x: self.dialog.dismiss())
+            self.dialog.add_icontext_button("discard", "delete-variant",
+                    action=lambda x: self._proceed_to_target(target_screen))
             self.dialog.open()
             return False
         else:
             return True
+
+    def _proceed_to_target(self, target_screen):
+        self.dismiss_all()
+        app = App.get_running_app()
+        app.base.to_screen(target_screen, skip_save_check=True)
+        self.edit_set = deepcopy(app.client.ownSet)
+        Clock.schedule_once(self.set_to_UI)

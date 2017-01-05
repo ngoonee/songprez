@@ -228,16 +228,17 @@ class BaseWidget(BoxLayout):
         if not skip_save_check:
             cur_scr = self.sm.current_screen
             if getattr(cur_scr, 'safe_to_exit', None):
-                if not cur_scr.safe_to_exit():
+                if not cur_scr.safe_to_exit(name):
                     return
         new_history, removed_screens = self._plan_history_change(name)
         # Check if skipped-over screens need a save reminder
         for scr_name in reversed(removed_screens):
             scr = self.sm.get_screen(scr_name)
-            if getattr(scr, 'safe_to_exit', None):
-                if not scr.safe_to_exit():
-                    self.sm.current = scr_name
-                    return
+            if scr != self.sm.current_screen:
+                if getattr(scr, 'safe_to_exit', None):
+                    if not scr.safe_to_exit(name):
+                        self.sm.current = scr_name
+                        return
         # Passed all checks, go ahead and change both history and screen
         self._history = new_history
         self.sm.current = name
