@@ -4,6 +4,7 @@ import kivy
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.core.window import Window
+from kivy.metrics import dp
 from kivy.uix.widget import Widget
 from kivy.clock import Clock
 from kivy.uix.screenmanager import Screen, ScreenManager
@@ -12,21 +13,15 @@ from kivy.properties import ListProperty, ObjectProperty
 from twisted.internet import defer
 from copy import deepcopy
 from blinker import signal
+from kivymd.theming import ThemableBehavior
+from kivymd.slider import MDSlider
 from ..control.spset import SPSet
-from .fontutil import iconfont
 from .chordlabel import ChordLabel
 from ..network.messages import GetItem
 
 Builder.load_string("""
 <MyStencil@BoxLayout+StencilView>
     padding: 0
-
-<FakeButton@ButtonBehavior+Label>
-    size_hint: None, None
-    size: 2*app.buttonsize, 2*app.buttonsize
-    font_size: 2*app.ui_fs_button
-    markup: True
-    opacity: 0.4
 
 <AddBar>:
     pbadd: pbadd
@@ -36,53 +31,67 @@ Builder.load_string("""
     pbedit: pbedit
     active: 0
     size_hint: None, None
-    width: 2*app.buttonsize
+    width: dp(48)
+    height: addbox.minimum_height
     StencilView:
         width: root.width
-        height: 2*app.buttonsize + (root.height-2*app.buttonsize) * root.active
-        size: root.size
+        height: dp(48) + (root.height-dp(48)) * root.active
         x: root.x
         y: root.y
         Widget:
             canvas.before:
                 Color:
-                    rgba: (.125, .125, .125, 1)
+                    rgba: root.theme_cls.bg_light
                 RoundedRectangle:
                     size: root.size
                     pos: root.pos
                     radius: dp(10),
             opacity: 1 if root.active else 0
-        FakeButton:
-            id: pbedit
-            pos: root.x, root.y + 4*self.height + dp(3)
-            opacity: root.active*0.6 + 0.4
-        FakeButton:
-            id: pbsave
-            pos: root.x, root.y + 3*self.height + dp(3)
-            opacity: root.active*0.6 + 0.4
-        Widget:
-            size: 2*app.buttonsize - dp(6), dp(3)
-            opacity: root.active*0.6 + 0.4
-            pos: root.x + dp(3), root.y + 6*app.buttonsize
-            canvas.before:
-                Color:
-                    rgba: (1, 1, 1, 1)
-                RoundedRectangle:
-                    size: self.size
-                    pos: self.pos
-                    radius: dp(3),
-        FakeButton:
-            id: pbscripture
-            pos: root.x, root.y + 2*self.height
-            opacity: root.active*0.6 + 0.4
-        FakeButton:
-            id: pbsearch
-            pos: root.x, root.y + 1*self.height
-            opacity: root.active*0.6 + 0.4
-        FakeButton:
-            id: pbadd
-            pos: root.x, root.y
-            opacity: root.active*0.6 + 0.4
+        BoxLayout:
+            id: addbox
+            orientation: 'vertical'
+            pos: root.pos
+            MDIconButton:
+                id: pbedit
+                opacity: root.active*0.6 + 0.4
+                icon: 'pencil'
+                on_release: root.edit()
+            MDIconButton:
+                id: pbsave
+                opacity: root.active*0.6 + 0.4
+                icon: 'content-save'
+                on_release: root.save()
+            Widget:
+                size_hint: None, None
+                size: root.width, dp(2)
+                opacity: root.active*0.6 + 0.4
+                canvas.before:
+                    Color:
+                        rgba: root.theme_cls.divider_color
+                    RoundedRectangle:
+                        size: self.width - dp(8), dp(2)
+                        pos: self.x + dp(4), self.y
+                        radius: dp(2),
+            MDIconButton:
+                id: pbscripture
+                opacity: root.active*0.6 + 0.4
+                icon: 'bible'
+                on_release: root.scripture()
+            MDIconButton:
+                id: pbsong
+                opacity: root.active*0.6 + 0.4
+                icon: 'file-document'
+                on_release: root.song()
+            MDIconButton:
+                id: pbsearch
+                opacity: root.active*0.6 + 0.4
+                icon: 'magnify'
+                on_release: root.search()
+            MDIconButton:
+                id: pbadd
+                opacity: root.active*0.6 + 0.4
+                icon: 'plus'
+                on_release: root.add()
 
 <TransposeBar>:
     pbviewchords: pbviewchords
@@ -91,50 +100,57 @@ Builder.load_string("""
     apply: None
     active: 0
     size_hint: None, None
-    height: 2*app.buttonsize
+    height: dp(60)
     StencilView:
         height: root.height
-        width: 2*app.buttonsize + (root.width-2*app.buttonsize) * root.active
-        x: root.x + (root.width-2*app.buttonsize) * (1-root.active)
+        width: dp(48) + (root.width-dp(48)) * root.active
+        x: root.x + (root.width-dp(48)) * (1-root.active)
         y: root.y
         Widget:
             canvas.before:
                 Color:
-                    rgba: (.125, .125, .125, 1)
+                    rgba: root.theme_cls.bg_light
                 RoundedRectangle:
                     size: root.size
                     pos: root.pos
                     radius: dp(10),
             opacity: 1 if root.active else 0
-        FakeButton:
-            id: pbviewchords
-            pos: root.x, root.y
-            opacity: root.active*0.6 + 0.4
-        Label:
+        MDLabel:
             id: transposelabel
             text: ("+" if slider.value > 0 else "") + str(int(slider.value))
-            font_size: app.ui_fs_main
+            font_style: 'Subhead'
             size_hint: None, None
             size: self.texture_size
             x: int(slider.x + slider.width/2 - self.width/2)
             y: slider.y + slider.height
-        Slider:
+            theme_text_color: 'Primary'
+            opacity: root.active*0.6 + 0.4
+        MDSlider:
             id: slider
             range: -6, 6
             step: 1
             size_hint: None, None
             width: root.width - pbviewchords.width - pbtranspose.width
-            height: app.buttonsize
-            pos: root.x + 2*app.buttonsize, root.y + dp(5)
+            height: dp(48)
+            pos: root.x + dp(48), root.y + dp(8)
             on_value: root.transpose(self.value) if root.active else 0
-        FakeButton:
-            id: pbtranspose
-            pos: root.x + root.width - self.width, root.y
+            show_off: False
             opacity: root.active*0.6 + 0.4
+        MDIconButton:
+            id: pbviewchords
+            pos: root.x, root.y + dp(6)
+            opacity: root.active*0.6 + 0.4
+            icon: 'music-note-off'
+        MDIconButton:
+            id: pbtranspose
+            pos: root.x + root.width - self.width, root.y + dp(6)
+            opacity: root.active*0.6 + 0.4
+            icon: 'music-note'
 
 <PresentScreen>:
     carousel: carousel
-    sendMessage: app.sendMessage
+    addbar: addbar
+    transposebar: transposebar
     BoxLayout:
         padding: '10dp'
         MyStencil:
@@ -144,81 +160,71 @@ Builder.load_string("""
                     size: self.parent.size
                     pos: self.parent.pos
                 AddBar:
-                    height: self.parent.height - 2*dp(10) - 2*app.buttonsize
-                    x: self.parent.x + self.parent.width - 2*app.buttonsize - dp(10)
-                    y: dp(10) + 2*app.buttonsize
+                    id: addbar
+                    x: self.parent.x + self.parent.width - dp(56)
+                    y: dp(16) + dp(48)
                     search: root.search
+                    song: root.song
                     scripture: root.scripture
                     save: root.save
                     edit: root.edit
                 TransposeBar:
-                    width: self.parent.width - 2*dp(10)
-                    pos: self.parent.x + dp(10), dp(10)
+                    id: transposebar
+                    width: self.parent.width - dp(16)
+                    pos: self.parent.x + dp(8), dp(8)
                     transpose: root.transpose
                     apply: root.apply
 """)
 
 
-class AddBar(Widget):
+class AddBar(ThemableBehavior, Widget):
     def __init__(self, **kwargs):
         super(AddBar, self).__init__(**kwargs)
         Clock.schedule_once(self._finish_init)
 
     def _finish_init(self, dt):
-        self.pbadd.text = iconfont('plus')
-        self.pbsearch.text = iconfont('search')
-        self.pbscripture.text = iconfont('scripture')
-        self.pbsave.text = iconfont('save')
-        self.pbedit.text = iconfont('edit')
+        self.pbadd.content.font_size = dp(32)
+        self.pbsearch.content.font_size = dp(32)
+        self.pbscripture.content.font_size = dp(32)
+        self.pbsave.content.font_size = dp(32)
+        self.pbedit.content.font_size = dp(32)
 
-    def _animate_in(self):
+    def animate_in(self):
         anim = Animation(active=1, d=0.2)
         anim.start(self)
 
-    def _animate_out(self):
+    def animate_out(self):
         anim = Animation(active=0, d=0.2)
         anim.start(self)
 
     def on_touch_down(self, touch):
         if self.active:
             if not self.collide_point(*touch.pos):
-                self._animate_out()
-            elif self.pbsearch.collide_point(*touch.pos):
-                self.search()
-                return True
-            elif self.pbscripture.collide_point(*touch.pos):
-                self.scripture()
-                return True
-            elif self.pbsave.collide_point(*touch.pos):
-                self.save()
-                return True
-            elif self.pbedit.collide_point(*touch.pos):
-                self.edit()
-                return True
+                self.animate_out()
         if self.pbadd.collide_point(*touch.pos):
             if self.active:
-                self._animate_out()
+                self.animate_out()
             else:
-                self._animate_in()
+                self.animate_in()
             return True
         super(AddBar, self).on_touch_down(touch)
         return False
 
-class TransposeBar(Widget):
+class TransposeBar(ThemableBehavior, Widget):
     def __init__(self, **kwargs):
         super(TransposeBar, self).__init__(**kwargs)
         Clock.schedule_once(self._finish_init)
 
     def _finish_init(self, dt):
-        self.pbviewchords.text = iconfont('chordoff')
-        self.pbtranspose.text = iconfont('transpose')
+        self.pbviewchords.content.font_size = dp(32)
+        self.pbtranspose.content.font_size = dp(32)
 
-    def _animate_in(self):
+    def animate_in(self):
         self.slider.value = 0
         anim = Animation(active=1, d=0.2)
         anim.start(self)
 
-    def _animate_out(self):
+    def animate_out(self):
         anim = Animation(active=0, d=0.2)
         anim.start(self)
         if self.slider.value != 0:
@@ -228,7 +234,7 @@ class TransposeBar(Widget):
     def on_touch_down(self, touch):
         if self.active:
             if not self.collide_point(*touch.pos):
-                self._animate_out()
+                self.animate_out()
             elif self.pbviewchords.collide_point(*touch.pos):
                 print('turn off/on chords')
                 return True
@@ -236,9 +242,9 @@ class TransposeBar(Widget):
                 return self.slider.on_touch_down(touch)
         if self.pbtranspose.collide_point(*touch.pos):
             if self.active:
-                self._animate_out()
+                self.animate_out()
             else:
-                self._animate_in()
+                self.animate_in()
             return True
         super(TransposeBar, self).on_touch_down(touch)
         return False
@@ -306,16 +312,23 @@ class PresentScreen(Screen):
             carousel.add_widget(s, index)
             s.text = song.lyrics
 
+    def song(self):
+        self.addbar.animate_out()
+        app = App.get_running_app()
+        app.base.to_screen('songs')
+    
     def search(self):
+        self.addbar.animate_out()
         app = App.get_running_app()
         app.base.to_screen('search')
 
     def scripture(self):
+        self.addbar.animate_out()
         app = App.get_running_app()
         app.base.to_screen('scripture')
 
     def save(self):
-        pass
+        self.addbar.animate_out()
 
     def edit(self):
-        pass
+        self.addbar.animate_out()
