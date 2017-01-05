@@ -69,19 +69,3 @@ icon_map = {'donate': u'\uf4cb',  # square-inc-cash
             '9': u'\uf3bc',  # numeric-9-box
             '9+': u'\uf3bf',  # numeric-9-plus-box
             }
-
-def iconfont(name, size=None):
-    icon = icon_map[name]
-    if size:
-        try:
-            float(str(size))
-            size = str(int(size))
-        except ValueError:
-            pass
-        return (u'[font=IconFonts][size='
-                + size + u']' + icon
-                + u'[/size][/font]')
-    else:
-        return (u'[font=IconFonts]'
-                + icon
-                + u'[/font]')
