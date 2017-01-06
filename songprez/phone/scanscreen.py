@@ -9,7 +9,7 @@ from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.screenmanager import Screen
 from kivy.uix.carousel import Carousel
 from .recyclelist import SPRecycleView
-from kivy.properties import ListProperty, StringProperty
+from kivy.properties import ListProperty, StringProperty, ObjectProperty
 from kivymd.label import MDLabel
 from kivymd.theming import ThemableBehavior
 import kivymd.material_resources as m_res
@@ -50,7 +50,7 @@ Builder.load_string("""
                 text: "CONNECT"
                 icon: 'remote'
                 disabled: True
-                on_press: root._done_preload()
+                on_press: root._host_selected()
 """)
 
 
@@ -60,9 +60,9 @@ class Instructions(ThemableBehavior, BoxLayout):
 
 
 class ScanScreen(Screen):
+    scanner = ObjectProperty(None)
     def __init__(self, **kwargs):
         super(ScanScreen, self).__init__(**kwargs)
-        self.scanner = Clock.schedule_interval(self._do_scan, 1)
         Clock.schedule_once(self._finish_init)
 
     def _finish_init(self, dt):
@@ -71,19 +71,31 @@ class ScanScreen(Screen):
     def _activate_button(self, instance, value):
         self.button.disabled = not(value)
 
-    def _do_scan(self, dt):
+    def on_parent(self, instance, parent):
+        if parent:
+            self.scanner = Clock.schedule_interval(self._do_scan, 1)
+            self._do_scan()
+        else:
+            if self.scanner:
+                self.scanner.cancel()
+
+    def _do_scan(self, dt=None):
         app = App.get_running_app()
         if app.seeker:
+            if not self.rv.data:
+                self.rv.data = [{'text': 'Please wait, scanning...',
+                                 'viewclass': 'ScanItem'}]
             app.seeker.findTargets()
             data = []
             for t in app.seeker.targets:
                 data.append({'text': t['name'],
                              'secondary_text': t['addr'],
                              'viewclass': 'ScanItem'})
-            self.rv.data = data
+            if data:
+                self.rv.data = data
 
-    def _done_preload(self):
+    def _host_selected(self):
         if self.rv.selected_identifier:
             app = App.get_running_app()
             self.scanner.cancel()
-            app.base.to_screen('main')
+            app.base.to_screen('sets')
