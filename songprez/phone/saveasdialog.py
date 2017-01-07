@@ -19,7 +19,7 @@ Builder.load_string("""
         text: root.message
         size_hint_y: None
         height: self.texture_size[1]
-    SingleLineTextField:
+    MDTextField:
         id: filepath
         text: root.suggestpath
         hint_text: "File path"
