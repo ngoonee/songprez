@@ -83,6 +83,29 @@ def on_selected_nodes(self, grid, nodes):
 LayoutSelectionBehavior.select_node = select_node
 LayoutSelectionBehavior.on_selected_nodes = on_selected_nodes
 
+# Monkey patch to allow ScrollView to hide/show toolbar if the
+# connect_to_toolbar property is True.
+from kivy.uix.scrollview import ScrollView
+ScrollView.old_y = NumericProperty(9999)
+ScrollView.delta_y = NumericProperty(0)
+ScrollView.connect_to_toolbar = BooleanProperty(False)
+def on_delta_y(self, instance, val):
+    if self.connect_to_toolbar:
+        app = App.get_running_app()
+        if val > 0:
+            app.base.hide_toolbar()
+        elif val < 0:
+            app.base.show_toolbar()
+ScrollView.on_delta_y = on_delta_y
+_on_scroll_move = ScrollView.on_scroll_move
+def on_scroll_move(self, touch):
+    new_y = touch.pos[1]
+    if self.old_y != 9999:
+        self.delta_y = new_y - self.old_y
+    self.old_y = new_y
+    _on_scroll_move(self, touch)
+ScrollView.on_scroll_move = on_scroll_move
+
 class SongPrezApp(App):
     base = ObjectProperty(None)
     nav_drawer = ObjectProperty(None)

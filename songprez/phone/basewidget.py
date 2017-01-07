@@ -13,7 +13,6 @@ from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.modalview import ModalView
 from kivymd.label import MDLabel
 from kivymd.dialog import MDDialog
-from kivymd import snackbar as Snackbar
 from ..control.spset import SPSet
 from .scanscreen import ScanScreen
 from .presentscreen import PresentScreen
@@ -270,8 +269,6 @@ class BaseWidget(FloatLayout):
             self.toolbar.hidden = True
             anim = Animation(y=self.height, d=0.2)
             anim.start(self.toolbar)
-            notification = ("Double-tap anywhere to show Toolbar")
-            Snackbar.make(notification)
 
     def show_toolbar(self):
         if self.toolbar.hidden:

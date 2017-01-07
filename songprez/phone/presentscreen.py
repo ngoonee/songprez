@@ -15,6 +15,7 @@ from copy import deepcopy
 from blinker import signal
 from kivymd.theming import ThemableBehavior
 from kivymd.slider import MDSlider
+from kivymd import snackbar as Snackbar
 from ..control.spset import SPSet
 from .chordlabel import ChordLabel
 from ..network.messages import GetItem
@@ -337,5 +338,7 @@ class PresentScreen(Screen):
         app = App.get_running_app()
         if parent:
             app.base.hide_toolbar()
+            notification = ("Double-tap anywhere to show Toolbar")
+            Snackbar.make(notification)
         else:
             app.base.show_toolbar()

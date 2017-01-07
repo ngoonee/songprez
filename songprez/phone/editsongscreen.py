@@ -48,6 +48,7 @@ Builder.load_string("""
         orientation: 'vertical'
         ScrollView:
             do_scroll_x: False
+            connect_to_toolbar: True
             FloatLayout:
                 size_hint_y: None
                 height: mainsongbox.height

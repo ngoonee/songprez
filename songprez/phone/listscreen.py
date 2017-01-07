@@ -32,15 +32,14 @@ Builder.load_string("""
     BoxLayout:
         orientation: 'vertical'
         spacing: '5dp'
-        TextInput:
-            size_hint_y: None
-            height: self.minimum_height
-            multiline: False
+        MDTextField:
             on_text_validate: root.do_search(self.text)
+            hint_text: "Search"
         SPRecycleView:
             id: rv
             primary_action: root.primary_action
             long_press_action: root.long_press_action
+            connect_to_toolbar: True
 
 <SongScreen>:
     rv: rv
@@ -50,6 +49,7 @@ Builder.load_string("""
             id: rv
             primary_action: root.primary_action
             long_press_action: root.long_press_action
+            connect_to_toolbar: True
     MDFloatingActionButton:
         icon: 'plus'
         size: dp(40), dp(40)
@@ -64,6 +64,7 @@ Builder.load_string("""
             id: rv
             primary_action: root.primary_action
             long_press_action: root.long_press_action
+            connect_to_toolbar: True
     MDFloatingActionButton:
         icon: 'plus'
         size: dp(40), dp(40)
