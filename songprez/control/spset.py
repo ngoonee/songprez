@@ -7,7 +7,7 @@ if sys.version_info[0] < 3:
 else:
     def unicode(input):  # Hack to allow use of 'unicode' function
         return str(input)  # in python 3
-from xml.parsers.expat import ExpatError
+from xml.dom import minidom
 from collections import OrderedDict
 from copy import deepcopy
 import time
@@ -125,14 +125,13 @@ class SPSet(object):
         '''
         Write this Set object to an XML file at filepath.
         '''
-        root = etree.Element('set', attrib={'name': self.name})
-        tree = etree.ElementTree(root)
+        root = etree.Element('set', {'name': self.name})
         slide_groups = etree.SubElement(root, 'slide_groups')
         for item in self._items:
             if item['type'] == 'song':
                 attrib = {a: item[a] for a in ['name', 'path',
                                                'presentation', 'type']}
-                slide_group = etree.Element('slide_group', attrib=attrib)
+                slide_group = etree.Element('slide_group', attrib)
                 slide_groups.append(slide_group)
             elif item['type'] == 'scripture':
                 slide_group = etree.Element('slide_group')
@@ -161,13 +160,18 @@ class SPSet(object):
                 keys = [k for k in item.keys() if k not in
                             ['title', 'slides', 'subtitle', 'notes']]
                 for s in keys:
-                    slide_group.attrib[s] = item[s]
+                    #slide_group.attrib[s] = item[s]
+                    slide_group.set(s, item[s])
                 slide_groups.append(slide_group)
-            elif item.attrib['type'] == 'image':
+            elif item['type'] == 'image':
                 pass
-            elif item.attrib['type'] == 'custom':
+            elif item['type'] == 'custom':
                 pass
-        tree.write(filepath, encoding='UTF-8', pretty_print=True, xml_declaration=True)
+        # Prettify it and then write it to file
+        dom = minidom.parseString(etree.tostring(root, 'utf-8'))
+        xml_string = dom.toprettyxml(indent="  ", encoding="UTF-8")
+        with open(filepath, 'w', encoding='utf8') as f:
+            f.write(xml_string)
 
     def add_item(self, item, itemtype, index=-1):
         '''

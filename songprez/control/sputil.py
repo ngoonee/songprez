@@ -5,32 +5,9 @@ import logging
 logger = logging.getLogger(__name__)
 from sys import platform
 
-# Attempt using lxml with fallbacks to cElementTree and ElementTree
-try:
-  from lxml import etree
-  logger.info("SPUtil: Using lxml.etree")
-except ImportError:
-  try:
-    # Python 2.5
-    import xml.etree.cElementTree as etree
-    logger.info("SPUtil: Using cElementTree on Python 2.5+")
-  except ImportError:
-    try:
-      # Python 2.5
-      import xml.etree.ElementTree as etree
-      logger.info("SPUtil: Using ElementTree on Python 2.5+")
-    except ImportError:
-      try:
-        # normal cElementTree install
-        import cElementTree as etree
-        logger.info("SPUtil: Using cElementTree")
-      except ImportError:
-        try:
-          # normal ElementTree install
-          import elementtree.ElementTree as etree
-          logger.info("SPUtil: Using ElementTree")
-        except ImportError:
-          logger.error("SPUtil: Failed to import ElementTree from any known place")
+# Just use cElementTree, reduce the headache of trying to get lxml working on
+# different platforms
+import xml.etree.cElementTree as etree
 
 if platform.startswith('linux') or platform == 'darwin':
     def is_hidden(filepath):

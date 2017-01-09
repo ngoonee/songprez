@@ -9,6 +9,7 @@ if sys.version_info[0] < 3:
 else:
     def unicode(input):  # Hack to allow use of 'unicode' function
         return str(input)  # in python 3
+from xml.dom import minidom
 from collections import OrderedDict
 from copy import deepcopy
 import time
@@ -62,10 +63,8 @@ class SPSong(object):
         retval = cls()
         try:
             root = etree.parse(filepath).getroot()
-        except etree.ParseError:
+        except (etree.ParseError, IOError) as e:
             return
-            raise LookupError("Unable to parse {}, not valid XML"
-                              .format(filepath))
         for elem in root:
             if elem.text is not None:
                 if elem.tag in _xmldefaults.keys():
@@ -112,13 +111,11 @@ class SPSong(object):
                 elem.attrib['print'] = u'true' if self.capo_print else u'false'
                 continue
             etree.SubElement(root, key).text = getattr(self, key)
-        tree = etree.ElementTree(root)
-        try:
-            tree.write(filepath, pretty_print=True,
-                       encoding='utf-8', xml_declaration=True)
-        except TypeError:
-            tree.write(filepath,
-                       encoding='utf-8', xml_declaration=True)
+        # Prettify it and then write it to file
+        dom = minidom.parseString(etree.tostring(root, 'utf-8'))
+        xml_string = dom.toprettyxml(indent="  ", encoding="UTF-8")
+        with open(filepath, 'w', encoding='utf8') as f:
+            f.write(xml_string)
 
     def __unicode__(self):
         strrep = "<Song Object - Title: %s" % (self.title)
