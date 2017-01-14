@@ -100,6 +100,7 @@ class SearchScreen(ListScreen):
                          'font_style': 'Headline',
                          'theme_text_color': 'Primary',
                          'secondary_theme_text_color': 'Primary',
+                         'padding': (dp(16), dp(18)),
                          'height': sp(60)}]
         Clock.schedule_once(self._get_details, 1)
 
@@ -272,6 +273,7 @@ class SongScreen(ListScreen):
                          'font_style': 'Headline',
                          'theme_text_color': 'Primary',
                          'secondary_theme_text_color': 'Primary',
+                         'padding': (dp(16), dp(18)),
                          'height': sp(60)}]
         signal('songList').connect(self.update_songs)
         Clock.schedule_once(self._get_details, 1)
@@ -448,6 +450,7 @@ class SetScreen(ListScreen):
                          'font_style': 'Headline',
                          'theme_text_color': 'Primary',
                          'secondary_theme_text_color': 'Primary',
+                         'padding': (dp(16), dp(18)),
                          'height': sp(60)}]
         signal('setList').connect(self.update_sets)
         Clock.schedule_once(self._get_details, 1)
