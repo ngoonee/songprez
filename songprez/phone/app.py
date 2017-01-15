@@ -14,6 +14,7 @@ import os
 import logging
 logger = logging.getLogger(__name__)
 from kivy.app import App
+from kivy.animation import Animation
 from kivy.clock import Clock
 from kivy.properties import StringProperty, BooleanProperty, ListProperty
 from kivy.properties import NumericProperty, ObjectProperty, DictProperty
@@ -105,6 +106,26 @@ def on_scroll_move(self, touch):
     self.old_y = new_y
     _on_scroll_move(self, touch)
 ScrollView.on_scroll_move = on_scroll_move
+
+# Monkey patch to implement goto_view for recycleview's layout
+from kivy.uix.recycleview import RecycleLayoutManagerBehavior
+def goto_view(self, index):
+    # Try to place widget at index in the center of the recycleview
+    rv = self.recycleview
+    view_opt = self.view_opts[index]
+    _, y = view_opt['pos']
+    w, h = view_opt['size']
+    total_h = self.height
+    view_h = rv.height
+    if h > view_h:
+        target_y = y + h - view_h
+    else:
+        target_y = y + h/2 - view_h/2
+    target_scroll_y = 1.0*target_y/(total_h-view_h)
+    target_scroll_y = min(1, max(0, target_scroll_y))
+    anim = Animation(scroll_y=target_scroll_y, d=0.5)
+    anim.start(rv)
+RecycleLayoutManagerBehavior.goto_view = goto_view
 
 class SongPrezApp(App):
     base = ObjectProperty(None)
