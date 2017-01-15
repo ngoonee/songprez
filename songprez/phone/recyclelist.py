@@ -22,10 +22,8 @@ from functools import partial
 Builder.load_string('''
 #:import md_icons kivymd.icon_definitions.md_icons
 <SPRecycleView>:
-    layout: layout
     key_viewclass: 'viewclass'
     SelectableRecycleBoxLayout:
-        id: layout
         default_size: None, None
         default_size_hint: 1, None
         size_hint_y: None
