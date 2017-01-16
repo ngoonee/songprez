@@ -479,6 +479,8 @@ class SetScreen(ListScreen):
                     subtitle = " | ".join(subtitle)
                     e['subtitle_text'] = subtitle
                     e['num_items'] = len(text)
+                    if i in self.rv.layout_manager.view_indices.values():
+                        self.rv.refresh_from_data(modified=slice(i, i+1, None))
             i += 1
         Clock.schedule_once(self._get_details, 1)
 
