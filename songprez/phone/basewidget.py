@@ -3,6 +3,7 @@ import kivy
 # kivy.require('1.9.1')
 from kivy.lang import Builder
 from kivy.clock import Clock
+from kivy import platform
 from kivy.core.window import Window
 from kivy.app import App
 from kivy.animation import Animation
@@ -11,6 +12,28 @@ from kivy.uix.screenmanager import ScreenManager
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.modalview import ModalView
+if platform == 'android':
+    from jnius import autoclass
+    from .runnable import run_on_ui_thread
+    @run_on_ui_thread
+    def set_fullscreen():
+        PythonActivity = autoclass('org.renpy.android.PythonActivity')
+        print('pythonactivity', PythonActivity)
+        Context = PythonActivity.mActivity
+        print('context', Context)
+        view_instance = Context.getWindow().getDecorView()
+        print('view_instance', view_instance)
+        View = autoclass('android.view.View')
+        print('View', View)
+        flag = View.SYSTEM_UI_FLAG_LAYOUT_STABLE \
+                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION \
+                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN \
+                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION \
+                    | View.SYSTEM_UI_FLAG_FULLSCREEN \
+                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+        print('flag', Flag)
+        view_instance.setSystemUiVisibility(flag)
+        print('set flag')
 from kivymd.label import MDLabel
 from kivymd.dialog import MDDialog
 from ..control.spset import SPSet
@@ -269,6 +292,10 @@ class BaseWidget(FloatLayout):
             self.toolbar.hidden = True
             anim = Animation(y=self.height, d=0.2)
             anim.start(self.toolbar)
+            if platform == 'android':
+                return
+                print('trying to set fullscreen')
+                set_fullscreen()
 
     def show_toolbar(self):
         if self.toolbar.hidden:
